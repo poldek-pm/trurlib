@@ -23,9 +23,11 @@ struct trurl_stream_private {
 
     
     void  *(*open) (const char*, const char *);
-    void  *(*dopen) (int, const char *);
+    void  *(*dopen)(int, const char *);
     int   (*read)  (void*, void*, size_t);
-    char  *(*gets)  (void*, char*, size_t);
+    char  *(*gets) (void*, char*, size_t);
+    int   (*getc)  (void*);
+    int   (*ungetc)  (int, void *);
     int   (*write) (void*, const void*, size_t);
     int   (*seek)  (void*, long, int);
     long  (*tell)  (void*); 
@@ -58,6 +60,7 @@ int n_stream_set_write_hook(tn_stream *st,
     
 
 int n_stream_gets(tn_stream *st, char *buf, size_t size);
+int n_stream_getline(tn_stream *st, char **bufptr, size_t size);
 
 static inline
 int n_stream_read(tn_stream *st, void *buf, size_t size) {

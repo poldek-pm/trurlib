@@ -128,6 +128,24 @@ static char *do_s_gets(void *stream, char *buf, size_t size)
 }
 
 
+static int do_gz_getc(void *stream) 
+{
+    register int c = gzgetc(stream);
+    if (c == -1)
+        return EOF;
+    
+    return c; 
+}
+
+static int do_gz_ungetc(int c, void *stream) 
+{
+    register int cc = gzungetc(c, stream);
+    if (cc == -1)
+        return EOF;
+    n_assert(cc == c);
+    return cc;
+}
+
 static int zlib_fseek_wrap(void *stream, long offset, int whence) 
 {
     z_off_t rc, off = offset;
@@ -165,6 +183,8 @@ static tn_stream *n_stream_new(int type)
             st->read  = (int (*)(void*, void*, size_t))do_s_read;
             st->write = (int (*)(void*, const void*, size_t))do_s_write;
             st->gets  = do_s_gets;
+            st->getc  = (int (*)(void*))getc;
+            st->ungetc = (int (*)(int, void*))ungetc;
             st->seek  = (int (*)(void*, long, int))fseek;
             st->tell  = (long (*)(void*))ftell;
             st->flush = (int (*)(void*))fflush;
@@ -177,6 +197,8 @@ static tn_stream *n_stream_new(int type)
             st->read  = gzread;
             st->write = (int (*)(void*, const void*, size_t))gzwrite;
             st->gets  = (char *(*)(void*, char*, size_t))gzgets;
+            st->getc  = do_gz_getc;
+            st->ungetc = do_gz_ungetc;
             st->seek  = (int (*)(void*, long, int))zlib_fseek_wrap;
             st->tell  = (long (*)(void*))gztell;
             st->flush = do_gz_flush;
@@ -361,12 +383,54 @@ int n_stream_printf(tn_stream *st, const char *fmt, ...)
     return n;
 }
 
-
+inline
 int n_stream_gets(tn_stream *st, char *buf, size_t size)
 {
     if (st->gets(st->stream, buf, size))
 		return strlen(buf);
 	
 	return 0;
+}
+
+#ifndef	MAX_CANON
+# define	MAX_CANON	256
+#endif
+#undef getc
+int n_stream_getline(tn_stream *st, char **bufptr, size_t size)
+{
+    char *buf = *bufptr;
+    size_t n;
+    
+    if (buf == NULL) {
+        buf = n_malloc(MAX_CANON);
+        size = MAX_CANON;
+    }
+    
+    *buf = '\0';
+    
+    n = n_stream_gets(st, buf, size);
+    if (n < size - 1) {
+        *bufptr = buf;
+        return n;
+    }
+
+    while (1) {
+        register int c;
+        if (n == size - 1) {
+            size *= 2;
+            buf = n_realloc(buf, size);
+        }
+        c = st->getc(st->stream);
+        if (c == EOF) 
+            break;
+        
+        buf[n++] = c;
+        if (c == '\n')
+            break;
+    }
+    
+    buf[n] = '\0';
+    *bufptr = buf;
+    return n;
 }
 

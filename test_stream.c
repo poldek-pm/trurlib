@@ -9,7 +9,8 @@
 
 #include "nstream.h"
 #include "nstore.h"
-
+#include "nassert.h"
+#include "nmalloc.h"
 
 
 void test_write(const char *name, const char *mode)
@@ -36,12 +37,26 @@ void test_read(const char *name)
     n_stream_close(st);
 }
 
+void test_getline(const char *name)
+{
+    tn_stream *st;
+    char *buf = n_malloc(16);
+    int n;
+    
+    st = n_stream_open(name, "r", TN_STREAM_UNKNOWN);
+    n = n_stream_getline(st, &buf, 16);
+    printf("getline = %d (%s)\n", n, buf);
+    n_assert(strlen(buf) == n);
+    n_stream_close(st);
+}
+
+
 
 int main(int argc, char *argv[])
 {
     if (argc > 1) {
-        test_write(argv[1], "a+");
-        test_read(argv[1]);
+        //test_write(argv[1], "a+");
+        test_getline(argv[1]);
     }
     
     return 0;
