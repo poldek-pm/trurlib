@@ -2,6 +2,7 @@
 # $Id$
 #
 #
+
 PROJ_DIR     = $(shell pwd)
 VERSION      = $(shell cat VERSION)
 INSTALL_ROOT = /usr/local
@@ -54,10 +55,10 @@ HEADERS = \
 	xmalloc.h
 
 
-
-STATIC_LIB  =  libtrurl.a
-SHARED_LIB  =  libtrurl.so.$(VERSION)
-
+LIBNAME     =  trurl
+STATIC_LIB  =  lib$(LIBNAME).a
+SHARED_LIB  =  lib$(LIBNAME).so.$(VERSION)
+SONAME      =  lib$(LIBNAME).so.$(shell cut -f 1 -d . VERSION)
 TEST_PROGS = \
 		test_common \
 		test_array  \
@@ -102,7 +103,7 @@ $(STATIC_LIB): $(OBJECTS)
 	$(RANLIB) $(STATIC_LIB)
 
 $(SHARED_LIB): $(SHOBJECTS)
-	gcc -shared -Wl,-soname=$(SHARED_LIB) $(CFLAGS) -o  $(SHARED_LIB) \
+	gcc -shared -Wl,-soname=$(SONAME) $(CFLAGS) -o  $(SHARED_LIB) \
 	     $(SHOBJECTS)
 
 symlink: 
@@ -116,10 +117,11 @@ tags:
 
 TAGS:   tags
 
-install: $(STATIC_LIB) $(SHARED_LIB)
+install: 
 	install -d 755 $(INSTALL_ROOT)/lib/
 	install -m 644 $(STATIC_LIB) $(INSTALL_ROOT)/lib/
 	install -s -m 755 $(SHARED_LIB) $(INSTALL_ROOT)/lib/
+	ln -sf $(SHARED_LIB) $(INSTALL_ROOT)/lib/libtrurl.so
 	install -d 755 $(INSTALL_ROOT)/include/trurl
 	install -m 644 $(HEADERS) $(INSTALL_ROOT)/include/trurl
 
@@ -174,6 +176,9 @@ dist:   distclean
 	arch_name=`basename $$DISTDIR`        ;\
 	tar cvpf $$arch_name.tar $$arch_name  ;\
 	gzip -9 $$arch_name.tar && rm -rf $$DISTDIR
+
+rpm:    dist
+	@rpm -ta /tmp/trurlib-$(VERSION).tar.gz 
 
 
 ifeq (.depend,$(wildcard .depend))
