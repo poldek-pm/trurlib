@@ -34,6 +34,9 @@ void n_array_free(tn_array *arr);
 tn_array *n_array_clean(tn_array *arr);
 
 
+/* Clone an array (only structure is cloned, not content) */
+tn_array *n_array_clone(const tn_array *arr);
+
 /* 
    for(i=0; i<n_array_size(arr); i++) 
        ...

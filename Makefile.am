@@ -13,6 +13,7 @@ libtrurl_la_LDFLAGS = -version-info $(TRURL_VERINFO)
 NARRAY_SRCS  = \
 	n_array_bsearch_ex.c    \
         n_array_clean.c \
+	n_array_clone.c \
         n_array_ctl.c   \
         n_array_dump_stats.c    \
         n_array_dup.c   \
@@ -26,8 +27,8 @@ NARRAY_SRCS  = \
         n_array_nth.c   \
         n_array_pop.c   \
         n_array_push.c  \
-        n_array_remove_nth.c    \
 	n_array_remove_ex.c     \
+        n_array_remove_nth.c    \
         n_array_set_nth.c       \
         n_array_shift.c \
         n_array_sorts.c \
