@@ -85,14 +85,14 @@ tn_array *n_array_dup(const tn_array *arr, t_fn_dup dupf);
 */
 
 int n_array_size(const tn_array *arr);
-#define n_array_size(arr) n_array_size_inl(arr)
-
 #ifndef SWIG
+#define n_array_size(arr) n_array_size_inl(arr)
 static inline int n_array_size_inl(const tn_array *arr)
 {
     return arr->items;
 }
 #endif
+
 #define n_array_isempty(arr) (n_array_size(arr) == 0)
 
 
@@ -100,11 +100,9 @@ static inline int n_array_size_inl(const tn_array *arr)
   foo = arr[i];
 */
 void *n_array_nth(const tn_array *arr, int i);
-#define n_array_nth(a, i) n_array_nth_inl(a, i)
-
-extern const char *n_errmsg_array_nth_oob;
-
 #ifndef SWIG
+#define n_array_nth(a, i) n_array_nth_inl(a, i)
+extern const char *n_errmsg_array_nth_oob;
 static inline void *n_array_nth_inl(const tn_array *arr, register int i)
 {
     if ((size_t) i >= arr->items || i < 0)
@@ -137,7 +135,6 @@ tn_array *n_array_remove_nth(tn_array *arr, int i);
 
 */
 tn_array *n_array_push(tn_array *arr, void *data);
-#define n_array_push(a, d) n_array_push_inl(a, d)
 
 tn_array *n_array_concat_ex(tn_array *arr, tn_array *src, tn_fn_dup dup_fn);
 #define n_array_concat(arr, src) n_array_concat_ex(arr, src, NULL) 
@@ -150,6 +147,7 @@ tn_array *n_array_concat_ex(tn_array *arr, tn_array *src, tn_fn_dup dup_fn);
 
 tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size);
 #ifndef SWIG
+#define n_array_push(a, d) n_array_push_inl(a, d)
 static inline tn_array *n_array_push_inl(tn_array *arr, void *data) {
 
     if (arr->items == arr->allocated) {
