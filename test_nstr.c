@@ -76,7 +76,13 @@ void test_(char *line)
 
 int main(int argc, char *argv[])
 {
-    test_(argv[1]);
+    if (argc > 1) {
+        char *s = n_strdup(argv[1]);
+        printf("'%s' => '%s'\n", argv[1], n_str_strip_ws(s));
+    }
+    
+//    test_(argv[1]);
+#undef TEST_STRTOKL
 #define TEST_STRTOKL 0
 #if TEST_STRTOKL
     test_strtokl();
@@ -85,6 +91,6 @@ int main(int argc, char *argv[])
 #if TEST_STRLEN
     test_strlen();
 #endif
-
+    
     return 0;
 }

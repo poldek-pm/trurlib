@@ -72,7 +72,8 @@ NSTR_SRCS = \
 	nstr_len.c     \
 	nstr_concat.c  \
 	nstr_cpy.c     \
-	nstr_basenam.c
+	nstr_basenam.c \
+	nstr.c
 
 
 libtrurl_la_SOURCES = \

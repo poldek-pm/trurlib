@@ -71,4 +71,7 @@ char *n_basedirnam(char *path, char **dirname, char **basename);
 
 char *n_basenam(const char *path);
 
+
+char *n_str_strip_ws(char *str);
+
 #endif /* TRURL_STR_H */
