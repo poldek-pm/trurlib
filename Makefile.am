@@ -100,7 +100,7 @@ pkginclude_HEADERS = \
 		trurl.h     \
 		xmalloc.h
 
-EXTRA_DIST = Makefile.extra VERSION trurlib.spec trurlib.spec.in test_*.c README.PL
+EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in test_*.c README.PL
 
 EXTRA_PROGRAMS = \
 		test_common \
