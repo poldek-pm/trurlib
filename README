@@ -6,11 +6,28 @@ TRURL library contains some useful data structures and routines:
  (both with Perl-like interface)
 - hash table
 - some string functions
-- xmalloc()s 
+- n_malloc()s wrappers
 
 and some other n stuff.
 
+There is no docs, but interface is really simple so
+reading headers should be enough.  
+
+Project CVS: <http://cvs.pld.org.pl/installer/trurlib/>.  
+Download: <http://team.pld.org.pl/~mis/poldek/download/>.  
+Please send comments, bug reports, etc to me <mis@pld.org.pl>
+
+Copyright (C) 1999 - 2002 Pawel A. Gajda
+TRURLib is free software; you can redistribute it and/or modify
+it under the terms of the GNU Library General Public License, version 2 as
+published by the Free Software Foundation (see file COPYING for details).
+
+You should have received a copy of the GNU Library General Public
+License along with this library; if not, write to the 
+Free Software Foundation, Inc., 59 Temple Place - Suite 330, 
+Boston, MA  02111-1307  USA.
+
 Build:
-$ ./configure
-$ make
-$ make install DESTDIR/
+$ ./configure && make && make install 
+
+

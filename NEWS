@@ -1,16 +1,43 @@
+0.43.7
+- xmalloc()s renamed to n_malloc()s cause to too many libraries/programs
+  provide xmalloc()s functions
+
 0.43.6
 - added n_*snprinf.h with *snprintf() wrappers
 
 0.43.5 
-- fixed 0.43.4
+* fixed 0.43.4
 
 0.43.4
-- bugfixes
-- added n_hash_size()
+* bugfixes
+* added n_hash_size()
 
-0.43.3:
-- bugfixes 
+0.43.3
+* bugfixes 
 
-0.43.2:
-- bugfixes 
+0.43.2
+* bugfixes 
+
+
+                                      * * *
+
+0.1
+* fixed bsearch (Jarek Woloszyn)
+* bugfixes
+	
+1999.06.02
+* fixed n_array_clean(), (Jarek Woloszyn)
+
+1999.05.28
+* fixed n_array_bsearch() (Jarek Woloszyn <yossa@dione.ids.pl>)
+
+1999.05.27
+* fixed a lot of narray bugs
+* fixed n_list_(shift, pop) (Wojtek Bojdol <wojboj@lp.net.pl>)
+* new:
+  n_list_remove_nth() 
+  n_array_bsearch() 
+  n_array_uniq()
+  n_array_eq() 
+  n_array_remove_nth()
 
