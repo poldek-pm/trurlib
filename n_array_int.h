@@ -48,19 +48,6 @@
 #define SETARR_UNSORTED(arr) ((arr)->flags &= ~ARR_SORTED) 
 #define ISARR_SORTED(arr)    ((arr)->flags & ARR_SORTED)
 
-struct trurl_array {
-    size_t      items;          
-    void        **data;
-    size_t      allocated;
-    unsigned    flags;
-    size_t      incstep;
-    size_t      start_index;
-
-    t_fn_free   free_fn;
-    t_fn_cmp    cmp_fn;
-};
-
-
 tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size);
 
 

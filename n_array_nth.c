@@ -2,7 +2,7 @@
 
 #include "n_array_int.h"
 
-void *n_array_nth(const tn_array *arr, int i)
+void *n_array_nth_unused(const tn_array *arr, int i)
 {
     n_assert(i >= 0);
     n_assert(arr->allocated > 0);

@@ -22,11 +22,11 @@
                                       * * *
 
 0.1
-* fixed bsearch (Jarek Woloszyn)
+* fixed bsearch (Jarek Woloszyn <yossa@dione.ids.pl>)
 * bugfixes
 	
 1999.06.02
-* fixed n_array_clean(), (Jarek Woloszyn)
+* fixed n_array_clean(), (Jarek Woloszyn <yossa@dione.ids.pl>)
 
 1999.05.28
 * fixed n_array_bsearch() (Jarek Woloszyn <yossa@dione.ids.pl>)

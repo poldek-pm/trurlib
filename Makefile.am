@@ -77,9 +77,9 @@ NSTR_SRCS = \
 
 
 libtrurl_la_SOURCES = \
-	trurl_die.c      \
 	trurl_cmpf.c     \
 	trurl_internal.h \
+	ndie.c		 \
 	nmalloc.c        \
 	xmalloc.c        \
 	nassert.c        \
@@ -99,6 +99,7 @@ pkginclude_HEADERS = \
 		nlist.h     \
 		nbuf.h	    \
 		trurl.h     \
+		ndie.h	    \
 		nmalloc.h   \
 		n_snprintf.h
 

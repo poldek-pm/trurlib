@@ -8,7 +8,7 @@
 #define TRURL_ARRAY_H
 
 #include "tfn_types.h"
-
+#include "ndie.h"
 
 #define TN_ARRAY_CONSTSIZE         (1 << 0)
 
@@ -17,14 +17,24 @@
  */
 #define TN_ARRAY_AUTOSORTED        (1 << 1)
 
-typedef struct trurl_array tn_array;
+/* WARN: never ever access array members directly */
+struct trurl_array_private {
+    size_t      items;
+    void        **data;
+    size_t      allocated;
+    unsigned    flags;
+    size_t      start_index;
+
+    t_fn_free   free_fn;
+    t_fn_cmp    cmp_fn;
+};
+
+typedef struct trurl_array_private tn_array;
 
 tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf);
 tn_array *n_array_ctl(tn_array *arr, unsigned flags);
 
-#define n_array_ctl_growth(arr, inctype)                            \
-      n_array_ctl((arr), (~(TN_ARRAY_INCNONE | TN_ARRAY_INCLINEAR | \
-                         TN_ARRAY_INCGEOMETRICAL)) | inctype)
+#define n_array_ctl_growth(arr, inctype)  ((void) 0) /* backward API compat */
 
 void n_array_free(tn_array *arr);
 
@@ -41,15 +51,26 @@ tn_array *n_array_clone(const tn_array *arr);
    for(i=0; i<n_array_size(arr); i++) 
        ...
 */
-#define n_array_size(arr) (*(int*)arr)
+//#define n_array_size(arr) (*(int*)arr)
+static inline int n_array_size(const tn_array *arr)
+{
+    return arr->items;
+}
+
 #define n_array_isempty(arr) (n_array_size(arr) == 0)
 
 /*
   foo = arr[i];
 
 */
-void *n_array_nth(const tn_array *arr, int i);
-
+//void *n_array_nth(const tn_array *arr, int i);
+static inline void *n_array_nth(const tn_array *arr, register int i)
+{
+    if ((size_t) i >= arr->items || i < 0)
+	n_die("n_array_nth: index(%d) out of bounds(%d)\n", i, arr->items);
+    
+    return arr->data[arr->start_index + i];
+}
 
 /*
   NOTE:
