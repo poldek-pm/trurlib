@@ -220,3 +220,12 @@ void *n_buf_it_get(tn_buf_it *bufi, size_t size)
     return ptr;
 }
 
+
+#undef n_buf_add
+// legacy: provide n_buf_add symbol 
+int n_buf_add(tn_buf *buf, const void *data, int size) 
+{
+    n_buf_addata(buf, data, size, 0);
+}
+
+
