@@ -70,8 +70,6 @@ void *xcalloc(size_t nmemb, size_t size)
 void *xrealloc(void *ptr, size_t size)
 {
     n_assert(size > 0);
-    n_assert(ptr != NULL);
-
     if ((ptr = realloc(ptr, size)) == NULL)
 	nomem();
 
