@@ -1,8 +1,8 @@
 # $Revision$, $Date$
 Summary:	trurlib 
 Name:		trurlib
-Version:	0.4
-Release:	2
+Version:	0.41
+Release:	1
 License:	LGPL
 Group:		Development/Libraries
 Group(pl):	Programowanie/Biblioteki
@@ -58,6 +58,9 @@ rm -rf $RPM_BUILD_ROOT
 All persons listed below can be reached at <cvs_login>@pld.org.pl
 
 $Log$
+Revision 1.3  2000/07/20 15:33:05  mis
+- version 0.41
+
 Revision 1.2  2000/07/15 12:39:00  mis
 - modularized narray, nhash and nlist modules
 
