@@ -223,7 +223,7 @@ void *n_buf_it_get(tn_buf_it *bufi, size_t size)
 // legacy: provide n_buf_add symbol 
 int n_buf_add(tn_buf *buf, const void *data, int size) 
 {
-    n_buf_addata(buf, data, size, 0);
+    return n_buf_addata(buf, data, size, 0);
 }
 
 
