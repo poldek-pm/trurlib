@@ -38,5 +38,6 @@ void (*set_trurl_err_hook( void (*hook)(const char *err) ))(const char *err);
 #include <trurl/nbuf.h>
 
 #include <trurl/nstr.h>    /* n_str_*   */
+#include <trurl/n_snprintf.h>
 
 #endif     
