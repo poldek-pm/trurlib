@@ -31,7 +31,8 @@ NSTR_OBJECTS = \
 	nstr_tok.o    \
 	nstr_tokl.o   \
 	nstr_len.o    \
-	nstr_concat.o 
+	nstr_concat.o \
+	nstr_cpy.o
 
 
 MOD_CPPFLAGS = -DMODULES -DMODULE
@@ -131,7 +132,7 @@ LIBNAME     =  trurl
 STATIC_LIB  =  lib$(LIBNAME).a
 SHARED_LIB  =  lib$(LIBNAME).so.$(VERSION)
 SONAME      =  lib$(LIBNAME).so.$(shell cut -f 1 -d . VERSION)
-TEST_PROGS = \
+TEST_PROGS  = \
 		test_common \
 		test_array  \
 	        test_list   \

@@ -1,7 +1,7 @@
 # $Revision$, $Date$
 Summary:	trurlib 
 Name:		trurlib
-Version:	0.41
+Version:	0.42
 Release:	1
 License:	LGPL
 Group:		Development/Libraries
@@ -58,6 +58,9 @@ rm -rf $RPM_BUILD_ROOT
 All persons listed below can be reached at <cvs_login>@pld.org.pl
 
 $Log$
+Revision 1.4  2000/09/20 16:30:26  mis
+- current working version is v0.42
+
 Revision 1.3  2000/07/20 15:33:05  mis
 - version 0.41
 
