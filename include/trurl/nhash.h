@@ -87,5 +87,8 @@ tn_array *n_hash_keys_ext(const tn_hash *ht, int cp);
 #define n_hash_keys(ht) n_hash_keys_ext(ht, 0)
 #define n_hash_keys_cp(ht) n_hash_keys_ext(ht, 1)
 
+#include <trurl/tfn_types.h>
+tn_hash *n_hash_dup(const tn_hash *ht, tn_fn_dup dup_fn);
+
 int n_hash_stats(const tn_hash *ht);
 #endif /* TRURL_HASH_H */

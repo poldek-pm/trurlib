@@ -67,7 +67,8 @@ NHASH_SRCS = \
         n_hash_remove.c \
 	n_hash_stats.c  \
 	hash-string.h   \
-	n_hash_keys.c
+	n_hash_keys.c   \
+	n_hash_dup.c
 
 NSTR_SRCS = \
 	nstr_tok.c     \
