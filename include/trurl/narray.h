@@ -62,8 +62,13 @@ void n_array_free(tn_array *arr);
  */
 tn_array *n_array_clean(tn_array *arr);
 
-/* Clone an array (only structure is cloned, not content) */
-tn_array *n_array_clone(const tn_array *arr);
+/*
+  Clone an array.
+ */
+tn_array *n_array_clone_ex(const tn_array *arr, t_fn_dup dupf);
+/* aliases for n_array_clone_ex */
+tn_array *n_array_clone(const tn_array *arr); 
+tn_array *n_array_dup(const tn_array *arr, t_fn_dup dupf);
 
 /* 
    for(i=0; i < n_array_size(arr); i++) 
@@ -209,10 +214,7 @@ void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
 int n_array_bsearch_idx_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
 #define n_array_bsearch_idx(arr, data) n_array_bsearch_idx_ex(arr, data, NULL)
 
-/*
-  Clone an array.
- */
-tn_array *n_array_dup(const tn_array *arr, t_fn_dup dupf);
+
 
 
 tn_array *n_array_remove_ex(tn_array *arr, const void *data, t_fn_cmp cmpf);
