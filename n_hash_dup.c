@@ -14,7 +14,7 @@ tn_hash *n_hash_dup(const tn_hash *ht, tn_fn_dup dup_fn)
     h->free_fn = ht->free_fn;
     h->hash_fn = ht->hash_fn;
     h->flags = h->flags;
-    
+    h->flags &= ~(TN_HASH_NOCPKEY);
     for (i = 0; i < ht->size; i++) {
         if (ht->table[i] == NULL)
             continue;
