@@ -64,7 +64,7 @@ tn_array *n_array_new(int size, t_fn_free freef, t_fn_cmp cmpf)
 }
 
 
-tn_array *n_array_new_na(int size, tn_alloc *na, t_fn_cmp cmpf)
+tn_array *n_array_new_na(tn_alloc *na, int size, t_fn_cmp cmpf)
 {
     tn_array *arr;
 
