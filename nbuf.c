@@ -48,7 +48,7 @@ tn_buf *n_buf_new(int initial_size)
     tn_buf *buf;
 
     if ((buf = n_malloc(sizeof(*buf))) == NULL)
-	return NULL;
+        return NULL;
 
     n_assert(initial_size >= 0);
     
@@ -93,11 +93,17 @@ tn_buf *n_buf_ctl(tn_buf *buf, unsigned flags)
 
 tn_buf *n_buf_clean(tn_buf *buf)
 {
-    if (!(buf->flags & TN_BUF_CONSTDATA)) {
+    if (buf->flags & TN_BUF_CONSTDATA) {
+        buf->data = NULL;
+        buf->allocated = 0;
+        buf->flags = 0;
+        
+    } else {
         buf->size = 0;
         buf->off  = 0;
         buf->data[0] = '\0';
     }
+
     return buf;
 }
 
@@ -237,8 +243,9 @@ char *n_buf_it_gets_ext(tn_buf_it *bufi, size_t *len, int endl)
     unsigned char *ptr;
     tn_buf *buf;
 
+
     buf = bufi->nbuf;
-    
+
     if (bufi->offs + 1 > buf->size)
         return NULL;
 
