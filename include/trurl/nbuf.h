@@ -10,6 +10,8 @@
 #define TN_BUF_CONSTSIZE         (1 << 0)
 #define TN_BUF_CONSTDATA         (1 << 1)
 
+#include <stdarg.h>
+
 typedef struct trurl_buf tn_buf;
 
 tn_buf *n_buf_new(int size);
@@ -27,6 +29,12 @@ int n_buf_addata(tn_buf *buf, const void *data, int size, int with_zero);
 int n_buf_addstring(tn_buf *buf, const char *str, int with_zero);
 #define n_buf_addstr(buf, str)  n_buf_addstring(buf, str, 0)
 #define n_buf_addstrz(buf, str) n_buf_addstring(buf, str, 1)
+
+/* WARN: limited to 4K */
+int n_buf_vprintf(tn_buf *nbuf, const char *fmt, va_list args);
+int n_buf_printf(tn_buf *nbuf, const char *fmt, ...);
+
+
 
 int n_buf_size(const tn_buf *buf);
 void *n_buf_ptr(const tn_buf *buf); /* returns buffer data pointer */

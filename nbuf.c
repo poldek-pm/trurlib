@@ -37,6 +37,7 @@
 #include "trurl_internal.h"
 #include "nmalloc.h"
 #include "nbuf.h"
+#include "n_snprintf.h"
 
 struct trurl_buf {
     unsigned char *data;
@@ -226,3 +227,25 @@ int n_buf_add(tn_buf *buf, const void *data, int size)
 }
 
 
+int n_buf_vprintf(tn_buf *nbuf, const char *fmt, va_list args)
+{
+    char     buf[4096];
+    int      n;
+    
+    n = n_vsnprintf(buf, sizeof(buf), fmt, args);
+    n_buf_add(nbuf, buf, n);
+    return n;
+}
+
+
+int n_buf_printf(tn_buf *nbuf, const char *fmt, ...)
+{
+    va_list  args;
+    int n;
+    
+    va_start(args, fmt);
+    n = n_buf_vprintf(nbuf, fmt, args);
+    va_end(args);
+    
+    return n;
+}
