@@ -192,7 +192,7 @@ void print_array_str(const tn_array * arr, const char *name, const char *sep)
     int i, n = n_array_size(arr);
 
     n_array_dump_stats(arr, name);
-    printf("Content:\n");
+    printf("Content[%d]:\n", n_array_size(arr));
     for (i = 0; i < n_array_size(arr); i++) {
 	char *p = n_array_nth(arr, i);
 	if (p != NULL)
@@ -277,28 +277,30 @@ int test_array_basic(void)
 
 
     for (i = 0; i < 2; i++) {
+        p = n_array_nth(arr, 0);
+        s = n_array_shift(arr);
+        n_assert(s == p);
 
-	p = n_array_nth(arr, 0);
-	s = n_array_shift(arr);
-	n_assert(s == p);
+        n_array_push(arr, s);
 
-	n_array_push(arr, s);
-
-	p = n_array_nth(arr, n_array_size(arr) - 1);
-	s = n_array_pop(arr);
-	n_assert(s == p);
-	if (s != NULL)
-	    free(s);
+        p = n_array_nth(arr, n_array_size(arr) - 1);
+        s = n_array_pop(arr);
+        n_assert(s == p);
+        if (s != NULL)
+            free(s);
     }
 
 
     printf("\nDisplay 3:");
     print_array_str(arr, "arr", NULL);
-
+    set_trurl_err_hook((void (*)(const char *)) puts);
     printf("Remove 3, 4, 10...\n");
     n_array_remove_nth(arr, 3);
+    print_array_str(arr, "arr", NULL);
     n_array_remove_nth(arr, 4);
+    print_array_str(arr, "arr", NULL);
     n_array_remove_nth(arr, 10);
+    print_array_str(arr, "arr", NULL);
 
     print_array_str(arr, "arr", "\n");
 
@@ -306,12 +308,12 @@ int test_array_basic(void)
 
     printf("\nShift all: ");
     while (n_array_size(arr)) {
-	s = n_array_shift(arr);
+        s = n_array_shift(arr);
 
-	if (s != NULL) {	/* arr contains some NULLs */
-	    printf("%s, ", s);
-	    free(s);
-	}
+        if (s != NULL) {	/* arr contains some NULLs */
+            printf("%s, ", s);
+            free(s);
+        }
     }
     printf("\nNow shift from empty array\n");
 
@@ -422,7 +424,10 @@ void test_array_remove(void)
     n_array_remove(arr, s1);
     print_array_str(arr, "removed ala", "\n");
 
-    n_array_remove(arr, "dupa2");
+    print_array_str(arr, "aa", "\n");
+    n_array_push(arr, n_strdup(s3));
+    n_array_remove_nth(arr, 0);
+    //n_array_remove(arr, "dupa2");
     print_array_str(arr, "removed dupa2", "\n");
     
     n_array_free(arr);
@@ -432,11 +437,11 @@ void test_array_remove(void)
 int main()
 {
 
-    test_array_basic();
+    //test_array_basic();
     //test_array_growth();
     //test_array_basic();
     //test_array_growth();
-    //test_array_remove();
+    test_array_remove();
     /* test_array_big(); */
     //test_array_sort();
     return 0;
