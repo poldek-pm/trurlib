@@ -371,6 +371,26 @@ void test_array_growth(void)
     n_array_free(arr3);
 }
 
+void test_array_sort(void)
+{
+    char buf[4096];
+    int i, n = 0;
+    tn_array *a = n_array_new(8, free, (t_fn_cmp) strcmp);
+
+    for (i=0; i<100; i++) {
+        snprintf(buf, sizeof(buf), "%.3d", i);
+	n_array_push(a, strdup(buf));
+    }
+    n_array_sort(a);
+    for (i = 0; i < n_array_size(a); i++) {
+	char *p = n_array_nth(a, i);
+
+	printf("%s\n", p);
+    }
+
+    n_array_free(a);
+}
+
 void test_array_remove(void)
 {
     tn_array *arr;
@@ -412,11 +432,13 @@ void test_array_remove(void)
 
 
 int main()
-{
+{	
+    //test_array_basic();
+    //test_array_growth();
     //test_array_basic();
     //test_array_growth();
     test_array_remove();
     /* test_array_big(); */
-    /* test_array_sort_search(); */
+    //test_array_sort();
     return 0;
 }
