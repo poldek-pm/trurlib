@@ -1,5 +1,7 @@
 # $Id$
 
+AUTOMAKE_OPTIONS = foreign
+
 # use libtool versioning 
 TRURL_VERINFO   = 0:0:0
 CFLAGS    = @CFLAGS@
@@ -25,6 +27,7 @@ NARRAY_SRCS  = \
         n_array_pop.c   \
         n_array_push.c  \
         n_array_remove_nth.c    \
+	n_array_remove_ex.c     \
         n_array_set_nth.c       \
         n_array_shift.c \
         n_array_sorts.c \
