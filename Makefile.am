@@ -81,6 +81,7 @@ libtrurl_la_SOURCES = \
 	trurl_cmpf.c     \
 	trurl_internal.h \
 	nmalloc.c        \
+	xmalloc.c        \
 	nassert.c        \
 	nbuf.c		 \
 	$(NARRAY_SRCS)   \
