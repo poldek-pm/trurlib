@@ -213,7 +213,7 @@ tn_array *n_array_qsort_ex(tn_array *arr, t_fn_cmp cmpf);
 
 /* insertion sort*/
 tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf);
-#define n_array_isort(arr) n_array_qsort_ex(arr, NULL)
+#define n_array_isort(arr) n_array_isort_ex(arr, NULL)
 
 
 /* cmpf is always called as cmpf(arr[i], data);
