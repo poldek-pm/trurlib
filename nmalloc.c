@@ -241,8 +241,11 @@ tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags)
 
 void n_alloc_free(tn_alloc *na)
 {
-    if (na->_flags & TN_ALLOC_OBSTACK)
+    if (na->_flags & TN_ALLOC_OBSTACK) {
         obstack_free(na->_privdata, NULL);
+        n_free(na->_privdata);
+    }
+    
     n_free(na);
 }
 
