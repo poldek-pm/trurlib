@@ -388,7 +388,12 @@ const tn_list_iterator n_list_iterator_start(const tn_list *l)
 void *n_list_iterator_get(tn_list_iterator *li)
 {
     void *data;
-    struct list_node *node = *(struct list_node**)li;
+    struct list_node *node;
+    
+    if (li == NULL)
+        return NULL;
+    
+    node = *(struct list_node**)li;
     
     if (node == NULL)
 	return NULL;
