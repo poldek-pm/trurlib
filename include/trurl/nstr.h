@@ -42,4 +42,13 @@ int n_str_len(const char *s, ...);
 char *n_str_concat(const char *s, ...);
 char *n_str_vconcat(const char *s, va_list ap);
 
+
+
+/*
+  Similar to strncpy(3), but:
+  - always terminate dest
+  - returns pointer to last dest '\0'
+*/
+char *n_strncpy(char *dest, const char *src, size_t n);
+
 #endif /* TRURL_STR_H */
