@@ -243,28 +243,35 @@ $(FIXIDIRARCH_TARGET): clean narray.o
 	 tar cvpzf /tmp/$(FIXIDIRARCH).tar.gz $(FIXIDIRARCH);               \
 	 rm -rf $(FIXIDIRARCH); 
 
+backup:
+	@cd $(PROJ_DIR); \
+	ARCHDIR=`basename  $(PROJ_DIR)`-ARCH; \
+	ARCHNAME=`basename  $(PROJ_DIR)`-`date +%Y.%m.%d-%H.%M`; \
+	cd ..; \
+	mkdir $$ARCHDIR || true; \
+	cd $$ARCHDIR && mkdir $$ARCHNAME || exit 1; \
+	cd .. ;\
+	cp -a $(PROJ_DIR) $$ARCHDIR/$$ARCHNAME ;\
+	cd $$ARCHDIR ;\
+	tar cvpzf $$ARCHNAME.tgz $$ARCHNAME && rm -rf $$ARCHNAME;   \
+	md5sum $$ARCHNAME.tgz > $$ARCHNAME.md5;                     \
+	if [ $(cparch)x = "1x" ]; then                              \
+	        mkdir $(backupdir)/copy || true;                    \
+		cp -v $$HOME/$$ARCHDIR/$$ARCHNAME.tgz $(backupdir); \
+		cp -v $$HOME/$$ARCHDIR/$$ARCHNAME.tgz $(backupdir)/copy; \
+		cd $(backupdir) || exit 1;                         \
+		md5sum --check $$HOME/$$ARCHDIR/$$ARCHNAME.md5;    \
+		cd copy || exit 1;                                 \
+		md5sum --check $$HOME/$$ARCHDIR/$$ARCHNAME.md5;    \
+	fi
+
+arch : distclean  backup 
+
+misarch: distclean 
+	$(MAKE) -C . backup cparch=1 backupdir=/z/
+
 #
-# Make copy of $(PROJ_DIR). Copies are stored in ../$(PROJ_DIR)-ARCH as  
-# $(PROJ_DIR)-DD.MM.YY-HH.MM.tgz 
-backup: 
-	@cd $(PROJ_DIR)                       ;\
-	CURDIR=`basename  $(PROJ_DIR)`        ;\
-	CURDATE=`date +%d.%m.%y-%H.%M`        ;\
-	ARCHDIR=$$CURDIR-ARCH                 ;\
-	ARCHNAME=$$CURDIR-$$CURDATE           ;\
-	cd $(PROJ_DIR)/..                     ;\
-	mkdir $$ARCHDIR  2>/dev/null || true  ;\
-	mkdir $$ARCHDIR/$$ARCHNAME            ;\
-	cp -ra $$CURDIR $$ARCHDIR/$$ARCHNAME  ;\
-	cd $$ARCHDIR                          ;\
-        tar cvpzf $$ARCHNAME.tgz $$ARCHNAME  
-
-
-
-arch :	distclean  backup 
-
-#
-# Make dist archives of $(PROJ_DIR). Archives are stored in TMPDIR (see below)   
+# Make dist archives of $(PROJ_DIR). Archives are stored in TMPDIR (see below)
 # as $(PROJ_DIR)-`cat VERSION`.tar.[gz, bz2]
 # 
 dist:   distclean
