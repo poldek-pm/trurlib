@@ -147,6 +147,9 @@ static tn_buf *n_buf_grow(tn_buf *buf, size_t req_size)
 {
     register size_t new_size = buf->allocated;
 
+    if (new_size == 0)
+        new_size = 2;
+    
     while (req_size >= new_size) 
         new_size *= 2;
     
