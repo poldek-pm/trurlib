@@ -82,7 +82,10 @@ int n_hash_map_arg(const tn_hash *ht,
                    void (*map_fn)(const char *, void *, void *), void *arg);
 
 #include <trurl/narray.h>
-tn_array *n_hash_keys(const tn_hash *ht);
+tn_array *n_hash_keys_ext(const tn_hash *ht, int cp);
+
+#define n_hash_keys(ht) n_hash_keys_ext(ht, 0)
+#define n_hash_keys_cp(ht) n_hash_keys_ext(ht, 1)
 
 int n_hash_stats(const tn_hash *ht);
 #endif /* TRURL_HASH_H */
