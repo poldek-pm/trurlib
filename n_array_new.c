@@ -101,3 +101,19 @@ void n_array_free_na(tn_alloc *na, tn_array *arr)
     arr->data = NULL;
     na->na_free(na, arr);
 }
+
+tn_fn_free n_array_ctl_set_freefn(tn_array *arr, tn_fn_free free_fn)
+{
+    tn_fn_free old_free_fn = arr->free_fn;
+    arr->free_fn = free_fn;
+    return old_free_fn;
+}
+
+tn_fn_cmp n_array_ctl_set_cmpfn(tn_array *arr, tn_fn_cmp cmp_fn)
+{
+    tn_fn_cmp old_cmp_fn = arr->cmp_fn;
+    arr->cmp_fn = cmp_fn;
+    TN_ARRAY_clr_sorted(arr);
+    return old_cmp_fn;
+}
+

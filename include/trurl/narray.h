@@ -58,6 +58,8 @@ static inline tn_array *n_array_ctl(tn_array *arr, unsigned flags) {
 #define n_array_ctl_growth(arr, inctype)  ((void) 0) /* backward API compat */
 #define n_array_has_free_fn(arr) (arr)->free_fn
 
+tn_fn_free n_array_ctl_set_freefn(tn_array *arr, tn_fn_free free_fn);
+tn_fn_cmp n_array_ctl_set_cmpfn(tn_array *arr, tn_fn_cmp cmp_fn);
 
 
 void n_array_free(tn_array *arr);
