@@ -10,11 +10,15 @@
 #include "nstream.h"
 #include "nstore.h"
 
-void test_write(const char *name)
+
+
+void test_write(const char *name, const char *mode)
 {
     tn_stream *st;
 
-    st = n_stream_open(name, "w", TN_STREAM_UNKNOWN);
+    if (mode == NULL) mode = "w";
+    
+    st = n_stream_open(name, mode, TN_STREAM_UNKNOWN);
     n_stream_printf(st, "dupa blada\n i co z tego\n");
     n_stream_seek(st, 0, SEEK_SET);
     n_stream_printf(st, "ALA");
@@ -36,7 +40,7 @@ void test_read(const char *name)
 int main(int argc, char *argv[])
 {
     if (argc > 1) {
-        test_write(argv[1]);
+        test_write(argv[1], "a+");
         test_read(argv[1]);
     }
     
