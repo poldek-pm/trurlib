@@ -37,7 +37,7 @@
   tokens[0] = s
   tokens[1] = token1
  */
-const char **n_str_tokl_n(const char *s, char *delim, int *ntokens)
+const char **n_str_tokl_n(const char *s, const char *delim, int *ntokens)
 {
     char **tokens, *scpy;
     char *p;
@@ -96,7 +96,7 @@ const char **n_str_tokl_n(const char *s, char *delim, int *ntokens)
 }
 
 #undef n_str_tokl
-const char **n_str_tokl(const char *s, char *delim) 
+const char **n_str_tokl(const char *s, const char *delim) 
 {
     return n_str_tokl_n(s, delim, NULL);
 }

@@ -27,9 +27,10 @@
 #endif
 
 
-char *n_str_tok(const char *s, char *tok, size_t toklen, char *delim)
+char *n_str_tok(const char *s, char *tok, size_t toklen, const char *delim)
 {
-    char *lim, *p;
+    char *lim;
+    const char *p;
 
     if (!*s)
         return NULL;
