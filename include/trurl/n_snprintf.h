@@ -16,7 +16,7 @@ int n_vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
     int s;
 
     s = vsnprintf(str, size, fmt, ap);
-    if (s < 0 || (unsigned)s > size)
+    if (s < 0 || (unsigned)s >= size)
         return size - 1;
     
     return s;
