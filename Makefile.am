@@ -118,6 +118,7 @@ EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in \
 			 test_hash.c \
 			 test_nstr.c \
 			 test_stream.c \
+			 test_obstack.c \
 			 README NEWS
 
 EXTRA_PROGRAMS = \
@@ -126,7 +127,8 @@ EXTRA_PROGRAMS = \
 	        test_list   \
 		test_hash   \
 		test_nstr   \
-		test_stream
+		test_stream \
+		test_obstack
 
 test_common_LDADD = libtrurl.la
 test_array_LDADD = libtrurl.la
@@ -134,6 +136,7 @@ test_list_LDADD = libtrurl.la
 test_hash_LDADD = libtrurl.la
 test_nstr_LDADD = libtrurl.la
 test_stream_LDADD =  libtrurl.la -lz
+test_obstack_LDADD =  libtrurl.la
 MAINTAINERCLEANFILES =	mkinstalldirs install-sh missing *.tar.gz *.spec \
 			config.h.in configure Makefile.in config.h \
 			config.sub config.guess aclocal.m4 \
