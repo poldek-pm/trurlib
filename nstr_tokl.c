@@ -68,7 +68,6 @@ const char **n_str_tokl(const char *s, char *delim)
     p = (char *) s;
 
     while (p != NULL && *p) {
-
 	if (n == tokens_size) {
 	    char **tmp;
             size_t new_size = (tokens_size + ALLOC_STEP) * sizeof(*tokens);
@@ -79,8 +78,12 @@ const char **n_str_tokl(const char *s, char *delim)
 		break;
 
 	    } else {
+                int i;
+                
 		tokens = tmp;
 		tokens_size += ALLOC_STEP;
+                for (i=n; i<tokens_size; i++)
+                    tokens[i] = NULL;
 	    }
 	}
 	p = n_str_tok(p, scpy, slen, delim);
