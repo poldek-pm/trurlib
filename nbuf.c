@@ -119,12 +119,10 @@ static tn_buf *n_buf_grow(tn_buf *buf, size_t req_size)
 {
     register size_t new_size = buf->allocated;
 
-    while (req_size >= new_size) {
+    while (req_size >= new_size) 
         new_size += buf->initial_size;
-        return n_buf_realloc(buf, new_size);
-    }
-
-    return buf;
+    
+    return n_buf_realloc(buf, new_size);
 }
 
 
@@ -161,12 +159,12 @@ char *n_buf_addstring(tn_buf *buf, const char *str, int with_zero)
     register void *p;
     register int len;
 
-    len = strlen(str) + 1;
+    len = strlen(str);
+
+    if (with_zero)
+        len++;
 
     p = n_buf_add(buf, str, len);
-    
-    if (p && with_zero) 
-        buf->data[buf->size++] = '\0';
     
     return p;
 }
