@@ -1,6 +1,6 @@
 /*
   TRURLib, hash table
-  Copyright (C) 1999, 2000 Pawel Gajda (mis@k2.net.pl)
+  Copyright (C) 1999, 2000 Pawel A. Gajda (mis@k2.net.pl)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Library General Public
@@ -37,8 +37,6 @@ Module is based on:
 
 #define USE_HASHSTRING 1
 
-
-
 /*
    ** A hash table consists of an array of these buckets.  Each bucket
    ** holds a copy of the key, a pointer to the data associated with the
@@ -47,8 +45,8 @@ Module is based on:
  */
 
 struct hash_bucket {
-    char *key;
-    void *data;
+    char  *key;
+    void  *data;
     struct hash_bucket *next;
 };
 
@@ -66,13 +64,16 @@ struct trurl_hash_table {
     size_t size;
     struct hash_bucket **table;
     size_t items;
-
-    void (*free_fn) (void *);
-    unsigned int (*hash_fn) (const char*);
+    
+    unsigned int  flags;
+    
+    void          (*free_fn) (void *);
+    unsigned int  (*hash_fn) (const char*);
 };
 
 #ifndef MODULES
 # define MODULE_n_hash_new
+# define MODULE_n_hash_ctl
 # define MODULE_n_hash_put
 # define MODULE_n_hash_get
 # define MODULE_n_hash_exists
@@ -119,6 +120,17 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
     return ht;
 }
 
+#ifdef MODULE_n_hash_ctl
+int n_hash_ctl(tn_hash *ht, unsigned int flags)
+{
+    if (ht->items > 0) {
+        trurl_die("n_hash_ctl: hash table not empty");
+        return 0;
+    }
+    ht->flags |= flags;
+    return 1;
+}
+#endif
 
 #if USE_HASHSTRING
 # include "hash-string.h"
@@ -148,16 +160,57 @@ static unsigned int hash_string(const char *string)
  * Insert 'key' into hash table.
  */
 #ifdef MODULE_n_hash_put
+static void n_hash_rehash(tn_hash *ht)
+{
+    size_t i, newsize, oldsize;
+    struct hash_bucket **oldtable;
+    unsigned int oldflags;
+    
+    oldsize  = ht->size;
+    oldtable = ht->table;
+    oldflags = ht->flags;
+    
+    newsize = 2 * ht->size + 1;
+    
+    ht->table = calloc(newsize, sizeof(*ht->table));
+    if (ht->table == NULL) {
+        ht->table = oldtable;
+	return;
+    }
+
+    ht->size = newsize;
+    ht->items = 0;
+
+    ht->flags = TN_HASH_NOCPKEY;
+    for (i = 0; i < oldsize; i++) {
+        register struct hash_bucket *node, *next_node;
+	if (oldtable[i] == NULL)
+            continue;
+
+        for (node = oldtable[i]; node != NULL; node = next_node) {
+            next_node = node->next;
+            n_hash_insert(ht, node->key, node->data);
+            free(node);
+        }
+    }
+
+    ht->flags = oldflags;
+    free(oldtable);
+}
+
 static
 tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
                     int replace)
 {
     struct hash_bucket *ptr;
-    unsigned val = ht->hash_fn(key) % ht->size;
+    unsigned val = ht->hash_fn(key);
+    
 
-
-    ptr = ht->table[val];
-
+    if (ht->flags & TN_HASH_REHASH && ht->size - ht->items <= ht->size/5) 
+        n_hash_rehash(ht);
+    
+    val %= ht->size;
+    ptr =  ht->table[val];
     /*
        ** NULL means this bucket hasn't been used yet.  We'll simply
        ** allocate space for our new bucket and put our data there, with
@@ -168,7 +221,11 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
 	if ((ptr = malloc(sizeof(*ptr))) == NULL)
 	    return NULL;
 
-	ptr->key  = strdup(key);
+        if (ht->flags & TN_HASH_NOCPKEY)
+            ptr->key = (char*)key;
+        else 
+            ptr->key  = strdup(key);
+        
 	ptr->next = NULL;
 	ptr->data = (void *) data;
 
@@ -180,47 +237,37 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
 
     /*
     ** This spot in the table is already in use.  See if the current string
-    ** has already been inserted, and if so, increment its count.
+    ** has already been inserted, and if so,  die or replace it
     */
 
     for (ptr = ht->table[val]; NULL != ptr; ptr = ptr->next) {
-
 	if (strcmp(key, ptr->key) == 0) {
-
 	    if (!replace) {
 		trurl_die("n_hash_insert: key '%s' already in table\n", key);
 		return NULL;
 	    }
-	    if (ht->free_fn == NULL) {
-		trurl_die("n_hash_replace: free function is NULL\n");
-		return NULL;
-	    }
-	    ht->free_fn(ptr->data);
+            
+            if (ht->free_fn)
+                ht->free_fn(ptr->data);
 	    ptr->data = (void *) data;
 	    return ht;
 	}
     }
 
-    /*
-    ** This key must not be in the table yet.  We'll add it to the head of
-    ** the list at this spot in the hash table.  Speed would be
-    ** slightly improved if the list was kept sorted instead.  In this case,
-    ** this code would be moved into the loop above, and the insertion would
-    ** take place as soon as it was determined that the present key in the
-    ** list was larger than this one.
-    */
-
+    
     if ((ptr = malloc(sizeof(*ptr))) == NULL)
 	return NULL;
 
-    ptr->key = strdup(key);
+    if (ht->flags & TN_HASH_NOCPKEY)
+        ptr->key = (char*)key;
+    else 
+        ptr->key  = strdup(key);
     ptr->data = (void *) data;
     ptr->next = ht->table[val];
     ht->table[val] = ptr;
 
     ht->items++;
     return ht;
-
 }
 
 
@@ -308,9 +355,10 @@ void *n_hash_remove(tn_hash *ht, const char *key)
 		data = ptr->data;
 
 		last->next = ptr->next;
+                if (!(ht->flags & TN_HASH_NOCPKEY))
+                    free(ptr->key);
 
-		free(ptr->key);
-		free(ptr);
+                free(ptr);
 		ht->items--;
 
 		return data;
@@ -325,7 +373,8 @@ void *n_hash_remove(tn_hash *ht, const char *key)
 		ht->table[val] = ptr->next;
 		data = ptr->data;
 
-		free(ptr->key);
+                if (!(ht->flags & TN_HASH_NOCPKEY))
+                    free(ptr->key);
 		free(ptr);
 		ht->items--;
 
@@ -350,18 +399,15 @@ void *n_hash_remove(tn_hash *ht, const char *key)
 void n_hash_free(tn_hash *ht)
 {
     size_t i;
-
     for (i = 0; i < ht->size; i++) {
-
 	while (ht->table[i] != NULL) {
 	    void *d = n_hash_remove(ht, ht->table[i]->key);
-	    if (d != NULL && ht->free_fn != NULL)
+	    if (ht->free_fn != NULL && d != NULL)
 		ht->free_fn(d);
 	}
     }
-
     free(ht->table);
-
+    
     ht->table = NULL;
     ht->size = 0;
     ht->items = 0;
@@ -382,7 +428,6 @@ int n_hash_map(const tn_hash *ht, void (*map_fn) (const char *, void *))
     register struct hash_bucket *tmp;
 
     for (i = 0; i < ht->size; i++) {
-
 	if (ht->table[i] == NULL)
             continue;
         
@@ -409,7 +454,6 @@ int n_hash_map_arg(const tn_hash *ht,
     register struct hash_bucket *tmp;
 
     for (i = 0; i < ht->size; i++) {
-
 	if (ht->table[i] == NULL)
             continue;
         

@@ -4,8 +4,8 @@
   $Id$
  */
 
-#ifndef __TRURL_HASH_H
-#define __TRURL_HASH_H
+#ifndef TRURL_HASH_H
+#define TRURL_HASH_H
 
 #include <stddef.h>           /* For size_t     */
 
@@ -23,6 +23,12 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
 
 
 void n_hash_free(tn_hash *ht);
+
+#define TN_HASH_NOCPKEY    (1 << 1)  /* do not make own copies of the keys */
+#define TN_HASH_REHASH     (1 << 2)  /* automatically grow and rehash
+                                        if filled more than 80%  */
+int n_hash_ctl(tn_hash *ht, unsigned int flags);
+
 
 /*
 ** Inserts a pointer to 'data' in the table, with a copy of 'key' as its
@@ -70,4 +76,4 @@ int n_hash_map(const tn_hash *ht, void (*map_fn)(const char *, void *));
 int n_hash_map_arg(const tn_hash *ht,
                    void (*map_fn)(const char *, void *, void *), void *arg);
 
-#endif /* __TRURL_HASH_H */
+#endif /* TRURL_HASH_H */
