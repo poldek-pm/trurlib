@@ -4,7 +4,7 @@
 
 tn_array *n_array_remove_ex(tn_array *arr, const void *data, t_fn_cmp cmpf)
 {
-    register unsigned int i, items;
+    register unsigned int i, items, n;
     register void *ptr;
 
     if (arr->items == 0)
@@ -16,37 +16,28 @@ tn_array *n_array_remove_ex(tn_array *arr, const void *data, t_fn_cmp cmpf)
     n_assert(cmpf != NULL);
     
     i = arr->start_index;
-    items = arr->start_index + arr->items;
-    items--;
-    
-    while (i < items) {
-        if (cmpf(arr->data[i], data) != 0)
-            i++;
-        else {
-            ptr = arr->data[i];
-            
-            /* if slot is not empty, free node data */
-            if (arr->data[i] != NULL && arr->free_fn != NULL)
-                arr->free_fn(arr->data[i]);
-            
-            memmove(&arr->data[i], &arr->data[i + 1],
-                    (arr->allocated - 1 - i) * sizeof(*arr->data));
-            items--;
-        }
-    }
+    items = arr->items;
 
-    items++;
-    
-    if (cmpf(arr->data[items - 1], data) == 0) {
-        items--;
-
+    while (i < arr->allocated) {
         ptr = arr->data[i];
-            
+        if (ptr == NULL || cmpf(ptr, data) != 0) {
+            i++;
+            continue;
+        }
+        
         /* if slot is not empty, free node data */
-        if (arr->data[i] != NULL && arr->free_fn != NULL)
-            arr->free_fn(arr->data[i]);
+        if (arr->free_fn != NULL)
+            arr->free_fn(ptr);
+        
+        n = arr->allocated - 1 - i;
+        n_assert(n >= 0);
+        
+        if (n > 0)
+            memmove(&arr->data[i], &arr->data[i + 1], n * sizeof(*arr->data));
+        
+        arr->data[arr->allocated - 1] = NULL;
+        items--;
     }
-    
     arr->items = items;
     return arr;
 }

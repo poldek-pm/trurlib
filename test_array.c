@@ -371,10 +371,51 @@ void test_array_growth(void)
     n_array_free(arr3);
 }
 
+void test_array_remove(void)
+{
+    tn_array *arr;
+    char *s1 = "ala ";
+    char *s2 = "ma ";
+    char *s3 = "kota ";
+    int i;
+
+    printf("\nTEST tn_array remove\n");
+    arr = n_array_new(14, free, (t_fn_cmp) strcmp);
+    for (i = 0; i < 4; i++) {
+        n_array_push(arr, strdup(s1));
+        n_array_push(arr, strdup(s2));
+        n_array_push(arr, strdup(s3));
+    }
+    n_array_push(arr, strdup("dupa"));
+    n_array_push(arr, strdup("dupa2"));
+    n_array_unshift(arr, strdup("blada"));
+    print_array_str(arr, "start", "\n");
+
+    n_array_remove(arr, "dupa");
+    print_array_str(arr, "removed dupa", "\n");
+
+    n_array_remove(arr, "blada");
+    print_array_str(arr, "removed blada", "\n");
+    
+    n_array_remove(arr, s3);
+    print_array_str(arr, "removed kota", "\n");
+    n_array_remove(arr, s2);
+    print_array_str(arr, "removed ma", "\n");
+    n_array_remove(arr, s1);
+    print_array_str(arr, "removed ala", "\n");
+
+    n_array_remove(arr, "dupa2");
+    print_array_str(arr, "removed dupa2", "\n");
+    
+    n_array_free(arr);
+}
+
+
 int main()
 {
-    test_array_basic();
-    test_array_growth();
+    //test_array_basic();
+    //test_array_growth();
+    test_array_remove();
     /* test_array_big(); */
     /* test_array_sort_search(); */
     return 0;
