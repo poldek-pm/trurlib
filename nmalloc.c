@@ -93,7 +93,8 @@ char *n_strdupl(const char *s, size_t length)
         nomem();
         return NULL;
     }
-    memcpy(new, s, length + 1);
+
+    memcpy(new, s, length);
     new[length] = '\0';
     return new;
 }
@@ -108,6 +109,7 @@ char *n_strdup(const char *s)
         nomem();
         return NULL;
     }
+
     return memcpy(new, s, len);
 }
 
