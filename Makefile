@@ -28,11 +28,12 @@ AR	 = ar
 STRIP	 = strip
 
 NSTR_OBJECTS = \
-	nstr_tok.o    \
-	nstr_tokl.o   \
-	nstr_len.o    \
-	nstr_concat.o \
-	nstr_cpy.o
+	nstr_tok.o     \
+	nstr_tokl.o    \
+	nstr_len.o     \
+	nstr_concat.o  \
+	nstr_cpy.o     \
+	nstr_basenam.o \
 
 
 MOD_CPPFLAGS = -DMODULES -DMODULE

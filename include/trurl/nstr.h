@@ -51,4 +51,10 @@ char *n_str_vconcat(const char *s, va_list ap);
 */
 char *n_strncpy(char *dest, const char *src, size_t n);
 
+
+
+/* WARN: it modifies path! */
+int n_basedirnam(char *path, char **dirname, char **basename);
+char *n_basenam(const char *path);
+
 #endif /* TRURL_STR_H */
