@@ -147,9 +147,9 @@ CLEANFILES = $(EXTRA_PROGRAMS) core *.o *.bak *~ *% *\# \#*
 symlink: 
 	@if [ ! -d trurl ]; then ln . trurl -s; fi;
 
-tests:  symlink $(EXTRA_PROGRAMS)
+tests:  $(EXTRA_PROGRAMS)
 
-all-local: symlink
+all-local: 
 	@ln -sf .libs/libtrurl.a libtrurl.a
 
 #dist-hook:
