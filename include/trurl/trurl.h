@@ -24,6 +24,10 @@
 #ifndef TRURLIB_H
 #define TRURLIB_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+    
 void (*set_trurl_err_hook( void (*hook)(const char *err) ))(const char *err);
 
 #include <trurl/nassert.h>   /* n_assert    */
@@ -39,4 +43,8 @@ void (*set_trurl_err_hook( void (*hook)(const char *err) ))(const char *err);
 #include <trurl/nstream.h>
 #include <trurl/ntuple.h>
 
+#ifdef __cplusplus
+}
+#endif    
+    
 #endif     

@@ -8,7 +8,9 @@
 
 #include <stdint.h>
 #include <trurl/nassert.h>
-
+#ifndef UINT16_MAX
+#define UINT16_MAX 65536
+#endif
 static inline void *n_ref(void *o)
 {
     register uint16_t *v;

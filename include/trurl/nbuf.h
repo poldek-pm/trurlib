@@ -139,7 +139,7 @@ int n_buf_it_read(tn_buf_it *bufi, void *buf, size_t size)
 {
     char *p;
     
-    if ((p = n_buf_it_get(bufi, size)) == NULL)
+    if ((p = (char*)n_buf_it_get(bufi, size)) == NULL)
         return -1;
     memcpy(buf, p, size);
     return size;
@@ -155,7 +155,7 @@ int n_buf_it_get_int8(tn_buf_it *nbufi, uint8_t *vp)
 {
     char *p;
     
-    p = n_buf_it_get(nbufi, sizeof(*vp));
+    p = (char*)n_buf_it_get(nbufi, sizeof(*vp));
     if (p == NULL)
         return 0;
     
@@ -171,7 +171,7 @@ int n_buf_it_get_int16(tn_buf_it *nbufi, uint16_t *vp)
 {
     char *p;
     
-    p = n_buf_it_get(nbufi, sizeof(*vp));
+    p = (char*)n_buf_it_get(nbufi, sizeof(*vp));
     if (p == NULL)
         return 0;
     
@@ -188,7 +188,7 @@ int n_buf_it_get_int32(tn_buf_it *nbufi, uint32_t *vp)
 {
     char *p;
     
-    p = n_buf_it_get(nbufi, sizeof(*vp));
+    p = (char*)n_buf_it_get(nbufi, sizeof(*vp));
     if (p == NULL)
         return 0;
 
