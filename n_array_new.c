@@ -2,6 +2,8 @@
 
 #include "n_array_int.h"
 
+#include <trurl/nmalloc.h>
+
 tn_array *n_array_init_ex(tn_array *arr, int size, t_fn_free freef,
                           t_fn_cmp cmpf, void **data)
 {
@@ -46,14 +48,56 @@ tn_array *n_array_init_ex(tn_array *arr, int size, t_fn_free freef,
 tn_array *n_array_new_ex(int size, t_fn_free freef, t_fn_cmp cmpf, void **data)
 {
     tn_array *arr;
-
+#if 0    
+    static int n = 0;
+    n++;
+    printf("n_array %d %d\n", n, n * sizeof(*arr));
+#endif    
     arr = n_malloc(sizeof(*arr));
     return n_array_init_ex(arr, size, freef, cmpf, data);
 }
 
-#undef n_array_new
+#undef n_array_new              /* legacy */
 tn_array *n_array_new(int size, t_fn_free freef, t_fn_cmp cmpf)
 {
     return n_array_new_ex(size, freef, cmpf, NULL);
 }
 
+
+tn_array *n_array_new_na(int size, tn_alloc *na, t_fn_cmp cmpf)
+{
+    tn_array *arr;
+
+    arr = na->na_malloc(na, sizeof(*arr));
+    n_array_init_ex(arr, size, NULL, cmpf, NULL);
+    arr->flags |= TN_ARRAY_INTERNAL_NA;
+    return arr;
+}
+
+void n_array_free(tn_array *arr)
+{
+    if (arr->_refcnt > 0) {
+        arr->_refcnt--;
+        return;
+    }
+    n_assert((arr->flags & TN_ARRAY_INTERNAL_NA) == 0);
+    n_array_clean(arr);
+    free(arr->data);
+    arr->data = NULL;
+    free(arr);
+}
+
+
+void n_array_free_na(tn_alloc *na, tn_array *arr)
+{
+    if (arr->_refcnt > 0) {
+        arr->_refcnt--;
+        return;
+    }
+    n_assert((arr->flags & TN_ARRAY_INTERNAL_NA) == 1);
+    
+    n_array_clean(arr);
+    free(arr->data);
+    arr->data = NULL;
+    na->na_free(na, arr);
+}

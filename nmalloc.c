@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "nassert.h"
+#include "nmalloc.h"
 
 typedef void (*memh) (void);
 
@@ -40,7 +41,8 @@ void (*setxmallocs_handler(void (*handler) (void))) (void) {
     return tmp;
 }
 
-void (*n_malloc_set_failhook(void (*fn) (void))) (void) {
+void (*n_malloc_set_failhook(void (*fn) (void))) 
+{
     memh tmp = mem_fail_fn;
     mem_fail_fn = fn;
     return tmp;
@@ -71,7 +73,7 @@ void *n_calloc(size_t nmemb, size_t size)
 {
     register void *v = calloc(nmemb, size);
     if (v == 0)
-	nomem();
+        nomem();
     return v;
 }
 
@@ -79,7 +81,7 @@ void *n_realloc(void *ptr, size_t size)
 {
     n_assert(size > 0);
     if ((ptr = realloc(ptr, size)) == NULL)
-	nomem();
+        nomem();
 
     return ptr;
 }
@@ -143,4 +145,104 @@ void n_cfree(void *ptr)
     }
 }
 
+static void *malloc_malloc(tn_alloc *na, size_t size)
+{
+    return n_malloc(size);
+}
+
+static
+void *malloc_calloc(tn_alloc *na, size_t size)
+{
+    return n_calloc(size, 1);
+}
+
+static
+void *malloc_realloc(tn_alloc *na, void *ptr, size_t size, size_t newsize)
+{
+    return n_realloc(ptr, newsize);
+}
+
+
+static
+void malloc_free(tn_alloc *na, void *ptr)
+{
+    return n_free(ptr);
+}
+
+
+
+#define obstack_chunk_alloc n_malloc
+#define obstack_chunk_free  n_free
+#include <obstack.h>
+
+static
+void *aobstack_malloc(tn_alloc *na, size_t size)
+{
+    return obstack_alloc((struct obstack*)na->_privdata, size);
+}
+
+static
+void *aobstack_calloc(tn_alloc *na, size_t size)
+{
+    void *ptr = obstack_alloc((struct obstack*)na->_privdata, size);
+    memset(ptr, 0, size);
+    return ptr;
+}
+
+
+static
+void aobstack_free(tn_alloc *na, void *ptr)
+{
+    ptr = ptr;
+}
+
+
+void *aobstack_realloc(tn_alloc *na, void *ptr, size_t size, size_t newsize)
+{
+    void *new;
+    new = obstack_alloc((struct obstack*)na->_privdata, newsize);
+    memcpy(new, ptr, size);
+    return new;
+}
+
+tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags)
+{
+    tn_alloc *na;
+
+    na = n_calloc(1, sizeof(*na));
+    na->_flags = flags;
+
+    if (flags & TN_ALLOC_MALLOC) {
+        na->_privdata = NULL;
+        na->na_malloc = malloc_malloc;
+        na->na_calloc = malloc_calloc;
+        na->na_free   = malloc_free;
+        na->na_realloc = malloc_realloc;
+        
+    } else if (flags & TN_ALLOC_OBSTACK) {
+        struct obstack *ob = n_malloc(sizeof(*ob));
+        obstack_init(ob);
+        if (chunkkb < 4) 
+            chunkkb = 4;
+        obstack_chunk_size(ob) = 1024 * chunkkb;
+        na->_privdata = ob;
+        na->na_malloc  = aobstack_malloc;
+        na->na_calloc  = aobstack_calloc;
+        na->na_free    = aobstack_free;
+        na->na_realloc = aobstack_realloc;
+        
+    } else {
+        n_assert(0);
+    }
     
+    
+    return na;
+}
+
+void n_alloc_free(tn_alloc *na)
+{
+    if (na->_flags & TN_ALLOC_OBSTACK)
+        obstack_free(na->_privdata, NULL);
+    n_free(na);
+}
+

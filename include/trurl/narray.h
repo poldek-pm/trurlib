@@ -11,8 +11,14 @@
 #include <trurl/tfn_types.h>
 #include <trurl/ndie.h>
 #include <trurl/n_obj_ref.h>
+#include <trurl/nmalloc.h>
 
-
+#define TN_ARRAY_CONSTSIZE         (1 << 0)
+#define TN_ARRAY_AUTOSORTED        (1 << 1) /* an array sorts itself in bsearch_*
+                                               functions;  don't work with
+                                               external cmp functions */
+#define TN_ARRAY_INTERNAL_ISSORTED  (1 << 8)
+#define TN_ARRAY_INTERNAL_NA        (1 << 9)
 /* WARN: _never_ ever access array members directly */
 typedef struct trurl_array_private {
     uint16_t    _refcnt;
@@ -26,6 +32,7 @@ typedef struct trurl_array_private {
     
     t_fn_free   free_fn;
     t_fn_cmp    cmp_fn;
+
 } tn_array;
 
 
@@ -33,6 +40,7 @@ typedef struct trurl_array_private {
 
 tn_array *n_array_new_ex(int size, t_fn_free freef, t_fn_cmp cmpf, void **data);
 #define n_array_new(size, freef, cmpf) n_array_new_ex(size, freef, cmpf, NULL)
+tn_array *n_array_new_na(int size, tn_alloc *na, t_fn_cmp cmpf);
 
 tn_array *n_array_init_ex(tn_array *arr, int size,
                           t_fn_free freef, t_fn_cmp cmpf, void **data);
@@ -40,11 +48,7 @@ tn_array *n_array_init_ex(tn_array *arr, int size,
 #define n_array_init(arr, size, freef, cmpf) \
             n_array_init_ex(arr, size, freef, cmpf, NULL)
 
-#define TN_ARRAY_CONSTSIZE         (1 << 0)
-/* if changed, an array sorts itself in bsearch_* functions;
-   don't work with external cmp functions
- */
-#define TN_ARRAY_AUTOSORTED        (1 << 1)
+
 #ifndef SWIG
 static inline tn_array *n_array_ctl(tn_array *arr, unsigned flags) {
     arr->flags |= flags;
@@ -55,7 +59,9 @@ static inline tn_array *n_array_ctl(tn_array *arr, unsigned flags) {
 #define n_array_has_free_fn(arr) (arr)->free_fn
 
 
+
 void n_array_free(tn_array *arr);
+void n_array_free_na(tn_alloc *na, tn_array *arr);
 
 /*
   Free content 
@@ -134,7 +140,7 @@ tn_array *n_array_concat_ex(tn_array *arr, tn_array *src, tn_fn_dup dup_fn);
 #define n_array_concat(arr, src) n_array_concat_ex(arr, src, NULL) 
 
 /* internal macros don't use */
-#define TN_ARRAY_INTERNAL_ISSORTED   (1 << 8)
+
 #define TN_ARRAY_set_sorted(arr) ((arr)->flags |= TN_ARRAY_INTERNAL_ISSORTED)
 #define TN_ARRAY_clr_sorted(arr) ((arr)->flags &= ~TN_ARRAY_INTERNAL_ISSORTED)
 #define TN_ARRAY_is_sorted(arr)  ((arr)->flags &  TN_ARRAY_INTERNAL_ISSORTED)

@@ -18,7 +18,6 @@ NARRAY_SRCS  = \
         n_array_ctl.c   \
         n_array_dump_stats.c    \
         n_array_eq_ex.c \
-        n_array_free.c  \
         n_array_grow_priv.c     \
         n_array_int.h   \
         n_array_map.c   \
