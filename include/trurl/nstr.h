@@ -26,6 +26,13 @@ const char **n_str_tokl_n(const char *s, char *delim, int *ntokens);
 #define n_str_tokl(s, delim) n_str_tokl_n(s, delim, NULL)
 void n_str_tokl_free(const char **tokens);
 
+#include <trurl/narray.h>
+tn_array *n_str_etokl_ext(const char *line, const char *white,
+                          const char *brk, const char *quote,
+                          char escape);
+
+#define n_str_etokl(line) n_str_etokl_ext(line, NULL, NULL, NULL, 0)
+
 
 /*
   Calculate length of strings 
