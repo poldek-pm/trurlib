@@ -13,5 +13,8 @@ typedef int   (*t_fn_cmp)  (const void *, const void *);
 typedef void  (*tn_fn_free) (void*);  
 typedef void* (*tn_fn_dup)  (void*);
 typedef int   (*tn_fn_cmp)  (const void *, const void *);
+typedef void  (*tn_fn_map1) (void *);
+typedef void  (*tn_fn_map2) (void *, void *);
+typedef void  (*tn_fn_map3) (void *, void *, void *);
 
 #endif
