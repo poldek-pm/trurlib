@@ -14,11 +14,13 @@
 #include <string.h>
 
 struct trurl_buf {
+    uint16_t      _refcnt;
+    uint16_t      flags;
+
     unsigned char *data;
     size_t        allocated;
     size_t        size;
     size_t        off;
-    unsigned int  flags;
 };
 
 typedef struct trurl_buf tn_buf;

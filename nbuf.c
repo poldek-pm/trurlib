@@ -102,6 +102,11 @@ tn_buf *n_buf_clean(tn_buf *buf)
 
 void n_buf_free(tn_buf *buf)
 {
+    if (buf->_refcnt > 0) {
+        buf->_refcnt--;
+        return;
+    }
+
     if (!(buf->flags & TN_BUF_CONSTDATA)) 
         free(buf->data);
     buf->data = NULL;
@@ -254,7 +259,7 @@ char *n_buf_it_gets_ext(tn_buf_it *bufi, size_t *len, int endl)
         bufi->offs++;
 
     *len = bufi->offs - *len;
-    bufi->offs++;               /* skip '\0' */
+    bufi->offs++;               /* skip endl */
     return ptr;
 }
 
