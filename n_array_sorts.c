@@ -30,7 +30,7 @@ void qsort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 
 	    do {
 		j--;
-	    } while (cmpf(arr[j], arr[0]) > 0);
+	    } while (j && cmpf(arr[j], arr[0]) > 0);
 
 
 	    do {
@@ -80,86 +80,74 @@ void isort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
     }
 }
 
-
-tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf)
+static inline t_fn_cmp autosort(tn_array *arr, t_fn_cmp cmpf, int *set_sorted) 
 {
-    if (cmpf != NULL) {
-        if (cmpf != arr->cmp_fn)
-            SETARR_UNSORTED(arr);
-    } else {
+    *set_sorted = 1;
+    
+    if (cmpf == NULL) {
         if (arr->cmp_fn == NULL) {
-            trurl_die("n_array_sort_ex: compare function is NULL\n");
+            trurl_die("n_array_sort: compare function is NULL\n");
             return NULL;
         }
-        
-        if (arr->flags & TN_ARRAY_AUTOSORTED) {
-            if (ISARR_SORTED(arr)) {
-                return arr;
-            }
-        }
-        cmpf = arr->cmp_fn;
-    }
-        
-#if 1
-    /* there is error in qsort_viodp_arr  - PawelK*/
-    /* where is it? - PawelG */
-    if (arr->items > 10) {
-	qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
 
-    } else {
-	isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+        cmpf = arr->cmp_fn;
+        
+    } else if (cmpf != arr->cmp_fn) {
+        SETARR_UNSORTED(arr);
+        *set_sorted = 0;
     }
-#else
-	isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
-#endif        
-    arr->flags |= ARR_SORTED;
+
+    return cmpf;
+}
+
+#define SORT_SORT  0
+#define SORT_QSORT 1
+#define SORT_ISORT 2
+
+static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int alg)
+{
+    int set_sorted;
+
+    cmpf = autosort(arr, cmpf, &set_sorted);
+
+    if ((arr->flags & TN_ARRAY_AUTOSORTED) && ISARR_SORTED(arr))
+        return arr;
+    
+    switch (alg) {
+        case SORT_SORT:
+            if (arr->items > 10) 
+                qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+            else 
+                isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+            break;
+
+        case SORT_QSORT:
+            qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+            break;
+            
+        case SORT_ISORT:
+            isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+            break;
+    }
+    
+    
+    if (set_sorted)    
+        arr->flags |= ARR_SORTED;
+    
     return arr;
 }
 
-
-tn_array *n_array_qsort_ex(tn_array *arr, t_fn_cmp cmpf)
+tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf) 
 {
-    if (cmpf != NULL) {
-        if (cmpf != arr->cmp_fn)
-            SETARR_UNSORTED(arr);
-    } else {
-        if (arr->cmp_fn == NULL) {
-            trurl_die("n_array_qsort_ex: compare function is NULL\n");
-            return NULL;
-        }
-        
-        if (arr->flags & TN_ARRAY_AUTOSORTED) {
-            if (ISARR_SORTED(arr)) {
-                return arr;
-            }
-        }
-        cmpf = arr->cmp_fn;
-    }
-
-    qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
-    return arr;
+    return n_array_sort_internal(arr, cmpf, SORT_SORT);
 }
 
-
-tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf)
+tn_array *n_array_qsort_ex(tn_array *arr, t_fn_cmp cmpf) 
 {
-    if (cmpf != NULL) {
-        if (cmpf != arr->cmp_fn)
-            SETARR_UNSORTED(arr);
-    } else {
-        if (arr->cmp_fn == NULL) {
-            trurl_die("n_array_sort_ex: compare function is NULL\n");
-            return NULL;
-        }
-        
-        if (arr->flags & TN_ARRAY_AUTOSORTED) {
-            if (ISARR_SORTED(arr)) {
-                return arr;
-            }
-        }
-        cmpf = arr->cmp_fn;
-    }
+    return n_array_sort_internal(arr, cmpf, SORT_QSORT);
+}
 
-    isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
-    return arr;
+tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf) 
+{
+    return n_array_sort_internal(arr, cmpf, SORT_ISORT);
 }
