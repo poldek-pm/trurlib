@@ -26,27 +26,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "nassert.h"
-
-typedef void (*t_fn_die_hook) (const char *errmsg);
+#include "ndie.h"
 
 static t_fn_die_hook die_hook;
 
-
-t_fn_die_hook set_trurl_err_hook(t_fn_die_hook hook)
+t_fn_die_hook n_die_set_hook(t_fn_die_hook hook)
 {
     t_fn_die_hook tmp = die_hook;
     die_hook = hook;
     return tmp;
 }
 
-
-void trurl_die(const char *fmt,...)
+t_fn_die_hook set_trurl_err_hook(t_fn_die_hook hook)
 {
-    va_list ap;
+    return n_die_set_hook(hook);
+}
 
-    va_start(ap, fmt);
 
+static void trurl_vdie(const char *fmt, va_list ap)
+{
     fflush(NULL);
 
     if (die_hook != NULL) {
@@ -68,6 +66,23 @@ void trurl_die(const char *fmt,...)
 
 	abort();
     }
+}
 
+
+void trurl_die(const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    trurl_vdie(fmt, ap);
+    va_end(ap);
+}
+
+void n_die(const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    trurl_vdie(fmt, ap);
     va_end(ap);
 }
