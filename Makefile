@@ -45,7 +45,7 @@ ifeq ($(modules),off)
 else 
    NARRAY_OBJECTS = \
 	n_array_new.o \
-	n_array_ctl_growth.o \
+	n_array_ctl.o \
 	n_array_clean.o \
 	n_array_free.o \
 	n_array_grow_priv.o \
