@@ -129,7 +129,18 @@ void *n_memdup(const void *ptr, size_t size)
 
 void n_free(void *ptr)
 {
-    n_assert(ptr != NULL);
-    free(ptr);
+    if (ptr)
+        free(ptr);
 }
 
+void n_cfree(void *ptr) 
+{
+    void **pptr = (void**)ptr;
+    
+    if (*pptr) {
+        free(*pptr);
+        *pptr = NULL;
+    }
+}
+
+    

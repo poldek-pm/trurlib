@@ -15,9 +15,9 @@ void *n_calloc(size_t nmemb, size_t size);
 void *n_realloc(void *ptr, size_t size);
 char *n_strdup(const char *s);
 void n_free(void *ptr);
+void n_cfree(void *ptr);
 
 char *n_strdupl(const char *s, size_t length);
-
 void *n_memdup(const void *ptr, size_t size);
 
 #endif /* NMALLOC_H */
