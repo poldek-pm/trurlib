@@ -22,7 +22,9 @@
    $Id$
  */
 
+
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -48,7 +50,7 @@ void (*n_malloc_set_failhook(void (*fn) (void))) (void) {
 static void nomem(void)
 {
     if (mem_fail_fn != NULL)
-	mem_fail_fn();
+        mem_fail_fn();
     else {
         printf("Memory exhausted\n");
         exit(1);
@@ -88,8 +90,8 @@ char *n_strdupl(const char *s, size_t length)
     register char *new;
 
     if ((new = n_malloc(length + 1)) == NULL) {
-	nomem();
-	return NULL;
+        nomem();
+        return NULL;
     }
     memcpy(new, s, length + 1);
     new[length] = '\0';
@@ -102,9 +104,9 @@ char *n_strdup(const char *s)
     register size_t len = strlen(s) + 1;
     register char *new;
 
-    if ((new = n_malloc(len + 1)) == NULL) {
-	nomem();
-	return NULL;
+    if ((new = n_malloc(len)) == NULL) {
+        nomem();
+        return NULL;
     }
     return memcpy(new, s, len);
 }

@@ -32,6 +32,7 @@
 #include "nassert.h"
 #include "nmalloc.h"
 #include "nstream.h"
+#include "ndie.h"
 
 #define ZLIB_TRACE 0
 
@@ -134,6 +135,9 @@ static tn_stream *n_stream_new(int type)
     st = n_malloc(sizeof(*st));
     st->stream = NULL;
     st->fd = -1;
+    st->type = type;
+    st->_write_hook = NULL;
+    st->_write_hook_arg = NULL;
     
     switch (type) {
         case TN_STREAM_STDIO:
@@ -161,7 +165,9 @@ static tn_stream *n_stream_new(int type)
             break;
             
         default:
+            n_die("%d: unknown stream type\n", type);
             n_assert(0);
+            break;
     }
 
     return st;

@@ -32,8 +32,8 @@ Module is based on:
 #include "nhash.h"
 #include "nmalloc.h"
 
-#define USE_HASHSTRING_GLIBC_DB 1
-#define USE_HASHSTRING_CDB 0
+#define USE_HASHSTRING_GLIBC_DB 0
+#define USE_HASHSTRING_CDB 1
 
 /*
    ** A hash table consists of an array of these buckets.  Each bucket

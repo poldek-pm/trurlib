@@ -40,13 +40,7 @@
 #include "n_snprintf.h"
 #include "nstream.h"
 #include "nstore.h"
-
-struct trurl_buf {
-    unsigned char *data;
-    size_t        allocated;
-    size_t        size;
-    unsigned int  flags;
-};
+#include "ndie.h"
 
 
 tn_buf *n_buf_new(int initial_size)
@@ -61,6 +55,7 @@ tn_buf *n_buf_new(int initial_size)
     buf->allocated = initial_size;
     buf->size = 0;
     buf->flags = 0;
+    buf->off = 0;
     
     if (initial_size == 0) {
         buf->data = NULL;
@@ -100,6 +95,7 @@ tn_buf *n_buf_clean(tn_buf *buf)
 {
     if (!(buf->flags & TN_BUF_CONSTDATA)) {
         buf->size = 0;
+        buf->off  = 0;
         buf->data[0] = '\0';
     }
     return buf;
@@ -129,15 +125,15 @@ static tn_buf *n_buf_realloc(tn_buf *buf, size_t new_size)
     }
 
     if (diff > 0) {
-	void *tmp;
+        void *tmp;
 
-	if ((tmp = n_realloc(buf->data, new_size)) == NULL) {
-	    return NULL;
+        if ((tmp = n_realloc(buf->data, new_size)) == NULL) {
+            return NULL;
 
-	} else {
-	    buf->data = tmp;
-	    buf->allocated = new_size;
-	}
+        } else {
+            buf->data = tmp;
+            buf->allocated = new_size;
+        }
     }
     return buf;
 }
@@ -156,50 +152,65 @@ static tn_buf *n_buf_grow(tn_buf *buf, size_t req_size)
     return n_buf_realloc(buf, new_size);
 }
 
-
+#if 0
 int n_buf_size(const tn_buf *buf)
 {
     return buf->size;
 }
 
-
 void *n_buf_ptr(const tn_buf *buf)
 {
     return buf->data;
 }
+#endif
 
-
-int n_buf_addata(tn_buf *buf, const void *data, int size, int zero)
+int n_buf_seek(tn_buf *buf, int off, int whence)
 {
-    int offs;
+    switch (whence) {
+        case SEEK_CUR:
+            buf->off += off;
+            break;
 
-    if (zero)
-        zero = 1;
-    
-    if (buf->allocated - buf->size < (unsigned)size + zero) 
-        if (n_buf_grow(buf, buf->allocated + size + zero) == NULL)
-	    return -1;
+        case SEEK_SET:
+            buf->off = off;
+            break;
 
-    memcpy(&buf->data[buf->size], data, size);
-    offs = buf->size;
-    buf->size += size;
-    if (zero)
-        buf->data[buf->size] = '\0';
+        case SEEK_END:
+            buf->off = buf->size;
+            if (off != 0)
+                n_die("nbuf: offset must be 0 with SEEK_END\n");
+            break;
+            
+        default:
+            n_die("nbuf: unknown whence (%d)\n", whence);
+            break;
+    }
     
-    return offs;
+    return buf->off;
 }
 
 
-int n_buf_addstring(tn_buf *buf, const char *str, int with_zero)
-{
-    register int len;
 
-    len = strlen(str);
+
+int n_buf_write_ex(tn_buf *buf, const void *ptr, int size, int zero)
+{
+    if (zero)
+        zero = 1;
     
-    if (with_zero)
-        len++;
+    if (buf->allocated - buf->off < (unsigned)size + zero) 
+        if (n_buf_grow(buf, buf->allocated + size + zero) == NULL)
+	    return -1;
+
+    memcpy(&buf->data[buf->off], ptr, size);
+    buf->off += size;
     
-    return n_buf_add(buf, str, len);
+    if (buf->off > buf->size)
+        buf->size = buf->off;
+    
+    if (zero)
+        buf->data[buf->off] = '\0';
+    
+    return size;
 }
 
 void n_buf_it_init(tn_buf_it *bufi, tn_buf *buf) 
@@ -225,7 +236,21 @@ void *n_buf_it_get(tn_buf_it *bufi, size_t size)
 // legacy: provide n_buf_add symbol 
 int n_buf_add(tn_buf *buf, const void *data, int size) 
 {
-    return n_buf_addata(buf, data, size, 0);
+    return n_buf_write_ex(buf, data, size, 0);
+}
+
+#undef n_buf_addata
+// legacy: provide n_buf_add symbol 
+int n_buf_addata(tn_buf *buf, const void *data, int size, int zero)
+{
+    return n_buf_write_ex(buf, data, size, zero);
+}
+
+#undef n_buf_addstring
+// legacy: provide n_buf_add symbol 
+int n_buf_addstring(tn_buf *buf, const char *str, int zero)
+{
+    return n_buf_write_ex(buf, str, strlen(str), zero);
 }
 
 
@@ -274,12 +299,12 @@ int n_buf_store(tn_buf *nbuf, tn_stream *st, int sizebits)
                 break;
                 
             case TN_BUF_STORE_16B:
-                n_assert(n_buf_size(nbuf) < UINT16_MAX);
+                n_assert(n_buf_size(nbuf) < INT16_MAX);
                 n_stream_write_uint16(st, n_buf_size(nbuf));
                 break;
 
             case TN_BUF_STORE_32B:
-                n_assert(n_buf_size(nbuf) < UINT32_MAX);
+                n_assert(n_buf_size(nbuf) < INT32_MAX);
                 n_stream_write_uint32(st, n_buf_size(nbuf));
                 break;
         }
@@ -289,6 +314,35 @@ int n_buf_store(tn_buf *nbuf, tn_stream *st, int sizebits)
     return n_stream_write(st, n_buf_ptr(nbuf), n_buf_size(nbuf)) ==
         n_buf_size(nbuf);
 }
+
+
+int n_buf_store_buf(tn_buf *nbuf, tn_buf *tonbuf, int sizebits) 
+{
+    if (sizebits == 0)
+        n_assert(0);
+    //n_store_uint32(st, n_buf_size(nbuf));
+    
+    else {
+        switch (sizebits) {
+            case TN_BUF_STORE_8B:
+                n_assert(0);
+                break;
+                
+            case TN_BUF_STORE_16B:
+                n_assert(n_buf_size(nbuf) < INT16_MAX);
+                n_buf_add_int16(tonbuf, n_buf_size(nbuf));
+                break;
+
+            case TN_BUF_STORE_32B:
+                n_assert(n_buf_size(nbuf) < INT32_MAX);
+                n_buf_add_int32(tonbuf, n_buf_size(nbuf));
+                break;
+        }
+    }
+    
+    return n_buf_write(tonbuf, n_buf_ptr(nbuf), n_buf_size(nbuf));
+}
+
 
 
 int n_buf_restore_skip(tn_stream *st, int sizebits)
@@ -326,7 +380,8 @@ int n_buf_restore_skip(tn_stream *st, int sizebits)
         }
     }
 
-    n_stream_seek(st, size, SEEK_CUR);
+    
+    return n_stream_seek(st, size, SEEK_CUR);
 }
 
 
@@ -337,7 +392,6 @@ int n_buf_restore_ex(tn_stream *st, tn_buf **bptr, int sizebits,
     tn_buf         *nbuf;
     char           *buf;
     uint32_t       size;
-    uint8_t        flag;
     int            rc = 0;
 
 
@@ -373,9 +427,10 @@ int n_buf_restore_ex(tn_stream *st, tn_buf **bptr, int sizebits,
                 n_assert(0);
         }
     }
-    
+
+    //printf("n_buf_restore %d, %lu\n", size, n_stream_tell(st));
     buf = alloca(size);
-    if (n_stream_read(st, buf, size) != size)
+    if (n_stream_read(st, buf, size) != (int)size)
         return 0;
 
     if (process_buf == NULL) {

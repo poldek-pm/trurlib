@@ -34,7 +34,6 @@ int n_hash_size(const tn_hash *ht)
     return ht->items;
 }
 
-
 #if USE_HASHSTRING_GLIBC_DB
 # include "hash-string.h"
 #elif USE_HASHSTRING_CDB
@@ -51,8 +50,8 @@ static unsigned int hash_string(const char *s)
   }
   return v;
 }
-#else
 
+#else
 /*
 ** Hashes a string to produce an unsigned int, which should be
 ** sufficient for most purposes.
@@ -63,9 +62,9 @@ static unsigned int hash_string(const char *string)
     int i;
 
     while (*string) {
-	i = (long int) (*(string++));
-	ret_val ^= i;
-	ret_val <<= 1;
+        i = (long int) (*(string++));
+        ret_val ^= i;
+        ret_val <<= 1;
     }
     return ret_val;
 }

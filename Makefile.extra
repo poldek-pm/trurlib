@@ -18,12 +18,12 @@ backup:
 	cd .. ;\
 	cp -a $(PROJ_DIR) $$ARCHDIR/$$ARCHNAME ;\
 	cd $$ARCHDIR ;\
-	tar cvpzf $$ARCHNAME.tgz $$ARCHNAME ||  rm -rf $$ARCHNAME;   \
-	md5sum $$ARCHNAME.tgz > $$ARCHNAME.md5;                     \
+	tar cvpjf $$ARCHNAME.tar.bz2 $$ARCHNAME ||  rm -rf $$ARCHNAME;   \
+	md5sum $$ARCHNAME.tar.bz2 > $$ARCHNAME.md5;                     \
 	if [ $(cparch)x = "1x" ]; then                              \
 	        mkdir $(backupdir)/copy || true;                    \
-		cp -v $$HOME/$$ARCHDIR/$$ARCHNAME.tgz $(backupdir); \
-		cp -v $$HOME/$$ARCHDIR/$$ARCHNAME.tgz $(backupdir)/copy; \
+		cp -v $$HOME/$$ARCHDIR/$$ARCHNAME.tar.bz2 $(backupdir); \
+		cp -v $$HOME/$$ARCHDIR/$$ARCHNAME.tar.bz2 $(backupdir)/copy; \
 		cd $(backupdir) || exit 1;                         \
 		md5sum --check $$HOME/$$ARCHDIR/$$ARCHNAME.md5;    \
 		cd copy || exit 1;                                 \

@@ -3,10 +3,10 @@
 AUTOMAKE_OPTIONS = foreign
 
 # use libtool versioning 
-TRURL_VERINFO   = 3:0:3
-CFLAGS    = @CFLAGS@
+TRURL_VERINFO   = 4:0:4
 CPPFLAGS  = -I$(top_srcdir)/include/trurl -I$(top_srcdir)/include
 INCLUDES  = 
+AM_CFLAGS = @AM_CFLAGS@
 
 lib_LTLIBRARIES  = libtrurl.la
 libtrurl_la_LDFLAGS = -version-info $(TRURL_VERINFO)
@@ -65,8 +65,8 @@ NHASH_SRCS = \
         n_hash_new.c    \
         n_hash_put.c    \
         n_hash_remove.c \
-        n_hash_stats.c  \
-	hash-string.h 
+	    n_hash_stats.c  \
+		hash-string.h 
 
 NSTR_SRCS = \
 	nstr_tok.c     \
@@ -88,7 +88,7 @@ libtrurl_la_SOURCES = \
 	nstream.c        \
 	nstore.c         \
 	$(NARRAY_SRCS)   \
-        $(NLIST_SRCS)    \
+    $(NLIST_SRCS)    \
 	$(NHASH_SRCS)    \
 	$(NSTR_SRCS)
 
@@ -106,7 +106,8 @@ pkginclude_HEADERS = \
 		include/trurl/nmalloc.h    \
 		include/trurl/n_snprintf.h \
 		include/trurl/nstream.h    \
-		include/trurl/nstore.h
+		include/trurl/nstore.h     \
+		include/trurl/n2h.h 
 
 EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in test_*.c README NEWS
 

@@ -16,6 +16,8 @@ void test_write(const char *name)
 
     st = n_stream_open(name, "w", TN_STREAM_UNKNOWN);
     n_stream_printf(st, "dupa blada\n i co z tego\n");
+    n_stream_seek(st, 0, SEEK_SET);
+    n_stream_printf(st, "ALA");
     n_stream_close(st);
 }
 

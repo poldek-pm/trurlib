@@ -48,23 +48,22 @@ static void trurl_vdie(const char *fmt, va_list ap)
     fflush(NULL);
 
     if (die_hook != NULL) {
-	char msg[1024];
+        char msg[1024];
 
-	strcpy(msg, "trurlib: ");
-	vsprintf(&msg[strlen(msg)], fmt, ap);
-
-	die_hook(msg);
+        strcpy(msg, "die: ");
+        vsprintf(&msg[strlen(msg)], fmt, ap);
+        die_hook(msg);
 
     } else {
-	int len;
-	fprintf(stderr, "trurlib:");
-	vfprintf(stderr, fmt, ap);
-	len = strlen(fmt);
+        int len;
+        fprintf(stderr, "die: ");
+        vfprintf(stderr, fmt, ap);
+        len = strlen(fmt);
 
-	if (len && fmt[len - 1] != '\n')
-	    fprintf(stderr, "\n");
+        if (len && fmt[len - 1] != '\n')
+            fprintf(stderr, "\n");
 
-	abort();
+        abort();
     }
 }
 

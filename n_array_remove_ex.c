@@ -4,7 +4,7 @@
 
 tn_array *n_array_remove_ex(tn_array *arr, const void *data, t_fn_cmp cmpf)
 {
-    register unsigned int i, items, n;
+    register int i, items, n;
     register void *ptr;
 
     if (arr->items == 0)
@@ -18,7 +18,7 @@ tn_array *n_array_remove_ex(tn_array *arr, const void *data, t_fn_cmp cmpf)
     i = arr->start_index;
     items = arr->items;
 
-    while (i < arr->allocated) {
+    while ((size_t)i < arr->allocated) {
         ptr = arr->data[i];
         if (ptr == NULL || cmpf(ptr, data) != 0) {
             i++;
