@@ -7,9 +7,6 @@
 #include <string.h>
 
 
-#include "nassert.h"
-#include "xmalloc.h"
-
 #include <trurl/trurl.h>
 #include "nstring.h"
 
@@ -106,11 +103,11 @@ void test_array_sort_search(void)
 
     while (fgets(buf, 3000, stdin)) {
 	strchr(buf, '\n')[0] = '\0';
-	n_array_push(a, strdup(buf));
-	n_array_unshift(a, strdup(buf));
+	n_array_push(a, n_strdup(buf));
+	n_array_unshift(a, n_strdup(buf));
 
-	n_array_push(b, strdup(buf));
-	n_array_unshift(b, strdup(buf));
+	n_array_push(b, n_strdup(buf));
+	n_array_unshift(b, n_strdup(buf));
 	n++;
     }
 
@@ -147,9 +144,9 @@ void test_array_big(void)
 
     while (fgets(buf, 3000, stdin)) {
 	strchr(buf, '\n')[0] = '\0';
-	n_array_push(a, strdup(buf));
-	n_array_unshift(a, strdup(buf));
-	n_array_set_nth(b, n + 10, strdup(buf));
+	n_array_push(a, n_strdup(buf));
+	n_array_unshift(a, n_strdup(buf));
+	n_array_set_nth(b, n + 10, n_strdup(buf));
 	n++;
     }
     n_array_dump_stats(a, "A");
@@ -214,13 +211,13 @@ int test_array_basic(void)
 
     arr = n_array_new(8, free, (t_fn_cmp) strcmp);
 
-    n_array_push(arr, strdup("Ala"));
+    n_array_push(arr, n_strdup("Ala"));
     n_assert(n_array_size(arr) == 1);
 
-    n_array_push(arr, strdup("ma"));
+    n_array_push(arr, n_strdup("ma"));
     n_assert(n_array_size(arr) == 2);
 
-    n_array_push(arr, strdup("kota"));
+    n_array_push(arr, n_strdup("kota"));
     n_assert(n_array_size(arr) == 3);
     print_array_str(arr, "arr", NULL);
 
@@ -232,7 +229,7 @@ int test_array_basic(void)
     n_assert(n_array_size(arr) == 2);
     print_array_str(arr, "arr", NULL);
 
-    n_array_push(arr, strdup("psa"));
+    n_array_push(arr, n_strdup("psa"));
     n_assert(n_array_size(arr) == 3);
 
     print_array_str(arr, "arr", NULL);
@@ -242,22 +239,22 @@ int test_array_basic(void)
     n_assert(strcmp(s, "Ala") == 0);
     free(s);
 
-    n_array_unshift(arr, strdup("Ola"));
+    n_array_unshift(arr, n_strdup("Ola"));
     n_assert(n_array_size(arr) == 3);
 
-    n_array_unshift(arr, strdup("Ala i"));
+    n_array_unshift(arr, n_strdup("Ala i"));
     n_assert(n_array_size(arr) == 4);
 
-    n_array_set_nth(arr, 2, strdup("maj±"));
-    n_array_set_nth(arr, 3, strdup("koty"));
+    n_array_set_nth(arr, 2, n_strdup("maj±"));
+    n_array_set_nth(arr, 3, n_strdup("koty"));
     n_assert(n_array_size(arr) == 4);
 
     print_array_str(arr, "arr", NULL);
 
-    n_array_set_nth(arr, 100, strdup("kot100"));
-    n_array_set_nth(arr, 99, strdup("kot99"));
-    n_array_set_nth(arr, 150, strdup("kot150"));
-    n_array_set_nth(arr, 10, strdup("Ania"));
+    n_array_set_nth(arr, 100, n_strdup("kot100"));
+    n_array_set_nth(arr, 99, n_strdup("kot99"));
+    n_array_set_nth(arr, 150, n_strdup("kot150"));
+    n_array_set_nth(arr, 10, n_strdup("Ania"));
 
     printf("\nUnsorted:");
     print_array_str(arr, "arr", "\n");
@@ -379,7 +376,7 @@ void test_array_sort(void)
 
     for (i=0; i<100; i++) {
         snprintf(buf, sizeof(buf), "%.3d", i);
-	n_array_push(a, strdup(buf));
+	n_array_push(a, n_strdup(buf));
     }
     n_array_sort(a);
     for (i = 0; i < n_array_size(a); i++) {
@@ -402,13 +399,13 @@ void test_array_remove(void)
     printf("\nTEST tn_array remove\n");
     arr = n_array_new(14, free, (t_fn_cmp) strcmp);
     for (i = 0; i < 4; i++) {
-        n_array_push(arr, strdup(s1));
-        n_array_push(arr, strdup(s2));
-        n_array_push(arr, strdup(s3));
+        n_array_push(arr, n_strdup(s1));
+        n_array_push(arr, n_strdup(s2));
+        n_array_push(arr, n_strdup(s3));
     }
-    n_array_push(arr, strdup("dupa"));
-    n_array_push(arr, strdup("dupa2"));
-    n_array_unshift(arr, strdup("blada"));
+    n_array_push(arr, n_strdup("dupa"));
+    n_array_push(arr, n_strdup("dupa2"));
+    n_array_unshift(arr, n_strdup("blada"));
     print_array_str(arr, "start", "\n");
 
     n_array_remove(arr, "dupa");

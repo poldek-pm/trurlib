@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include "nassert.h"
-#include "xmalloc.h"
 
 #include <trurl/trurl.h>
 #include "nstring.h"
@@ -53,16 +52,16 @@ void test_list(void)
 	char str[10];
 
 	sprintf(str, "%d", i);
-	n_list_push(l, strdup(str));
+	n_list_push(l, n_strdup(str));
 
 	sprintf(str, "%d", i + 1);
 
-	n_list_push(l, strdup(str));
-	n_list_push(l, strdup(str));
+	n_list_push(l, n_strdup(str));
+	n_list_push(l, n_strdup(str));
 
 	sprintf(str, "%d", i - 1);
-	n_list_unshift(l, strdup(str));
-	n_list_push(l, strdup(str));
+	n_list_unshift(l, n_strdup(str));
+	n_list_push(l, n_strdup(str));
     }
 
     print_list("list = ", l);

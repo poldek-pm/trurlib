@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #include "nassert.h"
-#include "xmalloc.h"
+#include "nmalloc.h"
 
 
 void assert_hook(const char *expr, const char *file, int line)
@@ -39,7 +39,7 @@ int main()
 
 
     setxmallocs_handler(xmallocs_handler);
-    p = malloc(1024 * 1024 * 1024);
+    p = n_malloc(1024 * 1024 * 1024);
 
     return 0;
 }

@@ -32,10 +32,7 @@
 #define n_assert(expr) assert(expr)
 #endif
 
-#ifdef USE_XMALLOCS
-#include "xmalloc.h"
-#endif
-
+#include "nmalloc.h"
 #include "nstr.h"
 
 char *n_str_vconcat(const char *s, va_list ap)
@@ -52,7 +49,7 @@ char *n_str_vconcat(const char *s, va_list ap)
 	len += strlen(p);
     }
 
-    if ((rstr = malloc(len + 1)) == NULL)
+    if ((rstr = n_malloc(len + 1)) == NULL)
 	return NULL;
 
     strcpy(rstr, s);

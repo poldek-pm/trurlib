@@ -11,7 +11,7 @@ tn_list *n_list_unshift(tn_list *l, void *data)
 	    return NULL;
     }
     
-    if ((node = malloc(sizeof(*node))) == NULL) {
+    if ((node = n_malloc(sizeof(*node))) == NULL) {
 	return NULL;
     }
     

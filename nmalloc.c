@@ -30,25 +30,33 @@
 
 typedef void (*memh) (void);
 
-static memh mem_handler = NULL;
+static memh mem_fail_fn = NULL;
 
 void (*setxmallocs_handler(void (*handler) (void))) (void) {
-    memh tmp = mem_handler;
+    memh tmp = mem_fail_fn;
+    mem_fail_fn = handler;
+    return tmp;
+}
 
-    mem_handler = handler;
-
+void (*set_nmalloc_fail_hook(void (*fn) (void))) (void) {
+    memh tmp = mem_fail_fn;
+    mem_fail_fn = fn;
     return tmp;
 }
 
 
 static void nomem(void)
 {
-    if (mem_handler != NULL)
-	mem_handler();
+    if (mem_fail_fn != NULL)
+	mem_fail_fn();
+    else {
+        printf("Memory exhausted");
+        exit(1);
+    }
 }
 
 
-void *xmalloc(size_t size)
+void *n_malloc(size_t size)
 {
     register void *v;
 
@@ -57,8 +65,7 @@ void *xmalloc(size_t size)
     return v;
 }
 
-
-void *xcalloc(size_t nmemb, size_t size)
+void *n_calloc(size_t nmemb, size_t size)
 {
     register void *v = calloc(nmemb, size);
     if (v == 0)
@@ -66,8 +73,7 @@ void *xcalloc(size_t nmemb, size_t size)
     return v;
 }
 
-
-void *xrealloc(void *ptr, size_t size)
+void *n_realloc(void *ptr, size_t size)
 {
     n_assert(size > 0);
     if ((ptr = realloc(ptr, size)) == NULL)
@@ -77,12 +83,26 @@ void *xrealloc(void *ptr, size_t size)
 }
 
 
-char *xstrdup(const char *s)
+char *n_strdupl(const char *s, size_t length)
+{
+    register char *new;
+
+    if ((new = n_malloc(length + 1)) == NULL) {
+	nomem();
+	return NULL;
+    }
+    memcpy(new, s, length + 1);
+    new[length] = '\0';
+    return new;
+}
+
+
+char *n_strdup(const char *s)
 {
     register size_t len = strlen(s) + 1;
     register char *new;
 
-    if ((new = xmalloc(len + 1)) == NULL) {
+    if ((new = n_malloc(len + 1)) == NULL) {
 	nomem();
 	return NULL;
     }
@@ -90,8 +110,38 @@ char *xstrdup(const char *s)
 }
 
 
-void xfree(void *ptr)
+void n_free(void *ptr)
 {
     n_assert(ptr != NULL);
     free(ptr);
 }
+
+
+
+/* be compatibile with < 0.43.7 */
+
+void *xmalloc(size_t size)
+{
+    return n_malloc(size);
+}
+
+void *xcalloc(size_t nmemb, size_t size)
+{
+    return n_calloc(nmemb, size);
+}
+
+void *xrealloc(void *ptr, size_t size)
+{
+    return n_realloc(ptr, size);
+}
+
+char *xstrdup(const char *s) 
+{
+    return n_strdup(s);
+}
+
+void xfree(void *ptr) 
+{
+    n_free(ptr);
+}
+

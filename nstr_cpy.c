@@ -30,10 +30,6 @@
 #define n_assert(expr) assert(expr)
 #endif
 
-#ifdef USE_XMALLOCS
-# include "xmalloc.h"
-#endif
-
 #include <stddef.h>
 
 char *n_strncpy(char *dest, const char *src, size_t n)

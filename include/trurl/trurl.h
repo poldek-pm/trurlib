@@ -24,10 +24,6 @@
 #ifndef TRURLIB_H
 #define TRURLIB_H
 
-#ifdef USE_XMALLOCS
-# include <trurl/xmalloc.h>
-#endif
-
 void (*set_trurl_err_hook( void (*hook)(const char *err) ))(const char *err);
 
 #include <trurl/nassert.h>   /* n_assert    */
@@ -39,5 +35,5 @@ void (*set_trurl_err_hook( void (*hook)(const char *err) ))(const char *err);
 
 #include <trurl/nstr.h>    /* n_str_*   */
 #include <trurl/n_snprintf.h>
-
+#include <trurl/nmalloc.h>
 #endif     

@@ -28,12 +28,9 @@ Module is based on:
 #endif
 
 
-#ifdef USE_XMALLOCS
-# include "xmalloc.h"
-#endif
-
 #include "trurl_internal.h"
 #include "nhash.h"
+#include "nmalloc.h"
 
 #define USE_HASHSTRING_GLIBC_DB 1
 #define USE_HASHSTRING_CDB 0

@@ -12,11 +12,6 @@
 #define n_assert(expr) assert(expr)
 #endif
 
-#ifdef USE_XMALLOCS
-#include "xmalloc.h"
-#endif
-
-
 #include "nstring.h"
 
 static char *vconcat(const char *s, va_list * ap);
@@ -36,7 +31,7 @@ tn_string n_string_construct(char *s)
 
     len = strlen(s);
     if (len > 0) {
-	str.s = strdup(s);
+	str.s = n_strdup(s);
 	str.len = len;
 	str.size = len + 1;
     }
@@ -49,7 +44,7 @@ static tn_string *n_string_generic_new(char *s)
     int len;
     tn_string *str;
 
-    if ((str = malloc(sizeof(*str))) == NULL)
+    if ((str = n_malloc(sizeof(*str))) == NULL)
 	return NULL;
 
     len = strlen(s);
@@ -70,7 +65,7 @@ static tn_string *n_string_generic_new(char *s)
 
 tn_string *n_string_new(char *s)
 {
-    return n_string_generic_new(strdup(s));
+    return n_string_generic_new(n_strdup(s));
 }
 
 
@@ -110,7 +105,7 @@ static tn_string *n_string_grow(tn_string * str, size_t size)
 
     if (str->len + size >= str->size) {
 	char *s;
-	if ((s = realloc(str->s, str->size + size)) == NULL)
+	if ((s = n_realloc(str->s, str->size + size)) == NULL)
 	    return NULL;
 
 	str->s = s;
@@ -224,7 +219,7 @@ static char *vconcat(const char *s, va_list * ap)
 	len += strlen(p);
     }
 
-    if ((rstr = malloc(len + 1)) == NULL)
+    if ((rstr = n_malloc(len + 1)) == NULL)
 	return NULL;
 
     strcpy(rstr, s);

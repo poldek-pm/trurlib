@@ -80,7 +80,7 @@ libtrurl_la_SOURCES = \
 	trurl_die.c      \
 	trurl_cmpf.c     \
 	trurl_internal.h \
-	xmalloc.c        \
+	nmalloc.c        \
 	nassert.c        \
 	nbuf.c		 \
 	$(NARRAY_SRCS)   \
@@ -98,7 +98,7 @@ pkginclude_HEADERS = \
 		nlist.h     \
 		nbuf.h	    \
 		trurl.h     \
-		xmalloc.h   \
+		nmalloc.h   \
 		n_snprintf.h
 
 EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in test_*.c README NEWS

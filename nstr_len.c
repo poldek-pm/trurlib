@@ -32,10 +32,6 @@
 #define n_assert(expr) assert(expr)
 #endif
 
-#ifdef USE_XMALLOCS
-#include "xmalloc.h"
-#endif
-
 #include "nstr.h"
 
 int n_str_vlen(const char *s, va_list ap)

@@ -32,10 +32,7 @@
 #define n_assert(expr) assert(expr)
 #endif
 
-#ifdef USE_XMALLOCS
-#include "xmalloc.h"
-#endif
-
+#include "nmalloc.h"
 #include "nstr.h"
 
 
@@ -53,10 +50,10 @@ const char **n_str_tokl(const char *s, char *delim)
     slen = strlen(s);
     tokens_size = 8;
 
-    if ((tokens = calloc(tokens_size, sizeof(*tokens))) == NULL)
+    if ((tokens = n_calloc(tokens_size, sizeof(*tokens))) == NULL)
 	return NULL;
 
-    if ((tokens[0] = calloc(slen + 1, sizeof(char))) == NULL) {
+    if ((tokens[0] = n_calloc(slen + 1, sizeof(char))) == NULL) {
 	free(tokens);
 	return NULL;
     }
@@ -73,7 +70,7 @@ const char **n_str_tokl(const char *s, char *delim)
 	if (n == tokens_size) {
 	    char **tmp;
             size_t new_size = (tokens_size + ALLOC_STEP) * sizeof(*tokens);
-	    if ((tmp = realloc(tokens, new_size)) == NULL) {
+	    if ((tmp = n_realloc(tokens, new_size)) == NULL) {
 		free(tokens[0]);
 		free(tokens);
 		tokens = NULL;

@@ -17,7 +17,7 @@ static void n_hash_rehash(tn_hash *ht)
     
     newsize = 2 * ht->size + 1;
     
-    ht->table = calloc(newsize, sizeof(*ht->table));
+    ht->table = n_calloc(newsize, sizeof(*ht->table));
     if (ht->table == NULL) {
         ht->table = oldtable;
 	return;
@@ -107,13 +107,13 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
      */
 
     if (ptr == NULL) {
-	if ((ptr = malloc(sizeof(*ptr))) == NULL)
+	if ((ptr = n_malloc(sizeof(*ptr))) == NULL)
 	    return NULL;
 
         if (ht->flags & TN_HASH_NOCPKEY)
             ptr->key = (char*)key;
         else 
-            ptr->key  = strdup(key);
+            ptr->key  = n_strdup(key);
         
 	ptr->next = NULL;
 	ptr->data = (void *) data;
@@ -146,13 +146,13 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
 //    printf("\n");
     
     
-    if ((ptr = malloc(sizeof(*ptr))) == NULL)
+    if ((ptr = n_malloc(sizeof(*ptr))) == NULL)
 	return NULL;
 
     if (ht->flags & TN_HASH_NOCPKEY)
         ptr->key = (char*)key;
     else 
-        ptr->key  = strdup(key);
+        ptr->key  = n_strdup(key);
     ptr->data = (void *) data;
     ptr->next = ht->table[val];
     ht->table[val] = ptr;

@@ -33,12 +33,9 @@
 # define n_assert(expr) assert(expr)
 #endif
 
-#ifdef USE_XMALLOCS
-# include "xmalloc.h"
-#endif
-
 #include "trurl_internal.h"
 #include "nlist.h"
+#include "nmalloc.h"
 
 #ifndef MODULES
 #endif

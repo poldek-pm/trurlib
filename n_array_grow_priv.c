@@ -13,7 +13,7 @@ static tn_array *n_array_realloc(tn_array *arr, size_t new_size)
     if (diff > 0) {
 	void **tmp;
 
-	if ((tmp = realloc(arr->data, new_size * sizeof(*tmp))) == NULL) {
+	if ((tmp = n_realloc(arr->data, new_size * sizeof(*tmp))) == NULL) {
 	    return NULL;
 
 	} else {

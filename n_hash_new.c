@@ -10,12 +10,12 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
 {
     tn_hash *ht = NULL;
 
-    ht = calloc(1, sizeof(*ht));
+    ht = n_calloc(1, sizeof(*ht));
 
     if (ht == NULL)
 	return NULL;
 
-    ht->table = calloc(size, sizeof(*ht->table));
+    ht->table = n_calloc(size, sizeof(*ht->table));
 
     if (ht->table == NULL) {
 	free(ht);

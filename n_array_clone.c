@@ -7,11 +7,11 @@ tn_array *n_array_clone(const tn_array *arr)
     register unsigned i;
     tn_array *new_arr;
 
-    if ((new_arr = calloc(1, sizeof(*new_arr))) == NULL)
+    if ((new_arr = n_calloc(1, sizeof(*new_arr))) == NULL)
 	return NULL;
     
     *new_arr = *arr;
-    new_arr->data = malloc(arr->allocated * sizeof(*arr->data));
+    new_arr->data = n_malloc(arr->allocated * sizeof(*arr->data));
     if (new_arr->data == NULL) {
 	free(new_arr);
 	new_arr = NULL;

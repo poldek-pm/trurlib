@@ -26,10 +26,6 @@
 #define n_assert(expr) assert(expr)
 #endif
 
-#ifdef USE_XMALLOCS
-#include "xmalloc.h"
-#endif
-
 
 char *n_str_tok(const char *s, char *tok, size_t toklen, char *delim)
 {

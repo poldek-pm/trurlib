@@ -36,12 +36,10 @@
 # define n_assert(expr) assert(expr)
 #endif
 
-#ifdef USE_XMALLOCS
-# include "xmalloc.h"
-#endif
 
 #include "trurl_internal.h"
 #include "narray.h"
+#include "nmalloc.h"
 #include "tfn_types.h"
 
 #define ARR_SORTED        (1 << 8)

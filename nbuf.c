@@ -34,11 +34,8 @@
 # define n_assert(expr) assert(expr)
 #endif
 
-#ifdef USE_XMALLOCS
-# include "xmalloc.h"
-#endif
-
 #include "trurl_internal.h"
+#include "nmalloc.h"
 #include "nbuf.h"
 
 struct trurl_buf {
@@ -53,7 +50,7 @@ tn_buf *n_buf_new(int initial_size)
 {
     tn_buf *buf;
 
-    if ((buf = malloc(sizeof(*buf))) == NULL)
+    if ((buf = n_malloc(sizeof(*buf))) == NULL)
 	return NULL;
 
     n_assert(initial_size >= 0);
@@ -65,7 +62,7 @@ tn_buf *n_buf_new(int initial_size)
     if (initial_size == 0) {
         buf->data = NULL;
         
-    } else if ((buf->data = malloc(initial_size)) != NULL) {
+    } else if ((buf->data = n_malloc(initial_size)) != NULL) {
         buf->data[0] = '\0';
 
     } else {
@@ -131,7 +128,7 @@ static tn_buf *n_buf_realloc(tn_buf *buf, size_t new_size)
     if (diff > 0) {
 	void *tmp;
 
-	if ((tmp = realloc(buf->data, new_size)) == NULL) {
+	if ((tmp = n_realloc(buf->data, new_size)) == NULL) {
 	    return NULL;
 
 	} else {

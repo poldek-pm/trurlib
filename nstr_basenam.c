@@ -32,11 +32,6 @@
 #define n_assert(expr) assert(expr)
 #endif
 
-#ifdef USE_XMALLOCS
-#include "xmalloc.h"
-#endif
-
-
 char *n_basedirnam(char *path, char **dirname, char **basename)
 {
     char *s = strrchr(path, '/');
