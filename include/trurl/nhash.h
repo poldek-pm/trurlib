@@ -81,6 +81,8 @@ int n_hash_map(const tn_hash *ht, void (*map_fn)(const char *, void *));
 int n_hash_map_arg(const tn_hash *ht,
                    void (*map_fn)(const char *, void *, void *), void *arg);
 
+#include <trurl/narray.h>
+tn_array *n_hash_keys(const tn_hash *ht);
 
 int n_hash_stats(const tn_hash *ht);
 #endif /* TRURL_HASH_H */

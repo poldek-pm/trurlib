@@ -13,13 +13,13 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
     ht = n_calloc(1, sizeof(*ht));
 
     if (ht == NULL)
-	return NULL;
+        return NULL;
 
     ht->table = n_calloc(size, sizeof(*ht->table));
 
     if (ht->table == NULL) {
-	free(ht);
-	return NULL;
+        free(ht);
+        return NULL;
     }
     ht->size = size;
     ht->items = 0;
