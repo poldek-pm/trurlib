@@ -37,10 +37,8 @@
 #include "xmalloc.h"
 #endif
 
-
+#include "trurl_internal.h"
 #include "nlist.h"
-
-extern void trurl_die(const char *fmt,...);
 
 struct list_node {
     void *data;
@@ -60,11 +58,6 @@ struct trurl_list {
     t_fn_dup dup_fn;
 };
 
-static int default_cmpf(const void* a,  const void *b) 
-{
-    return (a == b) ? 0 : 1;
-}
-
 
 tn_list *n_list_new(unsigned int flags,
 		    t_fn_free freef,
@@ -82,10 +75,10 @@ tn_list *n_list_new(unsigned int flags,
     l->head = l->tail = NULL;
 
     l->free_fn = freef;
-    if(cmpf != NULL)
+    if (cmpf != NULL)
         l->cmp_fn = cmpf;
     else 
-        l->cmp_fn = default_cmpf;
+        l->cmp_fn = trurl_default_cmpf;
     l->dup_fn = dupf;
 
     return l;
@@ -418,4 +411,17 @@ void *n_list_iterator_get(const tn_list *l)
 int n_list_size(const tn_list *l)
 {
     return l->items;
+}
+
+void n_list_map_arg(const tn_list *l, void (*map_fn)(void *, void *), void *arg)
+{
+    register struct list_node *node;
+
+    if (map_fn == NULL) {
+	trurl_die("n_list_map_arg: map_fn function is NULL\n");
+	return;
+    }
+    
+    for (node = l->head; node != NULL; node = node->next) 
+	map_fn(node->data, arg);
 }

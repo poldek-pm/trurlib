@@ -14,7 +14,7 @@ char *n_str_tok(const char *s, char *tok, size_t toklen, char *brk);
   Accepts a string and breaks it into words.
 
   RET: NULL terminated array of tokens. The array is allocated dynamically
-       by this function, and you *must* release it by  n_str_tokl_free().
+       by this function, and you *must* release it by n_str_tokl_free().
        Returns NULL if there was insufficient memory.
 */
 const char **n_str_tokl(const char *s, char *delim);

@@ -32,11 +32,10 @@ Module is based on:
 #include "xmalloc.h"
 #endif
 
+#include "trurl_internal.h"
 #include "nhash.h"
 
 #define USE_HASHSTRING 1
-
-extern void trurl_die(const char *fmt,...);
 
 
 

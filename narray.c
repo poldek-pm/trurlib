@@ -38,10 +38,9 @@
 #include "xmalloc.h"
 #endif
 
+#include "trurl_internal.h"
 #include "narray.h"
 #include "tfn_types.h"
-
-extern void trurl_die(const char *fmt,...);
 
 
 struct trurl_array {
@@ -97,7 +96,11 @@ tn_array *n_array_new_ex(int initial_size,
 
 	arr->free_fn = freef;
 	arr->dup_fn = dupf;
-	arr->cmp_fn = cmpf;
+        
+        if (cmpf)
+            arr->cmp_fn = cmpf;
+        else
+            arr->cmp_fn = trurl_default_cmpf;
     }
 
     return arr;
@@ -603,13 +606,13 @@ void *bsearch_voidp_arr(void *const *arr, size_t arr_size, const void *data,
 
 	i = (l + r) / 2;
 
-	if ((cmp_res = cmpf(data, arr[i])) == 0) {
+	if ((cmp_res = cmpf(arr[i], data)) == 0) {
 	    return (void *) arr[i];
 
-	} else if (cmp_res < 0) {
+	} else if (cmp_res > 0) {
 	    r = i;
 
-	} else if (cmp_res > 0) {
+	} else if (cmp_res < 0) {
 	    l = i + 1;
 	}
     }

@@ -19,7 +19,8 @@ typedef struct trurl_array tn_array;
 
 
 tn_array *n_array_new_ex(int        initial_size,
-                         enum       en_array_inctype inctype, int incstep,
+                         enum en_array_inctype  inctype,
+                         int        incstep,
                          t_fn_free  freef,
                          t_fn_cmp   cmpf,
                          t_fn_dup   dupf );

@@ -104,6 +104,9 @@ int n_list_contains_ex(const tn_list *l, const void *data, t_fn_cmp cmp_f);
 
 void *n_list_nth_pop(tn_list *l, unsigned long nth);
 
+void n_list_map_arg(const tn_list *l, void (*map_fn)(void *, void *), 
+                    void *arg);
+
 
 /* not finished yet
 #define n_list_push_v(l, d) n_list_append((l), (void*)(d))

@@ -39,8 +39,8 @@ OBJECTS = \
 	ndbhash.o    \
 	nlist.o      \
 	narray.o     \
-	nbuf.o	     \
 	trurl_die.o  \
+	trurl_cmpf.o \
 	$(NSTR_OBJECTS)
 
 TARGET	   =  libtrurl.a
