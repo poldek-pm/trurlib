@@ -35,6 +35,7 @@ tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf);
 tn_array *n_array_ctl(tn_array *arr, unsigned flags);
 
 #define n_array_ctl_growth(arr, inctype)  ((void) 0) /* backward API compat */
+#define n_array_has_free_fn(arr) (arr)->free_fn
 
 void n_array_free(tn_array *arr);
 
