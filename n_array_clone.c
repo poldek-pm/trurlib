@@ -14,14 +14,15 @@ tn_array *n_array_clone(const tn_array *arr)
     new_arr->data = malloc(arr->allocated * sizeof(*arr->data));
     if (new_arr->data == NULL) {
 	free(new_arr);
-	arr = NULL;
+	new_arr = NULL;
+        
+    } else {
+        new_arr->items = 0;
+        new_arr->start_index = 0;
+        
+        for (i = 0; i < new_arr->allocated; i++)
+            new_arr->data[i] = NULL;
     }
-    
-    new_arr->items = 0;
-    new_arr->start_index = 0;
-    
-    for (i = 0; i < new_arr->allocated; i++)
-        new_arr->data[i] = NULL;
-    
+    	
     return new_arr;
 }
