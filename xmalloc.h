@@ -38,9 +38,13 @@ void xfree(void *ptr);
 # undef realloc
 #endif 
 
-#ifdef strdup 
-# error "strdup already defined!"
-# undef strdup
+#ifdef strdup
+# if defined __GNU_LIBRARY__ && defined __GLIBC_MINOR__ && \
+             __GNU_LIBRARY__ == 6  && __GLIBC_MINOR__ > 0
+#  undef strdup
+# else
+#  error "strdup already defined!"
+# endif
 #endif 
 
 #ifdef free 
