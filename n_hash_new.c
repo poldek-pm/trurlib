@@ -9,11 +9,12 @@ static tn_hash *do_n_hash_new_ex(size_t size, void (*freefn) (void *))
 {
     tn_hash *ht = NULL;
 
-    ht = n_malloc(sizeof(*ht));
+    ht = n_calloc(1, sizeof(*ht));
 
     if (ht == NULL)
         return NULL;
-    
+
+    ht->flags = 0;
     ht->table = n_calloc(size, sizeof(*ht->table));
     if (ht->table == NULL) {
         free(ht);
@@ -29,13 +30,14 @@ static tn_hash *do_n_hash_new_ex(size_t size, void (*freefn) (void *))
     ht->items = 0;
     ht->free_fn = freefn;
     ht->hash_fn = NULL;
+    ht->_refcnt = 0;
     return ht;
 }
 
 static
 tn_hash *n_hash_new2(size_t size, void (*freefn) (void *)) 
 {
-    register size_t rsize = 16;
+    register size_t rsize = 4;
 
     while (rsize < size)
         rsize <<= 1;

@@ -31,7 +31,10 @@ int n_hash_size(const tn_hash *ht);
 #define TN_HASH_NOCPKEY    (1 << 1)  /* do not make own copies of the keys */
 #define TN_HASH_REHASH     (1 << 2)  /* automatically grow and rehash
                                         if filled more than 80%  */
+#define TN_HASH_NOREPLACE  (1 << 3)  /* don't check for duplicate keys
+                                        while inserting; use with care! */
 int n_hash_ctl(tn_hash *ht, unsigned int flags);
+
 //int n_hash_ctl_bktallocfn(tn_hash *ht, );
 
 

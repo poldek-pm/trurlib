@@ -67,3 +67,6 @@ struct trurl_hash_table {
 int n_hash_dohash(const tn_hash *ht, const char *s, int *slen);
 
 #define n_hash_nextslotv(key, klen) (klen + (int)key[klen - 1])
+
+struct hash_bucket *n_hash_get_bucket(const tn_hash *ht,
+                                      const char *key, int klen, unsigned val);

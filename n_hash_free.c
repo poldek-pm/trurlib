@@ -2,25 +2,41 @@
 
 #include "n_hash_int.h"
 
+static
+void free_slot(struct hash_bucket *node, tn_hash *ht)
+{
+    register struct hash_bucket *next_node;
+
+    for (; node != NULL; node = next_node) {
+        next_node = node->next;
+
+        if (ht->free_fn != NULL && node->data != NULL) {
+            DBGF("free %s %p\n", node->key, node->data);
+            ht->free_fn(node->data);
+        }
+        free(node);
+    }
+}
+
+
 void n_hash_free(tn_hash *ht)
 {
     size_t i;
-    
+
     if (ht->_refcnt > 0) {
         ht->_refcnt--;
         return;
     }
+
 #if ENABLE_TRACE    
-    if (ht->items > 32)
-        n_hash_stats(ht);
-#endif    
+    n_hash_stats(ht);
+#endif
+    
     for (i = 0; i < ht->size; i++) {
-        while (ht->table[i] != NULL) {
-            void *d = n_hash_remove(ht, ht->table[i]->key);
-            if (ht->free_fn != NULL && d != NULL)
-                ht->free_fn(d);
-        }
+        if (ht->table[i])
+            free_slot(ht->table[i], ht);
     }
+
     free(ht->table);
     
     ht->table = NULL;

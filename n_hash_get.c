@@ -38,12 +38,12 @@ int n_hash_exists_ll(const tn_hash *ht, const char *key)
 
 static inline
 struct hash_bucket *get_bucket_ll(struct hash_bucket **tbl,
-                                  const char *key, unsigned val)
+                                         const char *key, unsigned val)
 {
     struct hash_bucket *ptr;
 
     n_assert (tbl[val] != NULL);
-
+    
     for (ptr = tbl[val]; ptr != NULL; ptr = ptr->next) {
         if (strcmp(key, ptr->key) == 0)
             return ptr;
@@ -52,13 +52,10 @@ struct hash_bucket *get_bucket_ll(struct hash_bucket **tbl,
 }
 
 
-struct hash_bucket *n_hash_get_bucket(const tn_hash *ht, const char *key)
+struct hash_bucket *n_hash_get_bucket(const tn_hash *ht,
+                                      const char *key, int klen, unsigned val)
 {
     struct hash_bucket **tbl, *ptr = NULL;
-    unsigned val;
-    int klen;
-
-    val = n_hash_dohash(ht, key, &klen);
     tbl = ht->table;
     
     if (tbl[val] != NULL)
@@ -76,14 +73,21 @@ struct hash_bucket *n_hash_get_bucket(const tn_hash *ht, const char *key)
 void *n_hash_get(const tn_hash *ht, const char *key) 
 {
     struct hash_bucket *ptr;
-
-    ptr = n_hash_get_bucket(ht, key);
+    unsigned val;
+    int klen;
+    
+    val = n_hash_dohash(ht, key, &klen);
+    ptr = n_hash_get_bucket(ht, key, klen, val);
     return ptr ? ptr->data : NULL;
 }
 
 int n_hash_exists(const tn_hash *ht, const char *key) 
 {
-    return n_hash_get_bucket(ht, key) != NULL;
+    unsigned val;
+    int klen;
+    
+    val = n_hash_dohash(ht, key, &klen);
+    return n_hash_get_bucket(ht, key, klen, val) != NULL;
 }
 
     

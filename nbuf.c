@@ -75,7 +75,7 @@ tn_buf *n_buf_new(int initial_size)
 tn_buf *n_buf_init(tn_buf *buf, void *buffer, int size)
 {
     n_assert(buf->data == NULL);
-    
+    buf->off = 0;
     buf->data = buffer;
     buf->allocated = size;
     buf->size = size;
@@ -97,6 +97,7 @@ tn_buf *n_buf_clean(tn_buf *buf)
         buf->data = NULL;
         buf->allocated = 0;
         buf->flags = 0;
+        buf->off  = 0;
         
     } else {
         buf->size = 0;
@@ -133,6 +134,9 @@ static tn_buf *n_buf_realloc(tn_buf *buf, size_t new_size)
     if (diff > 0) {
         void *tmp;
 
+        DBGF("%p to %d: allocated %d, size %d, off %d\n", new_size,
+             buf, buf->allocated, buf->size, buf->off);
+        
         if ((tmp = n_realloc(buf->data, new_size)) == NULL) {
             return NULL;
 
