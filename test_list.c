@@ -34,10 +34,11 @@ int cmpstr_len(const void *a, const void *b)
 void print_list(char *msg, const tn_list * l)
 {
     char *s;
-
-    n_list_iterator_start(l);
+    tn_list_iterator li;
+    
+    li = n_list_iterator_start(l);
     printf("%s", msg);
-    while ((s = n_list_iterator_get(l))) {
+    while ((s = n_list_iterator_get(&li))) {
 	printf("%s, ", s);
     }
     printf("\n");
@@ -49,7 +50,7 @@ void test_list(void)
     char *s;
     tn_list *l;
 
-    l = n_list_new(0, free, (t_fn_cmp) strcmp, NULL);
+    l = n_list_new(0, free, (t_fn_cmp) strcmp);
 
     for (i = 1; i < 10; i++) {
 	char str[10];
@@ -90,7 +91,7 @@ void test_list(void)
 
     n_list_free(l);
 
-    l = n_list_new(TN_LIST_UNIQ, NULL, (t_fn_cmp) strcmp, NULL);
+    l = n_list_new(TN_LIST_UNIQ, NULL, (t_fn_cmp) strcmp);
     n_list_push(l, "1");
     n_list_push(l, "2");
     n_list_push(l, "3");

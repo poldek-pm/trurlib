@@ -1,6 +1,6 @@
 /*
   TRURLib, hash table
-  Copyright (C) 1999 Pawel Gajda (mis@k2.net.pl)
+  Copyright (C) 1999, 2000 Pawel Gajda (mis@k2.net.pl)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Library General Public
@@ -68,7 +68,13 @@ struct trurl_hash_table {
     size_t items;
 
     void (*free_fn) (void *);
+    unsigned int (*hash_fn) (const char*);
 };
+
+
+static unsigned int hash_string(const char *string);
+
+
 
 /* Initialize the hash_table to the size asked for.  Allocates space
    ** for the correct number of pointers and sets them to NULL.  If it
@@ -77,7 +83,8 @@ struct trurl_hash_table {
 
    ** RET : new hash table or NULL
  */
-tn_hash *n_hash_new(size_t size, void (*freefn) (void *))
+tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
+                       unsigned int (*hashfn) (const char*))
 {
     tn_hash *ht = NULL;
 
@@ -95,26 +102,27 @@ tn_hash *n_hash_new(size_t size, void (*freefn) (void *))
     ht->size = size;
     ht->items = 0;
     ht->free_fn = freefn;
-
+    ht->hash_fn = hashfn ? hashfn : (unsigned (*)(const char*))hash_string;
+    
     return ht;
 }
 
 
 #if USE_HASHSTRING
-#include "hash-string.h"
+# include "hash-string.h"
 #else
 
 /*
-** Hashes a string to produce an unsigned short, which should be
+** Hashes a string to produce an unsigned int, which should be
 ** sufficient for most purposes.
 */
-static unsigned hash_string(const char *string)
+static unsigned int hash_string(const char *string)
 {
     unsigned ret_val = 0;
     int i;
 
     while (*string) {
-	i = (int) (*(string++));
+	i = (long int) (*(string++));
 	ret_val ^= i;
 	ret_val <<= 1;
     }
@@ -127,10 +135,11 @@ static unsigned hash_string(const char *string)
  * Insert 'key' into hash table.
  */
 static
-tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data, int replace)
+tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
+                    int replace)
 {
     struct hash_bucket *ptr;
-    unsigned val = hash_string(key) % ht->size;
+    unsigned val = ht->hash_fn(key) % ht->size;
 
 
     ptr = ht->table[val];
@@ -219,7 +228,7 @@ tn_hash *n_hash_replace(tn_hash *ht, const char *key, const void *data)
  */
 void *n_hash_get(const tn_hash *ht, const char *key)
 {
-    unsigned val = hash_string(key) % ht->size;
+    unsigned val = ht->hash_fn(key) % ht->size;
     struct hash_bucket *ptr;
 
     if (NULL == ht->table[val])
@@ -233,6 +242,22 @@ void *n_hash_get(const tn_hash *ht, const char *key)
     return NULL;
 }
 
+int n_hash_exists(const tn_hash *ht, const char *key) 
+{
+    unsigned val = ht->hash_fn(key) % ht->size;
+    struct hash_bucket *ptr;
+
+    if (NULL == ht->table[val])
+	return 0;
+
+    for (ptr = ht->table[val]; NULL != ptr; ptr = ptr->next) {
+	if (0 == strcmp(key, ptr->key))
+	    return 1;
+    }
+
+    return 0;
+}
+
 
 /*
  * Delete a key from the hash table and return associated
@@ -240,7 +265,7 @@ void *n_hash_get(const tn_hash *ht, const char *key)
  */
 void *n_hash_remove(tn_hash *ht, const char *key)
 {
-    unsigned val = hash_string(key) % ht->size;
+    unsigned val = ht->hash_fn(key) % ht->size;
     void *data;
     struct hash_bucket *ptr, *last = NULL;
 

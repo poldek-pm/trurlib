@@ -1,6 +1,6 @@
 /* 
    TRURLib
-   Copyright (C) 1999 Pawel Gajda (mis@k2.net.pl)
+   Copyright (C) 1999, 2000 Pawel Gajda (mis@k2.net.pl)
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -51,18 +51,13 @@ struct trurl_list {
 
     struct list_node *head;
     struct list_node *tail;
-    struct list_node *current;	/* used by *iterator_func()  */
 
     t_fn_free free_fn;
     t_fn_cmp cmp_fn;
-    t_fn_dup dup_fn;
 };
 
 
-tn_list *n_list_new(unsigned int flags,
-		    t_fn_free freef,
-		    t_fn_cmp cmpf,
-		    t_fn_dup dupf)
+tn_list *n_list_new(unsigned int flags, t_fn_free freef, t_fn_cmp cmpf)
 {
     tn_list *l;
 
@@ -79,11 +74,9 @@ tn_list *n_list_new(unsigned int flags,
         l->cmp_fn = cmpf;
     else 
         l->cmp_fn = trurl_default_cmpf;
-    l->dup_fn = dupf;
 
     return l;
 }
-
 
 void n_list_free(tn_list *l)
 {
@@ -386,24 +379,23 @@ void *n_list_nth(const tn_list *l, int nth)
 }
 
 
-void n_list_iterator_start(const tn_list *l)
+const tn_list_iterator n_list_iterator_start(const tn_list *l)
 {
-    register tn_list *list = (tn_list *) l;
-    list->current = list->head;
+    return l->head;
 }
 
 
-void *n_list_iterator_get(const tn_list *l)
+void *n_list_iterator_get(tn_list_iterator *li)
 {
-    register tn_list *list = (tn_list *) l;
-
     void *data;
-
-    if (list->current == NULL)
+    struct list_node *node = *(struct list_node**)li;
+    
+    if (node == NULL)
 	return NULL;
 
-    data = list->current->data;
-    list->current = list->current->next;
+    data = node->data;
+    node = node->next;
+    *li = node;
     return data;
 }
 

@@ -1,7 +1,7 @@
 /* 
-   TRURLib dynamic array of pointers to something
+   TRURLib dynamic array of void pointers 
    
-   Copyright (C) 1999 Pawel Gajda (mis@k2.net.pl)
+   Copyright (C) 1999, 2000 Pawel Gajda (mis@k2.net.pl)
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -44,27 +44,19 @@
 
 
 struct trurl_array {
-    void **data;
+    size_t      items;          
+    void        **data;
+    size_t      allocated;
+    int         inctype;
+    size_t      incstep;
+    size_t      start_index;
 
-    size_t                 allocated;
-    size_t                 items;
-    enum en_array_inctype  inctype;
-    size_t                 incstep;
-    size_t                 start_index;
-
-    t_fn_free  free_fn;
-    t_fn_dup   dup_fn;
-    t_fn_cmp   cmp_fn;
+    t_fn_free   free_fn;
+    t_fn_cmp    cmp_fn;
 };
 
 
-
-tn_array *n_array_new_ex(int initial_size,
-			 enum en_array_inctype inctype,
-			 int incstep,
-			 t_fn_free freef,
-			 t_fn_cmp cmpf,
-			 t_fn_dup dupf)
+tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf)
 {
     tn_array *arr;
 
@@ -76,10 +68,6 @@ tn_array *n_array_new_ex(int initial_size,
     if (initial_size < 1)
 	initial_size = 2;
 
-    if (incstep < 2 && inctype != INC_NONE) {
-	trurl_die("n_array_new_ex: incstep less than 2(%d)\n", incstep);
-	return NULL;
-    }
     if ((arr->data = malloc(initial_size * sizeof(*arr->data))) == NULL) {
 	free(arr);
 	arr = NULL;
@@ -91,11 +79,10 @@ tn_array *n_array_new_ex(int initial_size,
 	    arr->data[i] = NULL;
 
 	arr->allocated = initial_size;
-	arr->inctype = inctype;
-	arr->incstep = incstep;
+	arr->inctype = TN_ARRAY_INCGEOMETRICAL;
+        arr->incstep = 2;
 
-	arr->free_fn = freef;
-	arr->dup_fn = dupf;
+        arr->free_fn = freef;
         
         if (cmpf)
             arr->cmp_fn = cmpf;
@@ -107,29 +94,31 @@ tn_array *n_array_new_ex(int initial_size,
 }
 
 
-tn_array *n_array_new(int initial_size,
-		      t_fn_free freef,
-		      t_fn_cmp cmpf,
-		      t_fn_dup dupf)
+tn_array *n_array_ctl_growth(tn_array *arr, int inctype, int incstep)
 {
-    return n_array_new_ex(initial_size, INC_GEOMETRICAL, 2, freef, cmpf, dupf);
+    if (incstep < 2 && inctype != TN_ARRAY_INCNONE) {
+	trurl_die("n_array_new_ex: incstep less than 2(%d)\n", incstep);
+	return NULL;
+    }
+    
+    arr->inctype = inctype;
+    arr->incstep = incstep;
+    return arr;
 }
+
 
 
 tn_array *n_array_clean(tn_array *arr)
 {
     register unsigned int i;
 
-    if (arr->free_fn != NULL) {
-	for (i = 0; i < arr->allocated; i++) {
-
-	    if (arr->data[i] != NULL) {
-                if (arr->free_fn != NULL)
-                    arr->free_fn(arr->data[i]);
+    for (i = 0; i < arr->allocated; i++) {
+        if (arr->data[i] != NULL) {
+            if (arr->free_fn != NULL)
+                arr->free_fn(arr->data[i]);
                 
-		arr->data[i] = NULL;
-	    }
-	}
+            arr->data[i] = NULL;
+        }
     }
     
     arr->start_index = 0;
@@ -183,21 +172,21 @@ static tn_array *n_array_grow(tn_array *arr, size_t req_size)
     while (req_size >= new_size) {
         switch (arr->inctype) {
 
-            case INC_NONE:
+            case TN_ARRAY_INCNONE:
                 trurl_die("n_array_grow: grow request for const size array");
                 return NULL;
                 
-            case INC_LINEAR:
+            case TN_ARRAY_INCLINEAR:
                 new_size += arr->incstep;
                 break;
 
-            case INC_GEOMETRICAL:
+            case TN_ARRAY_INCGEOMETRICAL:
                 new_size *= arr->incstep;
                 break;
                 
             default:
                 n_assert(0);
-                trurl_die("n_array_grow: unknown inctype");
+                trurl_die("n_array_grow: unknown inctype %d", arr->inctype);
 	}
     }
     
@@ -205,10 +194,10 @@ static tn_array *n_array_grow(tn_array *arr, size_t req_size)
 }
 
 
-int n_array_size(const tn_array *arr)
+/*int n_array_size(const tn_array *arr)
 {
     return arr->items;
-}
+    }*/
 
 
 void *n_array_nth(const tn_array *arr, int i)
@@ -246,9 +235,9 @@ tn_array *n_array_remove_nth(tn_array *arr, int i)
     ptr = arr->data[pos];
 
     /* if slot is not empty, free node data */
-    if (arr->data[pos] != NULL && arr->free_fn != NULL) {
+    if (arr->data[pos] != NULL && arr->free_fn != NULL)
 	arr->free_fn(arr->data[pos]);
-    }
+    
     
     memmove(&arr->data[pos], &arr->data[pos + 1],
 	    (arr->allocated - 1 - pos) * sizeof(*arr->data));
@@ -418,22 +407,18 @@ int n_array_eq_ex(const tn_array *arr1, const tn_array *arr2, t_fn_cmp cmpf)
 }
 
 
-tn_array *n_array_dup_ex(const tn_array *arr, t_fn_dup dup_fn)
+tn_array *n_array_dup(const tn_array *arr, t_fn_dup dup_fn)
 {
     tn_array *dupl;
-
-    if (dup_fn == NULL)
-	dup_fn = arr->dup_fn;
 
     n_assert(dup_fn != NULL);
 
     if (dup_fn == NULL)
 	return NULL;
 
-    dupl = n_array_new_ex(arr->allocated,
-			  arr->inctype,
-			  arr->incstep,
-			  arr->free_fn, arr->cmp_fn, arr->dup_fn);
+    dupl = n_array_new(arr->allocated, arr->free_fn, arr->cmp_fn);
+    n_array_ctl_growth(dupl, arr->inctype, arr->incstep);
+
     if (dupl != NULL) {
 	register unsigned int i;
 
@@ -447,45 +432,6 @@ tn_array *n_array_dup_ex(const tn_array *arr, t_fn_dup dup_fn)
     return dupl;
 }
 
-
-
-tn_array *n_array_libc_qsort_ex(tn_array *arr, t_fn_cmp cmpf)
-{
-    if (cmpf == NULL)
-	cmpf = arr->cmp_fn;
-
-    if (cmpf == NULL) {
-	trurl_die("n_array_sort_ex: compare function is NULL\n");
-	return NULL;
-    }
-    
-    qsort(&arr->data[arr->start_index], arr->items, sizeof(void *), cmpf);
-
-    return arr;
-}
-
-
-void *n_array_libc_bsearch_ex(const tn_array *arr, const void *data,
-			      t_fn_cmp cmpf)
-{
-    void **ptr = NULL;
-
-    if (cmpf == NULL)
-	cmpf = arr->cmp_fn;
-
-    if (cmpf == NULL) {
-	trurl_die("n_array_bsearch_ex: free function is NULL\n");
-	return NULL;
-    }
-    
-    if (arr->items > 0) {
-	ptr = bsearch(&data, &arr->data[arr->start_index], arr->items,
-                       sizeof(void *), cmpf);
-
-    }
-    
-    return ptr != NULL ? *ptr : NULL;
-}
 
 
 #define SWAP_void(a, b)               \
@@ -575,8 +521,10 @@ tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf)
 	trurl_die("n_array_sort_ex: compare function is NULL\n");
 	return NULL;
     }
-#if 0
+    
+#if 1
     /* there is error in qsort_viodp_arr  - PawelK*/
+    /* where is it? - PawelG */
     if (arr->items > 10) {
 	qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
 
@@ -587,6 +535,35 @@ tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf)
 	isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
 #endif
 
+    return arr;
+}
+
+
+tn_array *n_array_qsort_ex(tn_array *arr, t_fn_cmp cmpf)
+{
+    if (cmpf == NULL)
+	cmpf = arr->cmp_fn;
+
+    if (cmpf == NULL) {
+	trurl_die("n_array_sort_ex: compare function is NULL\n");
+	return NULL;
+    }
+    
+    qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+    return arr;
+}
+
+tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf)
+{
+    if (cmpf == NULL)
+	cmpf = arr->cmp_fn;
+
+    if (cmpf == NULL) {
+	trurl_die("n_array_sort_ex: compare function is NULL\n");
+	return NULL;
+    }
+    
+    isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
     return arr;
 }
 
@@ -675,10 +652,11 @@ void n_array_map_arg(tn_array *arr, void (*map_fn) (void *, void *), void *arg)
 
 }
 
-
+#ifndef NDEBUG
 void n_array_dump_stats(const tn_array *arr, const char *name)
 {
 
     printf("\nArray \"%s\" [memsize, items, start_index] = %d, %d, %d\n",
            name ? name : "", arr->allocated, arr->items, arr->start_index);
 }
+#endif

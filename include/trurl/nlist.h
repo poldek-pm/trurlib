@@ -10,13 +10,11 @@
 
 typedef struct trurl_list tn_list;
 
-/*#define TN_LLIST_SORTED 0x1*/ /* not implemented */
+/*#define TN_LIST_SORTED 0x1*/ /* not implemented */
 #define TN_LIST_UNIQ   0x2
 
-tn_list *n_list_new(unsigned int flags,
-                    t_fn_free freef,
-                    t_fn_cmp  cmpf,
-                    t_fn_dup  dupf);
+tn_list *n_list_new(unsigned int flags, t_fn_free freef, t_fn_cmp cmpf);
+
 
 void n_list_free(tn_list *l);
 
@@ -64,7 +62,6 @@ void *n_list_remove_nth(tn_list *l, int nth);
   RET: number of removed nodes
 */
 int n_list_remove_ex(tn_list *l, const void *data, t_fn_cmp cmpf);
-
 #define n_list_remove(l, data) n_list_remove_ex(l, data, NULL)
 
 
@@ -80,18 +77,15 @@ int n_list_size(const tn_list *l);
 void *n_list_nth(const tn_list *l, int nth);
 
 
-/* reset iterator */
-void n_list_iterator_start(const tn_list *l);
-
-void *n_list_iterator_get(const tn_list *l);
-
-
+typedef void* tn_list_iterator;
+/* iterator */
+const tn_list_iterator n_list_iterator_start(const tn_list *l);
+void *n_list_iterator_get(tn_list_iterator *li);
 
 /*
   Find the node in the list and return it 
  */
 void *n_list_lookup_ex(const tn_list *l, const void *data, t_fn_cmp cmpf);
-
 #define n_list_lookup(l, data) n_list_lookup_ex(l, data, NULL)
 
 
@@ -99,13 +93,11 @@ void *n_list_lookup_ex(const tn_list *l, const void *data, t_fn_cmp cmpf);
   RET: bool
 */
 int n_list_contains_ex(const tn_list *l, const void *data, t_fn_cmp cmp_f);
-
 #define n_list_contains(l, data) n_list_contains_ex(l, data, NULL)
 
-void *n_list_nth_pop(tn_list *l, unsigned long nth);
 
-void n_list_map_arg(const tn_list *l, void (*map_fn)(void *, void *), 
-                    void *arg);
+void n_list_map_arg(const tn_list *l,
+                    void (*map_fn)(void *, void *), void *arg);
 
 
 /* not finished yet

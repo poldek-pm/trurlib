@@ -2,11 +2,12 @@
 # $Id$
 #
 #
-PROJ_DIR=$(shell pwd)
+PROJ_DIR     = $(shell pwd)
+VERSION      = $(shell cat VERSION)
 INSTALL_ROOT = /usr/local
 
-ifdef PREFIX
-INSTALL_ROOT=$(PREFIX)
+ifdef prefix
+	INSTALL_ROOT = $(prefix)
 endif
 
 DEF_USE_N_ASSERT  = -DUSE_N_ASSERT
@@ -40,7 +41,22 @@ OBJECTS = \
 	trurl_cmpf.o \
 	$(NSTR_OBJECTS)
 
-TARGET	   =  libtrurl.a
+SHOBJECTS = $(addsuffix s, $(OBJECTS))
+
+HEADERS = \
+	nassert.h   \
+	nhash.h     \
+	nstr.h      \
+	tfn_types.h \
+	narray.h    \
+	nlist.h     \
+	trurl.h     \
+	xmalloc.h
+
+
+
+STATIC_LIB  =  libtrurl.a
+SHARED_LIB  =  libtrurl.so.$(VERSION)
 
 TEST_PROGS = \
 		test_common \
@@ -49,33 +65,45 @@ TEST_PROGS = \
 		test_hash   \
 		test_nstr  
 
-ifndef WHITHOUT_DBHASH
+
+without_dbhash ?= 0
+ifeq ($(without_dbhash),0)
   OBJECTS    += ndbhash.o
+  HEADERS    += ndbhash.h
   TEST_PROGS += test_dbhash
   LIBS       += -ldb1  
 endif
 
 
 ####### Implicit rules
-
 %.o:	%.cc
 	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $<
 
 %.o:	%.c
 	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $<
 
+%.os:	%.c
+	$(CC) -c -fPIC $(CFLAGS) $(INCLUDE) -o $@ $<
+
+
 test_%:  test_%.o 
 	$(CC) $(CFLAGS) $< -o $@ $(LFLAGS) -L. -ltrurl $(LIBS) 
 
 
-all: symlink $(TARGET) 
+all: static
 
+static: symlink $(STATIC_LIB) 
+shared: symlink $(SHARED_LIB)
 tests: $(TEST_PROGS)
 
 
-$(TARGET): $(OBJECTS)
-	$(AR) cr $(TARGET) $(OBJECTS)
-	$(RANLIB) $(TARGET)
+$(STATIC_LIB): $(OBJECTS)
+	$(AR) cr $(STATIC_LIB) $(OBJECTS)
+	$(RANLIB) $(STATIC_LIB)
+
+$(SHARED_LIB): $(SHOBJECTS)
+	gcc -shared -Wl,-soname=$(SHARED_LIB) $(CFLAGS) -o  $(SHARED_LIB) \
+	     $(SHOBJECTS)
 
 symlink: 
 	@if [ ! -d trurl ]; then ln . trurl -s; fi;
@@ -88,16 +116,19 @@ tags:
 
 TAGS:   tags
 
-install: $(TARGET)
-	install -m 644 $(TARGET) $(INSTALL_ROOT)/lib/
+install: $(STATIC_LIB) $(SHARED_LIB)
+	install -d 755 $(INSTALL_ROOT)/lib/
+	install -m 644 $(STATIC_LIB) $(INSTALL_ROOT)/lib/
+	install -s -m 755 $(SHARED_LIB) $(INSTALL_ROOT)/lib/
 	install -d 755 $(INSTALL_ROOT)/include/trurl
-	install -m 644 *.h $(INSTALL_ROOT)/include/trurl
+	install -m 644 $(HEADERS) $(INSTALL_ROOT)/include/trurl
 
 .PHONY: clean distclean backup arch dist
 
-clean:
-	-rm -f core *.o *.bak *~ *% *\# 
-	-rm -f $(TARGET) $(TEST_PROGS) trurl
+clean: TEST_PROGS += test_dbhash
+clean:  
+	-rm -f core *.o *.os *.bak *~ *% *\# 
+	-rm -f $(STATIC_LIB) $(TEST_PROGS) $(SHARED_LIB) trurl
 
 
 distclean: clean
@@ -127,7 +158,7 @@ arch :	distclean  backup
 # Make dist archives of $(PROJ_DIR). Archives are stored in TMPDIR (see below)   
 # as $(PROJ_DIR)-`cat VERSION`.tar.[gz, bz2]
 # 
-dist:
+dist:   distclean
 	@cd $(PROJ_DIR)                       ;\
 	TMPDIR=/tmp                           ;\
 	REV=`cat VERSION`                     ;\
@@ -136,11 +167,13 @@ dist:
 	rm -rf $$DISTDIR                      ;\
 	mkdir $$DISTDIR                       ;\
 	cp -a * $$DISTDIR                     ;\
+	for f in `cat .cvsignore`; do          \
+             rm -rf $$DISTDIR/$$f             ;\
+        done                                  ;\
 	cd $$TMPDIR                           ;\
 	arch_name=`basename $$DISTDIR`        ;\
 	tar cvpf $$arch_name.tar $$arch_name  ;\
-	bzip2 -9 -k $$arch_name.tar           ;\
-	gzip -9 $$arch_name.tar
+	gzip -9 $$arch_name.tar && rm -rf $$DISTDIR
 
 
 ifeq (.depend,$(wildcard .depend))

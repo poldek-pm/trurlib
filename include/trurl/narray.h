@@ -9,32 +9,18 @@
 
 #include "tfn_types.h"
 
-enum en_array_inctype {
-  INC_NONE,			/* const       */
-  INC_LINEAR,			/* 1 2 3 4...  */
-  INC_GEOMETRICAL		/* 1 2 4 8...  */
-};
+
+#define TN_ARRAY_INCNONE           0 /* const       */
+#define TN_ARRAY_INCLINEAR         1 /* 1 2 3 4...  */ 
+#define TN_ARRAY_INCGEOMETRICAL	   2 /* 1 2 4 8...  */
+
 
 typedef struct trurl_array tn_array;
 
-
-tn_array *n_array_new_ex(int        initial_size,
-                         enum en_array_inctype  inctype,
-                         int        incstep,
-                         t_fn_free  freef,
-                         t_fn_cmp   cmpf,
-                         t_fn_dup   dupf );
-
-
-tn_array *n_array_new(int        initial_size,
-                      t_fn_free  freef,
-                      t_fn_cmp   cmpf,
-                      t_fn_dup   dupf );
-
-
+tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf);
+tn_array *n_array_ctl_growth(tn_array *arr, int inctype, int incstep);
 
 void n_array_free(tn_array *arr);
-
 
 /*
   Free content 
@@ -42,13 +28,11 @@ void n_array_free(tn_array *arr);
 tn_array *n_array_clean(tn_array *arr);
 
 
-
 /* 
    for(i=0; i<n_array_size(arr); i++) 
        ...
 */
-int n_array_size(const tn_array *arr);
-
+#define n_array_size(arr) (*(int*)arr)
 
 /*
   foo = arr[i];
@@ -57,18 +41,15 @@ int n_array_size(const tn_array *arr);
 void *n_array_nth(const tn_array *arr, int i);
 
 
-
 /*
   NOTE:
   - grows array if 'i' is out of bounds.
-  - if arr[i] exists destroy it by arr->free_fn(if set). Be careful! 
+  - if arr[i] exists destroy it by arr->free_fn(if set). Be careful!
   
   arr[i] = foo;
 
 */
 tn_array *n_array_set_nth(tn_array *arr, int i, void *data);
-
-
 
 
 /*
@@ -78,8 +59,6 @@ tn_array *n_array_set_nth(tn_array *arr, int i, void *data);
 tn_array *n_array_remove_nth(tn_array *arr, int i);
 
 
-
-
 /*
   arr[ LAST_INDEX++ ] = foo;
 
@@ -87,15 +66,11 @@ tn_array *n_array_remove_nth(tn_array *arr, int i);
 tn_array *n_array_push(tn_array *arr, void *data);
 
 
-
-
 /*
   foo = arr[ LAST_INDEX-- ];
 
 */
 void *n_array_pop(tn_array *arr);
-
-
 
 
 /*
@@ -106,8 +81,6 @@ void *n_array_pop(tn_array *arr);
 void *n_array_shift(tn_array *arr);
 
 
-
-
 /*
   memmove(&arr[1], &arr[1..LAST_INDEX]);
   arr[0] = foo;
@@ -116,14 +89,11 @@ void *n_array_shift(tn_array *arr);
 tn_array *n_array_unshift(tn_array *arr, void *data);
 
 
-
-
 /*
   return arr1 == arr2
   
  */
 int n_array_eq_ex(const tn_array *arr1, const tn_array *arr2, t_fn_cmp cmpf);
-
 #define n_array_eq(arr1, arr2) n_array_eq_ex(arr1, arr2, NULL)
 
 
@@ -132,13 +102,19 @@ int n_array_eq_ex(const tn_array *arr1, const tn_array *arr2, t_fn_cmp cmpf);
   NOTE: array must be sorted
 */
 tn_array *n_array_uniq_ex(tn_array *arr, t_fn_cmp cmpf);
-
 #define n_array_uniq(arr) n_array_uniq_ex(arr, NULL)
 
-
-
+/* let make decision about algorithm */
 tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf);
 #define n_array_sort(arr) n_array_sort_ex(arr, NULL)
+
+/* quicksort */
+tn_array *n_array_qsort_ex(tn_array *arr, t_fn_cmp cmpf);
+#define n_array_qsort(arr) n_array_qsort_ex(arr, NULL)
+
+/* insertion sort*/
+tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf);
+#define n_array_isort(arr) n_array_qsort_ex(arr, NULL)
 
 
 /* cmpf is always called as cmpf(arr[i], data);
@@ -147,35 +123,11 @@ tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf);
 void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
 #define n_array_bsearch(arr, data) n_array_bsearch_ex(arr, data, NULL)
 
-/*
- * FOR BACKWARD COMPATIBILITY, will be removed
- */
-#define n_array_search_ex(a, b, c) n_array_bsearch_ex(a, b, c)
-#define n_array_search(a, b) n_array_bsearch(a, b)
-
-
-
-
-
-/* For partial BACKWARD COMPATIBILITY, will be removed*/
-
-tn_array *n_array_libc_qsort_ex(tn_array *arr, t_fn_cmp cmpf);
-#define n_array_libc_qsort(arr) n_array_sort_ex_libc(arr, NULL)
-
-void *n_array_libc_bsearch_ex(const tn_array *arr, const void *data,
-                              t_fn_cmp cmpf);
-
-#define n_array_libc_bsearch(arr, data) n_array_bsearch_ex_libc(arr,data, NULL)
-
-
-
 
 /*
   Clone an array.
  */
-tn_array *n_array_dup_ex(const tn_array *arr, t_fn_dup dupf);
-#define n_array_dup(arr) n_array_dup_ex(arr, NULL)
-
+tn_array *n_array_dup(const tn_array *arr, t_fn_dup dupf);
 
 
 /* 
@@ -192,18 +144,8 @@ void n_array_map(tn_array *arr, void (*map_fn)(void *));
 void n_array_map_arg(tn_array *arr, void (*map_fn)(void *, void *), void *arg);
 
 
-
 /* for debugging */
 void n_array_dump_stats(const tn_array *arr, const char *name);
 
 
 #endif /* __TRURL_ARRAY_H */
-    
-
-        
-
-
-    
-
-
-    

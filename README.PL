@@ -1,3 +1,5 @@
+$Id$
+
 TRURLib
 
 Jest to zacz±tek biblioteki, która bêdzie u¿ywana w ca³ym programie
@@ -38,8 +40,10 @@ instalacyjnym.
       - hash (key, value) 
         <trurl/nhash.h> 	
 
-      - dbhash (key, value) - opakowanie dla funkcji libdb (man dbopen) 
-        <trurl/ndbhash.h> 		 
+      - dbhash (key, value) - opakowanie dla funkcji libdb (man dbopen)
+        <trurl/ndbhash.h> 
+       Uwaga: ¿eby skompilowaæ z tym bibliotekê nale¿y wydaæ polecenie
+       $ make with_dbhash=1
 
       - string, nie skoñczony, nie nadaje siê do u¿ytku. 
 
@@ -59,12 +63,14 @@ wzglêdnych. Niech to zawsze bêdzie
  
    - nazwy funkcji zaczynaj± siê od 'n_'
 
-   - nazwy typów strukturalnych: tn_NAZWATYPU, np. tn_array   
+   - nazwy typów strukturalnych: tn_NAZWATYPU, np. tn_array
 
    - nazwy funkcji operuj±cych na typach n_NAZWATYPU_NAZWAFUNKCJI, 
       np. n_array_sort()  
 
-   - nazwy typów funkcji zaczynaj± siê od 't_fn' 
+   - nazwy typów funkcji zaczynaj± siê od 'tn_fn_' 
+
+   - makrodefinicje TN_NAZWATYPUZDU¯YCHLITER_CO¦TAMCO¦TAM
 
 
 3. B³êdy 

@@ -16,8 +16,13 @@ typedef struct trurl_hash_table tn_hash;
 ** returns NULL
 */
 
-tn_hash *n_hash_new(size_t size, void (*freefn)(void*));
+tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
+                       unsigned int (*hashfn) (const char*));
 
+#define n_hash_new(a, b) n_hash_new_ex(a, b, NULL)
+
+
+void n_hash_free(tn_hash *ht);
 
 /*
 ** Inserts a pointer to 'data' in the table, with a copy of 'key' as its
@@ -37,6 +42,12 @@ tn_hash *n_hash_replace(tn_hash *ht, const char *key, const void *data);
 
 void *n_hash_get(const tn_hash *ht, const char *key);
 
+/*
+** If the key has not been inserted in the table, returns 0,
+** otherwise returns 1.
+*/
+
+int n_hash_exists(const tn_hash *ht, const char *key);
 
 /*
 ** Deletes an entry from the table.  Returns a pointer to the data that
@@ -58,12 +69,5 @@ int n_hash_map(const tn_hash *ht, void (*map_fn)(const char *, void *));
 
 int n_hash_map_arg(const tn_hash *ht,
                    void (*map_fn)(const char *, void *, void *), void *arg);
-
-
-/*
-** Frees a hash table.
-*/
-void n_hash_free(tn_hash *ht);
-
 
 #endif /* __TRURL_HASH_H */

@@ -102,8 +102,8 @@ void test_array_sort_search(void)
 {
     char buf[4096];
     int i, n = 0;
-    tn_array *a = n_array_new(8, free, (t_fn_cmp) strcmp, NULL);
-    tn_array *b = n_array_new(8, free, (t_fn_cmp) strcmp, NULL);
+    tn_array *a = n_array_new(8, free, (t_fn_cmp) strcmp);
+    tn_array *b = n_array_new(8, free, (t_fn_cmp) strcmp);
 
     while (fgets(buf, 3000, stdin)) {
 	strchr(buf, '\n')[0] = '\0';
@@ -115,25 +115,12 @@ void test_array_sort_search(void)
 	n++;
     }
 
-    n_array_libc_qsort_ex(a, (t_fn_cmp) cmpstr_for_libc_qsort);
     n_array_sort(b);
 
     n_assert(n_array_eq(b, a));	/* our qsort() works fine? */
 
     n_array_dump_stats(a, "A");
     n_array_dump_stats(b, "B");
-
-    /* our bsearch works fine? */
-    for (i = n_array_size(b) - 1; i >= 0; i--) {
-	char *ap, *bp;
-	void *p = n_array_nth(b, i);
-
-	ap = n_array_libc_bsearch_ex(a, p, (t_fn_cmp) cmpstr_for_libc_qsort);
-	bp = n_array_bsearch(b, p);
-
-	/*       printf("a %s\tb %s\n", ap, bp); */
-	n_assert(cmpstr(ap, bp) == 0);
-    }
 
     for (i = 0; i < n_array_size(b); i++) {
 	char *p = n_array_nth(b, i);
@@ -152,8 +139,8 @@ void test_array_big(void)
 {
     char buf[4096];
     int i, n = 0;
-    tn_array *a = n_array_new(8, free, (t_fn_cmp) strcmp, NULL);
-    tn_array *b = n_array_new(8, free, (t_fn_cmp) strcmp, NULL);
+    tn_array *a = n_array_new(8, free, (t_fn_cmp) strcmp);
+    tn_array *b = n_array_new(8, free, (t_fn_cmp) strcmp);
 
     printf("\nTEST INTERACTIVE tn_array\n");
 
@@ -209,7 +196,7 @@ void print_array_str(const tn_array * arr, const char *name, const char *sep)
 
     n_array_dump_stats(arr, name);
     printf("Content:\n");
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n_array_size(arr); i++) {
 	char *p = n_array_nth(arr, i);
 	if (p != NULL)
 	    printf("[%d]\t = %s%s", i, p, sep ? sep : "\n");
@@ -226,7 +213,7 @@ int test_array_basic(void)
     int i;
 
 
-    arr = n_array_new(8, free, (t_fn_cmp) strcmp, NULL);
+    arr = n_array_new(8, free, (t_fn_cmp) strcmp);
 
     n_array_push(arr, strdup("Ala"));
     n_assert(n_array_size(arr) == 1);
@@ -355,9 +342,12 @@ void test_array_growth(void)
     int i;
 
     printf("\nTEST tn_array growth\n");
-    arr1 = n_array_new_ex(8, INC_LINEAR, 2, NULL, (t_fn_cmp) strcmp, NULL);
-    arr2 = n_array_new_ex(8, INC_GEOMETRICAL, 2, NULL, (t_fn_cmp) strcmp, NULL);
-    arr3 = n_array_new_ex(8, INC_NONE, 0, NULL, (t_fn_cmp) strcmp, NULL);
+    arr1 = n_array_new(8, NULL, (t_fn_cmp) strcmp);
+    n_array_ctl_growth(arr1, TN_ARRAY_INCLINEAR, 2);
+    
+    arr2 = n_array_new(8, NULL, (t_fn_cmp) strcmp);
+    arr3 = n_array_new(8, NULL, (t_fn_cmp) strcmp);
+    n_array_ctl_growth(arr3, TN_ARRAY_INCNONE, 0);
 
     for (i = 0; i < 8; i++) {
 	n_array_push(arr1, s1);
