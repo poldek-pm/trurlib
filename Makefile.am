@@ -3,9 +3,9 @@
 AUTOMAKE_OPTIONS = foreign
 
 # use libtool versioning 
-TRURL_VERINFO   = 4:0:4
+TRURL_VERINFO   = 3:0:3
 CFLAGS    = @CFLAGS@
-CPPFLAGS  = -I$(top_srcdir)/include/trurl
+CPPFLAGS  = -I$(top_srcdir)/include/trurl -I$(top_srcdir)/include
 INCLUDES  = 
 
 lib_LTLIBRARIES  = libtrurl.la
@@ -85,6 +85,8 @@ libtrurl_la_SOURCES = \
 	xmalloc.c        \
 	nassert.c        \
 	nbuf.c		 \
+	nstream.c        \
+	nstore.c         \
 	$(NARRAY_SRCS)   \
         $(NLIST_SRCS)    \
 	$(NHASH_SRCS)    \
@@ -92,37 +94,36 @@ libtrurl_la_SOURCES = \
 
 pkgincludedir = $(includedir)/trurl
 pkginclude_HEADERS = \
-		include/trurl/nassert.h   \
-		include/trurl/nhash.h     \
-		include/trurl/nstr.h      \
-		include/trurl/tfn_types.h \
-		include/trurl/narray.h    \
-		include/trurl/nlist.h     \
-		include/trurl/nbuf.h	  \
-		include/trurl/trurl.h     \
-		include/trurl/ndie.h	  \
-		include/trurl/nmalloc.h   \
-		include/trurl/n_snprintf.h
+		include/trurl/nassert.h    \
+		include/trurl/nhash.h      \
+		include/trurl/nstr.h       \
+		include/trurl/tfn_types.h  \
+		include/trurl/narray.h     \
+		include/trurl/nlist.h      \
+		include/trurl/nbuf.h	   \
+		include/trurl/trurl.h      \
+		include/trurl/ndie.h	   \
+		include/trurl/nmalloc.h    \
+		include/trurl/n_snprintf.h \
+		include/trurl/nstream.h    \
+		include/trurl/nstore.h
 
-EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in \
-	     test_array.c test_common.c test_hash.c \
-	     test_list.c test_nstr.c \
-	     README NEWS
+EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in test_*.c README NEWS
 
-check_PROGRAMS = 
 EXTRA_PROGRAMS = \
 		test_common \
 		test_array  \
 	        test_list   \
 		test_hash   \
-		test_nstr  
+		test_nstr   \
+		test_stream
 
 test_common_LDADD = libtrurl.la
 test_array_LDADD = libtrurl.la
 test_list_LDADD = libtrurl.la
 test_hash_LDADD = libtrurl.la
 test_nstr_LDADD = libtrurl.la
-
+test_stream_LDADD =  libtrurl.la -lz
 MAINTAINERCLEANFILES =	mkinstalldirs install-sh missing *.tar.gz *.spec \
 			config.h.in configure Makefile.in config.h \
 			config.sub config.guess aclocal.m4 \
@@ -131,9 +132,19 @@ MAINTAINERCLEANFILES =	mkinstalldirs install-sh missing *.tar.gz *.spec \
 DISTCLEANFILES = TAGS gmon.out trurl $(distdir)/.deps libtrurl.a
 CLEANFILES = $(EXTRA_PROGRAMS) core *.o *.bak *~ *% *\# \#* 
 
+symlink: 
+	@if [ ! -d trurl ]; then ln . trurl -s; fi;
+
 tests:  symlink $(EXTRA_PROGRAMS)
 
-all-local: 
+all-local: symlink
 	@ln -sf .libs/libtrurl.a libtrurl.a
+
+#dist-hook:
+#	rm -rf $(distdir)/.deps
+
+#clean-local:
+#	-rm -f core *.o *.bak *~ *% *\# TAGS gmon.out trurl \#*
+#	-rm -f $(EXTRA_PROGRAMS)
 
 include Makefile.extra

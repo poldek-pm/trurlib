@@ -38,6 +38,8 @@
 #include "nmalloc.h"
 #include "nbuf.h"
 #include "n_snprintf.h"
+#include "nstream.h"
+#include "nstore.h"
 
 struct trurl_buf {
     unsigned char *data;
@@ -249,3 +251,147 @@ int n_buf_printf(tn_buf *nbuf, const char *fmt, ...)
     
     return n;
 }
+
+
+#include <netinet/in.h>
+#define hton16(v)  htons(v)
+#define hton32(v)  htonl(v)
+
+#define ntoh16(v)  ntohs(v)
+#define ntoh32(v)  ntohl(v)
+
+
+
+int n_buf_store(tn_buf *nbuf, tn_stream *st, int sizebits) 
+{
+    if (sizebits == 0)
+        n_store_uint32(st, n_buf_size(nbuf));
+    
+    else {
+        switch (sizebits) {
+            case TN_BUF_STORE_8B:
+                n_assert(0);
+                break;
+                
+            case TN_BUF_STORE_16B:
+                n_assert(n_buf_size(nbuf) < UINT16_MAX);
+                n_stream_write_uint16(st, n_buf_size(nbuf));
+                break;
+
+            case TN_BUF_STORE_32B:
+                n_assert(n_buf_size(nbuf) < UINT32_MAX);
+                n_stream_write_uint32(st, n_buf_size(nbuf));
+                break;
+        }
+    }
+    
+        
+    return n_stream_write(st, n_buf_ptr(nbuf), n_buf_size(nbuf)) ==
+        n_buf_size(nbuf);
+}
+
+
+int n_buf_restore_skip(tn_stream *st, int sizebits)
+{
+    uint32_t size;
+    
+    if (sizebits == 0)
+        n_restore_uint32(st, &size);
+    
+    else {
+        switch (sizebits) {
+            case TN_BUF_STORE_8B: 
+            {
+                uint8_t v;
+                n_stream_read_uint8(st, &v);
+                size = v;
+                break;
+            }
+            
+            case TN_BUF_STORE_16B:
+            {
+                uint16_t v;
+                n_stream_read_uint16(st, &v);
+                size = v;
+                break;
+            }
+            
+
+            case TN_BUF_STORE_32B:
+                n_stream_read_uint32(st, &size);
+                break;
+
+            default:
+                n_assert(0);
+        }
+    }
+
+    n_stream_seek(st, size, SEEK_CUR);
+}
+
+
+
+int n_buf_restore_ex(tn_stream *st, tn_buf **bptr, int sizebits, 
+                     int (*process_buf)(tn_buf *, void *), void *arg) 
+{
+    tn_buf         *nbuf;
+    char           *buf;
+    uint32_t       size;
+    uint8_t        flag;
+    int            rc = 0;
+
+
+    if (bptr)
+        *bptr = NULL;
+
+    if (sizebits == 0)
+        n_restore_uint32(st, &size);
+    
+    else {
+        switch (sizebits) {
+            case TN_BUF_STORE_8B: {
+                uint8_t v;
+                n_stream_read_uint8(st, &v);
+                size = v;
+                break;
+            }
+                
+            case TN_BUF_STORE_16B: 
+            {
+                uint16_t v;
+                n_stream_read_uint16(st, &v);
+                size = v;
+                break;
+            }
+            
+
+            case TN_BUF_STORE_32B:
+                n_stream_read_uint32(st, &size);
+                break;
+
+            default:
+                n_assert(0);
+        }
+    }
+    
+    buf = alloca(size);
+    if (n_stream_read(st, buf, size) != size)
+        return 0;
+
+    if (process_buf == NULL) {
+        nbuf = n_buf_new(size);
+        n_buf_addata(nbuf, buf, size, 0);
+        *bptr = nbuf;
+        rc = 1;
+        
+    } else {
+        nbuf = n_buf_new(0);
+        n_buf_init(nbuf, buf, size);
+        rc = process_buf(nbuf, arg);
+        n_buf_free(nbuf);
+    }
+        
+    return rc;
+}
+
+

@@ -7,8 +7,8 @@
 #include <string.h>
 
 
-#include <trurl/trurl.h>
-#include "nstring.h"
+#include "trurl.h"
+//#include "nstring.h"
 
 
 #include <sys/types.h>

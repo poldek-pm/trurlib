@@ -18,7 +18,7 @@ backup:
 	cd .. ;\
 	cp -a $(PROJ_DIR) $$ARCHDIR/$$ARCHNAME ;\
 	cd $$ARCHDIR ;\
-	tar cpzf $$ARCHNAME.tgz $$ARCHNAME ||  rm -rf $$ARCHNAME;   \
+	tar cvpzf $$ARCHNAME.tgz $$ARCHNAME ||  rm -rf $$ARCHNAME;   \
 	md5sum $$ARCHNAME.tgz > $$ARCHNAME.md5;                     \
 	if [ $(cparch)x = "1x" ]; then                              \
 	        mkdir $(backupdir)/copy || true;                    \

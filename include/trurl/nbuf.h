@@ -50,6 +50,22 @@ typedef struct trurl_buf_iterator tn_buf_it;
 void n_buf_it_init(tn_buf_it *bufi, tn_buf *buf);
 void *n_buf_it_get(tn_buf_it *bufi, size_t size);
 
+#include <trurl/nstream.h>
+
+/* sizebits */
+#define TN_BUF_STORE_NIL  0  /* (re)store extra byte with bits information */
+#define TN_BUF_STORE_8B   1
+#define TN_BUF_STORE_16B  2
+#define TN_BUF_STORE_32B  3
+
+int n_buf_store(tn_buf *nbuf, tn_stream *st, int sizebits);
+int n_buf_restore_skip(tn_stream *st, int sizebits);
+int n_buf_restore_ex(tn_stream *st, tn_buf **bptr, int sizebits, 
+                     int (*process_buf)(tn_buf *, void *), void *arg);
+
+#define n_buf_restore(st, bptr, sizebits) \
+                        n_buf_restore_ex(st, bptr, sizebits, NULL, NULL);
+
 #endif /* TRURL_BUF_H */
     
 
