@@ -31,7 +31,7 @@ int n_hash_stats(const tn_hash *ht)
             maxdeep = deep;
     }
 
-    printf("%p %d items, %d emptys, %d collisions, maxdeep %d\n", ht, 
+    printf("%p %zd items, %d emptys, %d collisions, maxdeep %d\n", ht, 
            ht->items, nempts, ncolls, maxdeep);
     return n;
 }
