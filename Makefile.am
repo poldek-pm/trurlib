@@ -1,9 +1,12 @@
 # $Id$
 
+# use libtool versioning 
+TRURL_VERINFO   = 0:0:0
 CFLAGS    = @CFLAGS@
 INCLUDES  = 
 
 lib_LTLIBRARIES  = libtrurl.la
+libtrurl_la_LDFLAGS = -version-info $(TRURL_VERINFO)
 
 NARRAY_SRCS  = \
 	n_array_bsearch_ex.c    \
@@ -113,6 +116,9 @@ symlink:
 	@if [ ! -d trurl ]; then ln . trurl -s; fi;
 
 tests:  symlink $(EXTRA_PROGRAMS)
+
+all-local:
+	@ln -sf .libs/libtrurl.a libtrurl.a
 
 dist-hook:
 	rm -rf $(distdir)/.deps
