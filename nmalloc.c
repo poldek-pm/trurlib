@@ -226,6 +226,7 @@ tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags)
         if (chunkkb < 2) 
             chunkkb = 2;
         obstack_chunk_size(ob) = 1024 * chunkkb;
+        obstack_alignment_mask(ob) = 0; /* TODO: configurable */
         na->_privdata = ob;
         na->na_malloc  = aobstack_malloc;
         na->na_calloc  = aobstack_calloc;
