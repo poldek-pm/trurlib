@@ -17,6 +17,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef USE_N_ASSERT
 #include "nassert.h"
@@ -32,23 +33,23 @@
 
 char *n_str_tok(const char *s, char *tok, size_t toklen, char *delim)
 {
-    char *lim, *b;
+    char *lim, *p;
 
     if (!*s)
 	return NULL;
 
     lim = tok + toklen - 1;
 
+    s += strspn(s, delim);
+        
     while (*s && tok <= lim) {
-
-	for (b = delim; *b; b++) {
-
-	    if (*s == *b) {
+	for (p = delim; *p; p++) {
+	    if (*s == *p) {
 		*tok = '\0';
-		for (++s, b = delim; *s && *b; ++b) {
-		    if (*s == *b) {
+		for (++s, p = delim; *s && *p; ++p) {
+		    if (*s == *p) {
 			++s;
-			b = delim;
+			p = delim;
 		    }
 		}
 		return (char *) s;
