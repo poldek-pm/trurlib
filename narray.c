@@ -1,7 +1,7 @@
 /* 
    TRURLib dynamic array of void pointers 
    
-   Copyright (C) 1999, 2000 Pawel Gajda (mis@k2.net.pl)
+   Copyright (C) 1999, 2000 Pawel A. Gajda (mis@k2.net.pl)
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -627,9 +627,9 @@ tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf)
 
 
 #ifdef MODULE_n_array_bsearch_ex
-static
-void *bsearch_voidp_arr(void *const *arr, size_t arr_size, const void *data,
-			t_fn_cmp cmpf)
+static __inline__
+int bsearch_voidp_arr(void *const *arr, size_t arr_size, const void *data,
+                      t_fn_cmp cmpf)
 {
     register size_t l, r, i;
     int cmp_res;
@@ -642,8 +642,8 @@ void *bsearch_voidp_arr(void *const *arr, size_t arr_size, const void *data,
 	i = (l + r) / 2;
 
 	if ((cmp_res = cmpf(arr[i], data)) == 0) {
-	    return (void *) arr[i];
-
+	    return i;
+            
 	} else if (cmp_res > 0) {
 	    r = i;
 
@@ -652,21 +652,59 @@ void *bsearch_voidp_arr(void *const *arr, size_t arr_size, const void *data,
 	}
     }
 
-    return NULL;
+    return -1;
+}
+
+
+int n_array_bsearch_idx_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf)
+{
+    int idx;
+    void **base;
+
+    if (cmpf == NULL) {
+        if (arr->cmp_fn == NULL) {
+            trurl_die("n_array_bsearch_ex: compare function is NULL\n");
+            return -1;
+        }
+        cmpf = arr->cmp_fn;
+    }
+    
+    if(arr->items == 0)
+        return -1;
+    
+    base = &arr->data[arr->start_index];
+
+    if (arr->items > 1) {
+	idx = bsearch_voidp_arr(base, arr->items, data, cmpf);
+        if (idx > 0) {
+            while (idx) {
+                if (cmpf(base[idx - 1], data) != 0)
+                    break;
+                idx--;
+            }
+        }
+
+    } else {
+        idx = -1;
+	if (cmpf(base[0], data) == 0)
+	    idx = 0;
+    }
+
+    return idx;
 }
 
 
 void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf)
 {
-    void *ptr;
+    int idx;
     void **base;
 
-    if (cmpf == NULL)
-	cmpf = arr->cmp_fn;
-
     if (cmpf == NULL) {
-	trurl_die("n_array_bsearch_ex: compare function is NULL\n");
-	return NULL;
+        if (arr->cmp_fn == NULL) {
+            trurl_die("n_array_bsearch_ex: compare function is NULL\n");
+            return NULL;
+        }
+        cmpf = arr->cmp_fn;
     }
     
     if(arr->items == 0)
@@ -675,18 +713,17 @@ void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf)
     base = &arr->data[arr->start_index];
 
     if (arr->items > 1) {
-	ptr = bsearch_voidp_arr(base, arr->items, data, cmpf);
-
+	idx = bsearch_voidp_arr(base, arr->items, data, cmpf);
+        
     } else {
-	ptr = NULL;
+        idx = -1;
 	if (cmpf(base[0], data) == 0)
-	    ptr = base[0];
+	    idx = 0;
     }
 
-    return ptr;
+    return idx < 0 ? NULL : base[idx];
 }
 #endif
-
 
 #ifdef MODULE_n_array_map
 void n_array_map(tn_array *arr, void (*map_fn) (void *))

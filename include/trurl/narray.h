@@ -4,8 +4,8 @@
   $Id$
 */
 
-#ifndef __TRURL_ARRAY_H
-#define __TRURL_ARRAY_H
+#ifndef TRURL_ARRAY_H
+#define TRURL_ARRAY_H
 
 #include "tfn_types.h"
 
@@ -104,7 +104,7 @@ int n_array_eq_ex(const tn_array *arr1, const tn_array *arr2, t_fn_cmp cmpf);
 tn_array *n_array_uniq_ex(tn_array *arr, t_fn_cmp cmpf);
 #define n_array_uniq(arr) n_array_uniq_ex(arr, NULL)
 
-/* let make decision about algorithm */
+/* let function make decision about algorithm */
 tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf);
 #define n_array_sort(arr) n_array_sort_ex(arr, NULL)
 
@@ -123,6 +123,13 @@ tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf);
 void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
 #define n_array_bsearch(arr, data) n_array_bsearch_ex(arr, data, NULL)
 
+
+/* same as above, but returns position number, if there are more
+   than one the same items, always returns first position;
+   If item not found returns -1; 
+ */
+int n_array_bsearch_idx_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
+#define n_array_bsearch_idx(arr, data) n_array_bsearch_idx_ex(arr, data, NULL)
 
 /*
   Clone an array.
@@ -148,4 +155,4 @@ void n_array_map_arg(tn_array *arr, void (*map_fn)(void *, void *), void *arg);
 void n_array_dump_stats(const tn_array *arr, const char *name);
 
 
-#endif /* __TRURL_ARRAY_H */
+#endif /* TRURL_ARRAY_H */
