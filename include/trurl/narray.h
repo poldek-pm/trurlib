@@ -34,6 +34,11 @@ typedef struct trurl_array_private tn_array;
 tn_array *n_array_new_ex(int size, t_fn_free freef, t_fn_cmp cmpf, void **data);
 #define n_array_new(size, freef, cmpf) n_array_new_ex(size, freef, cmpf, NULL)
 
+tn_array *n_array_init_ex(tn_array *arr, int size,
+                          t_fn_free freef, t_fn_cmp cmpf, void **data);
+
+#define n_array_init(arr, size, freef, cmpf) \
+            n_array_init_ex(arr, size, freef, cmpf, NULL)
 
 #define TN_ARRAY_CONSTSIZE         (1 << 0)
 /* if changed, an array sorts itself in bsearch_* functions;

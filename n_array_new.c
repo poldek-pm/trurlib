@@ -2,19 +2,20 @@
 
 #include "n_array_int.h"
 
-tn_array *n_array_new_ex(int size, t_fn_free freef, t_fn_cmp cmpf, void **data)
+tn_array *n_array_init_ex(tn_array *arr, int size, t_fn_free freef,
+                          t_fn_cmp cmpf, void **data)
 {
-    tn_array *arr;
-    register int i;
-    
-    arr = n_malloc(sizeof(*arr));
     n_assert(size >= 0);
+    n_assert(arr);
     
     if (data) {
         arr->data   = data;
         arr->items  = size;
         
     } else {
+#ifdef TRURL_VERY_PORTABLE
+        register int i;
+#endif    
         if (size < 1)
             size = 2;
         
@@ -40,6 +41,14 @@ tn_array *n_array_new_ex(int size, t_fn_free freef, t_fn_cmp cmpf, void **data)
         arr->cmp_fn = cmpf;
     
     return arr;
+}
+
+tn_array *n_array_new_ex(int size, t_fn_free freef, t_fn_cmp cmpf, void **data)
+{
+    tn_array *arr;
+
+    arr = n_malloc(sizeof(*arr));
+    return n_array_init_ex(arr, size, freef, cmpf, data);
 }
 
 #undef n_array_new
