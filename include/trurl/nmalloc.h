@@ -9,8 +9,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-void (*set_nmalloc_fail_hook(void (*handler) (void)));
-
+void (*n_malloc_set_failhook(void (*fn) (void)));
 void *n_malloc(size_t size);
 void *n_calloc(size_t nmemb, size_t size);
 void *n_realloc(void *ptr, size_t size);

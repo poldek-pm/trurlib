@@ -38,7 +38,7 @@ void (*setxmallocs_handler(void (*handler) (void))) (void) {
     return tmp;
 }
 
-void (*set_nmalloc_fail_hook(void (*fn) (void))) (void) {
+void (*n_malloc_set_failhook(void (*fn) (void))) (void) {
     memh tmp = mem_fail_fn;
     mem_fail_fn = fn;
     return tmp;

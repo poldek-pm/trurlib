@@ -38,7 +38,7 @@ int main()
     n_assert_sethook(NULL);
 
 
-    setxmallocs_handler(xmallocs_handler);
+    n_malloc_set_failhook(xmallocs_handler);
     p = n_malloc(1024 * 1024 * 1024);
 
     return 0;
