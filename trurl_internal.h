@@ -10,7 +10,7 @@
 extern void trurl_die(const char *fmt,...);
 extern int trurl_default_cmpf(const void *a, const void *b);
 
-
+#include <stdio.h>
 #if ENABLE_TRACE
 # define DBGF(fmt, args...)  fprintf(stdout, "%-18s: " fmt, __FUNCTION__ , ## args)
 # define DBG(fmt, args...)   fprintf(stdout, fmt, ## args)

@@ -15,7 +15,7 @@ static void n_hash_rehash(tn_hash *ht)
 
     DBGF("n_hash_rehash %d\n", ht->size);
     
-    newsize = 2 * ht->size;
+    newsize = 4 * ht->size;
     if (ht->hash_fn)
         newsize += 1;
     
@@ -100,7 +100,7 @@ struct hash_bucket *new_bucket(tn_hash *ht, const char *key, int klen)
 #if 0
 static
 tn_hash *n_hash_put_ll(tn_hash *ht, const char *key, const void *data,
-                    int replace)
+                       int replace)
 {
     struct hash_bucket *ptr;
     unsigned val;

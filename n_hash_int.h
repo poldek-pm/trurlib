@@ -62,6 +62,7 @@ struct trurl_hash_table {
     
     void          (*free_fn) (void *);
     unsigned int  (*hash_fn) (const char*);
+    tn_alloc      *na;
 };
 
 int n_hash_dohash(const tn_hash *ht, const char *s, int *slen);
