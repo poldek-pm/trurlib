@@ -36,15 +36,17 @@
 #include "xmalloc.h"
 #endif
 
+#include "nstr.h"
+
 char *n_str_vconcat(const char *s, va_list ap)
 {
     char *p, *rstr;
-    va_list tmp_ap, save_ap;
+    va_list save_ap;
     int len;
 
     len = strlen(s);
 
-    tmp_ap = save_ap = ap;
+    __va_copy(save_ap, ap);
 
     while ((p = va_arg(ap, char *)) != NULL) {	/* calculate length of args */
 	len += strlen(p);
@@ -55,14 +57,14 @@ char *n_str_vconcat(const char *s, va_list ap)
 
     strcpy(rstr, s);
 
-    ap = tmp_ap;
-
+    __va_copy(ap, save_ap);
+    
     while ((p = va_arg(ap, char *)) != NULL) {
 	strcat(rstr, p);
     }
 
-    ap = save_ap;
-
+    __va_copy(ap, save_ap);
+    
     return rstr;
 }
 

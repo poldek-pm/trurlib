@@ -36,22 +36,23 @@
 #include "xmalloc.h"
 #endif
 
+#include "nstr.h"
 
 int n_str_vlen(const char *s, va_list ap)
 {
     char *p;
     va_list save_ap;
     int len;
-
+    
     len = strlen(s);
-
-    save_ap = ap;
+    
+    __va_copy(save_ap, ap);
 
     while ((p = va_arg(ap, char *)) != NULL) {	/* calculate length of args */
 	len += strlen(p);
     }
 
-    ap = save_ap;
+    __va_copy(ap, save_ap);
 
     return len;
 }
@@ -63,7 +64,7 @@ int n_str_len(const char *s,...)
     int len;
 
     va_start(ap, s);
-
+    
     len = n_str_vlen(s, ap);
 
     va_end(ap);

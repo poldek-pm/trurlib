@@ -7,6 +7,11 @@
 #ifndef TRURL_STR_H
 #define TRURL_STR_H
 
+#include <stdarg.h>
+
+#ifndef __va_copy
+# define __va_copy(a, b) ((a) = (b))
+#endif
 
 char *n_str_tok(const char *s, char *tok, size_t toklen, char *brk);
 
@@ -22,7 +27,7 @@ void n_str_tokl_free(const char **tokens);
 
 
 
-#include <stdarg.h>
+
 
 /*
   Calculate length of strings 
