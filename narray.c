@@ -44,7 +44,7 @@
 
 #ifndef MODULES
 # define MODULE_n_array_new
-# define MODULE_n_array_ctl_growth
+# define MODULE_n_array_ctl
 # define MODULE_n_array_clean
 # define MODULE_n_array_free
 # define MODULE_n_array_grow_priv
@@ -65,18 +65,24 @@
 # define MODULE_n_array_dump_stats
 #endif
 
+#define ARR_SORTED        (1 << 8)
+
+#define SETARR_SORTED(arr)   ((arr)->flags |= ARR_SORTED)
+#define SETARR_UNSORTED(arr) ((arr)->flags &= ~ARR_SORTED) 
+#define ISARR_SORTED(arr)    ((arr)->flags & ARR_SORTED)
 
 struct trurl_array {
     size_t      items;          
     void        **data;
     size_t      allocated;
-    int         inctype;
+    unsigned    flags;
     size_t      incstep;
     size_t      start_index;
 
     t_fn_free   free_fn;
     t_fn_cmp    cmp_fn;
 };
+
 
 tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size);
 
@@ -90,7 +96,6 @@ tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf)
 	return NULL;
 
     n_assert(initial_size >= 0);
-
     if (initial_size < 1)
 	initial_size = 2;
 
@@ -105,9 +110,7 @@ tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf)
 	    arr->data[i] = NULL;
 
 	arr->allocated = initial_size;
-	arr->inctype = TN_ARRAY_INCGEOMETRICAL;
-        arr->incstep = 2;
-
+	arr->flags = 0;
         arr->free_fn = freef;
         
         if (cmpf)
@@ -115,22 +118,15 @@ tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf)
         else
             arr->cmp_fn = trurl_default_cmpf;
     }
-
     return arr;
 }
 #endif
 
 
-#ifdef MODULE_n_array_ctl_growth
-tn_array *n_array_ctl_growth(tn_array *arr, int inctype, int incstep)
+#ifdef MODULE_n_array_ctl
+tn_array *n_array_ctl(tn_array *arr, unsigned flags)
 {
-    if (incstep < 2 && inctype != TN_ARRAY_INCNONE) {
-	trurl_die("n_array_new_ex: incstep less than 2(%d)\n", incstep);
-	return NULL;
-    }
-    
-    arr->inctype = inctype;
-    arr->incstep = incstep;
+    arr->flags |= flags;
     return arr;
 }
 #endif
@@ -203,24 +199,12 @@ tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size)
     register size_t new_size = arr->allocated;
 
     while (req_size >= new_size) {
-        switch (arr->inctype) {
+        if (arr->flags & TN_ARRAY_CONSTSIZE) {
+            trurl_die("n_array_grow: grow request for const size array");
+            return NULL;
+        }
 
-            case TN_ARRAY_INCNONE:
-                trurl_die("n_array_grow: grow request for const size array");
-                return NULL;
-                
-            case TN_ARRAY_INCLINEAR:
-                new_size += arr->incstep;
-                break;
-
-            case TN_ARRAY_INCGEOMETRICAL:
-                new_size *= arr->incstep;
-                break;
-                
-            default:
-                n_assert(0);
-                trurl_die("n_array_grow: unknown inctype %d", arr->inctype);
-	}
+        new_size *= 2;
     }
     
     return n_array_realloc(arr, new_size);
@@ -238,8 +222,6 @@ int n_array_size(const tn_array *arr)
 #ifdef MODULE_n_array_nth
 void *n_array_nth(const tn_array *arr, int i)
 {
-    register unsigned int pos = arr->start_index + i;
-
     n_assert(i >= 0);
     n_assert(arr->allocated > 0);
     n_assert(arr->items > 0);
@@ -249,7 +231,7 @@ void *n_array_nth(const tn_array *arr, int i)
 	return NULL;
     }
     
-    return arr->data[pos];
+    return arr->data[arr->start_index + i];
 }
 #endif
 
@@ -282,7 +264,7 @@ tn_array *n_array_remove_nth(tn_array *arr, int i)
 
     arr->data[arr->allocated - 1] = NULL;
     arr->items--;
-
+    SETARR_UNSORTED(arr);
     return arr;
 }
 #endif
@@ -316,6 +298,7 @@ tn_array *n_array_set_nth(tn_array *arr, int i, void *data)
     }
 
     arr->data[pos] = data;
+    SETARR_UNSORTED(arr);
     return arr;
 }
 #endif
@@ -331,7 +314,7 @@ tn_array *n_array_push(tn_array *arr, void *data)
     
     arr->data[arr->start_index + arr->items] = data;
     arr->items++;
-
+    SETARR_UNSORTED(arr);
     return arr;
 }
 #endif 
@@ -354,7 +337,6 @@ void *n_array_pop(tn_array *arr)
     ptr = arr->data[pos];
 
     arr->data[pos] = NULL;
-
     return ptr;
 }
 #endif
@@ -374,7 +356,6 @@ void *n_array_shift(tn_array *arr)
     ptr = arr->data[arr->start_index];
     arr->data[arr->start_index] = NULL;
     arr->start_index++;
-
     return ptr;
 }
 #endif
@@ -398,6 +379,7 @@ tn_array *n_array_unshift(tn_array *arr, void *data)
     }
 
     arr->items++;
+    SETARR_UNSORTED(arr);
     return arr;
 }
 #endif
@@ -426,7 +408,6 @@ tn_array *n_array_uniq_ex(tn_array *arr, t_fn_cmp cmpf)
 	    i++;
 	}
     }
-
     return arr;
 }
 #endif
@@ -471,8 +452,7 @@ tn_array *n_array_dup(const tn_array *arr, t_fn_dup dup_fn)
 	return NULL;
 
     dupl = n_array_new(arr->allocated, arr->free_fn, arr->cmp_fn);
-    n_array_ctl_growth(dupl, arr->inctype, arr->incstep);
-
+    dupl->flags = arr->flags;
     if (dupl != NULL) {
 	register unsigned int i;
 
@@ -570,14 +550,23 @@ void isort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 
 tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf)
 {
-    if (cmpf == NULL)
-	cmpf = arr->cmp_fn;
-
-    if (cmpf == NULL) {
-	trurl_die("n_array_sort_ex: compare function is NULL\n");
-	return NULL;
+    if (cmpf != NULL) {
+        if (cmpf != arr->cmp_fn)
+            SETARR_UNSORTED(arr);
+    } else {
+        if (arr->cmp_fn == NULL) {
+            trurl_die("n_array_sort_ex: compare function is NULL\n");
+            return NULL;
+        }
+        
+        if (arr->flags & TN_ARRAY_AUTOSORTED) {
+            if (ISARR_SORTED(arr)) {
+                return arr;
+            }
+        }
+        cmpf = arr->cmp_fn;
     }
-    
+        
 #if 1
     /* there is error in qsort_viodp_arr  - PawelK*/
     /* where is it? - PawelG */
@@ -590,21 +579,30 @@ tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf)
 #else
 	isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
 #endif
-
+    arr->flags |= ARR_SORTED;
     return arr;
 }
 
 
 tn_array *n_array_qsort_ex(tn_array *arr, t_fn_cmp cmpf)
 {
-    if (cmpf == NULL)
-	cmpf = arr->cmp_fn;
-
-    if (cmpf == NULL) {
-	trurl_die("n_array_sort_ex: compare function is NULL\n");
-	return NULL;
+    if (cmpf != NULL) {
+        if (cmpf != arr->cmp_fn)
+            SETARR_UNSORTED(arr);
+    } else {
+        if (arr->cmp_fn == NULL) {
+            trurl_die("n_array_qsort_ex: compare function is NULL\n");
+            return NULL;
+        }
+        
+        if (arr->flags & TN_ARRAY_AUTOSORTED) {
+            if (ISARR_SORTED(arr)) {
+                return arr;
+            }
+        }
+        cmpf = arr->cmp_fn;
     }
-    
+
     qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
     return arr;
 }
@@ -612,14 +610,23 @@ tn_array *n_array_qsort_ex(tn_array *arr, t_fn_cmp cmpf)
 
 tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf)
 {
-    if (cmpf == NULL)
-	cmpf = arr->cmp_fn;
-
-    if (cmpf == NULL) {
-	trurl_die("n_array_sort_ex: compare function is NULL\n");
-	return NULL;
+    if (cmpf != NULL) {
+        if (cmpf != arr->cmp_fn)
+            SETARR_UNSORTED(arr);
+    } else {
+        if (arr->cmp_fn == NULL) {
+            trurl_die("n_array_sort_ex: compare function is NULL\n");
+            return NULL;
+        }
+        
+        if (arr->flags & TN_ARRAY_AUTOSORTED) {
+            if (ISARR_SORTED(arr)) {
+                return arr;
+            }
+        }
+        cmpf = arr->cmp_fn;
     }
-    
+
     isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
     return arr;
 }
@@ -656,16 +663,21 @@ int bsearch_voidp_arr(void *const *arr, size_t arr_size, const void *data,
 }
 
 
-int n_array_bsearch_idx_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf)
+int n_array_bsearch_idx_ex(const tn_array *arr, const void *data,
+                           t_fn_cmp cmpf)
 {
     int idx;
     void **base;
-
+    
     if (cmpf == NULL) {
         if (arr->cmp_fn == NULL) {
             trurl_die("n_array_bsearch_ex: compare function is NULL\n");
             return -1;
         }
+
+        if (arr->flags & TN_ARRAY_AUTOSORTED) 
+            n_array_sort_ex((tn_array*)arr, NULL);
+        
         cmpf = arr->cmp_fn;
     }
     
@@ -698,15 +710,18 @@ void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf)
 {
     int idx;
     void **base;
-
+    
     if (cmpf == NULL) {
         if (arr->cmp_fn == NULL) {
             trurl_die("n_array_bsearch_ex: compare function is NULL\n");
             return NULL;
         }
+        if (arr->flags & TN_ARRAY_AUTOSORTED) 
+            n_array_sort_ex((tn_array*)arr, NULL);
+        
         cmpf = arr->cmp_fn;
     }
-    
+
     if(arr->items == 0)
         return NULL;
     

@@ -342,11 +342,10 @@ void test_array_growth(void)
 
     printf("\nTEST tn_array growth\n");
     arr1 = n_array_new(8, NULL, (t_fn_cmp) strcmp);
-    n_array_ctl_growth(arr1, TN_ARRAY_INCLINEAR, 2);
     
     arr2 = n_array_new(8, NULL, (t_fn_cmp) strcmp);
     arr3 = n_array_new(8, NULL, (t_fn_cmp) strcmp);
-    n_array_ctl_growth(arr3, TN_ARRAY_INCNONE, 0);
+    n_array_ctl(arr3, TN_ARRAY_CONSTSIZE);
 
     for (i = 0; i < 8; i++) {
 	n_array_push(arr1, s1);

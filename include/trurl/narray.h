@@ -10,15 +10,21 @@
 #include "tfn_types.h"
 
 
-#define TN_ARRAY_INCNONE           0 /* const       */
-#define TN_ARRAY_INCLINEAR         1 /* 1 2 3 4...  */ 
-#define TN_ARRAY_INCGEOMETRICAL	   2 /* 1 2 4 8...  */
+#define TN_ARRAY_CONSTSIZE         (1 << 0)
 
+/* if changed array sorts itself in bsearch_* functions
+   don't work with external cmp functions
+ */
+#define TN_ARRAY_AUTOSORTED        (1 << 1)
 
 typedef struct trurl_array tn_array;
 
 tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf);
-tn_array *n_array_ctl_growth(tn_array *arr, int inctype, int incstep);
+tn_array *n_array_ctl(tn_array *arr, unsigned flags);
+
+#define n_array_ctl_growth(arr, inctype)                            \
+      n_array_ctl((arr), (~(TN_ARRAY_INCNONE | TN_ARRAY_INCLINEAR | \
+                         TN_ARRAY_INCGEOMETRICAL)) | inctype)
 
 void n_array_free(tn_array *arr);
 
@@ -33,6 +39,7 @@ tn_array *n_array_clean(tn_array *arr);
        ...
 */
 #define n_array_size(arr) (*(int*)arr)
+#define n_array_isempty(arr) (n_array_size(arr) == 0)
 
 /*
   foo = arr[i];
