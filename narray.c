@@ -28,19 +28,42 @@
 #include <string.h>
 
 #ifdef USE_N_ASSERT
-#include "nassert.h"
+# include "nassert.h"
 #else
-#include <assert.h>
-#define n_assert(expr) assert(expr)
+# include <assert.h>
+# define n_assert(expr) assert(expr)
 #endif
 
 #ifdef USE_XMALLOCS
-#include "xmalloc.h"
+# include "xmalloc.h"
 #endif
 
 #include "trurl_internal.h"
 #include "narray.h"
 #include "tfn_types.h"
+
+#ifndef MODULES
+# define MODULE_n_array_new
+# define MODULE_n_array_ctl_growth
+# define MODULE_n_array_clean
+# define MODULE_n_array_free
+# define MODULE_n_array_grow_priv
+# define MODULE_n_array_nth
+# define MODULE_n_array_remove_nth
+# define MODULE_n_array_set_nth
+# define MODULE_n_array_push
+# define MODULE_n_array_pop
+# define MODULE_n_array_shift
+# define MODULE_n_array_unshift
+# define MODULE_n_array_uniq_ex
+# define MODULE_n_array_eq_ex
+# define MODULE_n_array_dup
+# define MODULE_n_array_sorts
+# define MODULE_n_array_bsearch_ex
+# define MODULE_n_array_map
+# define MODULE_n_array_map_arg
+# define MODULE_n_array_dump_stats
+#endif
 
 
 struct trurl_array {
@@ -55,7 +78,10 @@ struct trurl_array {
     t_fn_cmp    cmp_fn;
 };
 
+tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size);
 
+
+#ifdef MODULE_n_array_new
 tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf)
 {
     tn_array *arr;
@@ -92,8 +118,10 @@ tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf)
 
     return arr;
 }
+#endif
 
 
+#ifdef MODULE_n_array_ctl_growth
 tn_array *n_array_ctl_growth(tn_array *arr, int inctype, int incstep)
 {
     if (incstep < 2 && inctype != TN_ARRAY_INCNONE) {
@@ -105,9 +133,10 @@ tn_array *n_array_ctl_growth(tn_array *arr, int inctype, int incstep)
     arr->incstep = incstep;
     return arr;
 }
+#endif
 
 
-
+#ifdef MODULE_n_array_clean
 tn_array *n_array_clean(tn_array *arr)
 {
     register unsigned int i;
@@ -126,8 +155,10 @@ tn_array *n_array_clean(tn_array *arr)
 
     return arr;
 }
+#endif
 
 
+#ifdef MODULE_n_array_free
 void n_array_free(tn_array *arr)
 {
     n_array_clean(arr);
@@ -136,8 +167,10 @@ void n_array_free(tn_array *arr)
     arr->data = NULL;
     free(arr);
 }
+#endif
 
 
+#ifdef MODULE_n_array_grow_priv
 static tn_array *n_array_realloc(tn_array *arr, size_t new_size)
 {
     register int diff;
@@ -165,7 +198,7 @@ static tn_array *n_array_realloc(tn_array *arr, size_t new_size)
 }
 
 
-static tn_array *n_array_grow(tn_array *arr, size_t req_size)
+tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size)
 {
     register size_t new_size = arr->allocated;
 
@@ -192,14 +225,17 @@ static tn_array *n_array_grow(tn_array *arr, size_t req_size)
     
     return n_array_realloc(arr, new_size);
 }
+#endif
 
-
-/*int n_array_size(const tn_array *arr)
+#if 0
+int n_array_size(const tn_array *arr)
 {
     return arr->items;
-    }*/
+}
+#endif
 
 
+#ifdef MODULE_n_array_nth
 void *n_array_nth(const tn_array *arr, int i)
 {
     register unsigned int pos = arr->start_index + i;
@@ -215,8 +251,10 @@ void *n_array_nth(const tn_array *arr, int i)
     
     return arr->data[pos];
 }
+#endif
 
 
+#ifdef MODULE_n_array_remove_nth
 tn_array *n_array_remove_nth(tn_array *arr, int i)
 {
     register unsigned int pos = arr->start_index + i;
@@ -247,8 +285,10 @@ tn_array *n_array_remove_nth(tn_array *arr, int i)
 
     return arr;
 }
+#endif
 
 
+#ifdef MODULE_n_array_set_nth
 tn_array *n_array_set_nth(tn_array *arr, int i, void *data)
 {
     register size_t pos = arr->start_index + i;
@@ -263,7 +303,7 @@ tn_array *n_array_set_nth(tn_array *arr, int i, void *data)
     }
     
     if (pos > arr->allocated) {
-        if (n_array_grow(arr, pos) == NULL)
+        if (n_array_grow_priv_(arr, pos) == NULL)
 	    return NULL;
 
 	arr->items = pos + 1;
@@ -278,12 +318,14 @@ tn_array *n_array_set_nth(tn_array *arr, int i, void *data)
     arr->data[pos] = data;
     return arr;
 }
+#endif
 
 
+#ifdef MODULE_n_array_push
 tn_array *n_array_push(tn_array *arr, void *data)
 {
     if (arr->items == arr->allocated) {
-        if (n_array_grow(arr, arr->allocated + 1) == NULL)
+        if (n_array_grow_priv_(arr, arr->allocated + 1) == NULL)
 	    return NULL;
     }
     
@@ -292,8 +334,10 @@ tn_array *n_array_push(tn_array *arr, void *data)
 
     return arr;
 }
+#endif 
 
 
+#ifdef MODULE_n_array_pop
 void *n_array_pop(tn_array *arr)
 {
     register void *ptr;
@@ -313,8 +357,10 @@ void *n_array_pop(tn_array *arr)
 
     return ptr;
 }
+#endif
 
 
+#ifdef MODULE_n_array_shift
 void *n_array_shift(tn_array *arr)
 {
     void *ptr;
@@ -331,8 +377,10 @@ void *n_array_shift(tn_array *arr)
 
     return ptr;
 }
+#endif
 
 
+#ifdef MODULE_n_array_unshift
 tn_array *n_array_unshift(tn_array *arr, void *data)
 {
     if(arr->start_index > 0) {
@@ -341,7 +389,7 @@ tn_array *n_array_unshift(tn_array *arr, void *data)
 
     } else {
 	if (arr->items == arr->allocated) {
-	    if (n_array_grow(arr, arr->allocated + 1) == NULL)
+	    if (n_array_grow_priv_(arr, arr->allocated + 1) == NULL)
 		return NULL;
 	}
         
@@ -352,8 +400,10 @@ tn_array *n_array_unshift(tn_array *arr, void *data)
     arr->items++;
     return arr;
 }
+#endif
 
 
+#ifdef MODULE_n_array_uniq_ex
 tn_array *n_array_uniq_ex(tn_array *arr, t_fn_cmp cmpf)
 {
     register size_t i = 1;
@@ -379,8 +429,10 @@ tn_array *n_array_uniq_ex(tn_array *arr, t_fn_cmp cmpf)
 
     return arr;
 }
+#endif
 
 
+#ifdef MODULE_n_array_eq_ex
 int n_array_eq_ex(const tn_array *arr1, const tn_array *arr2, t_fn_cmp cmpf)
 {
     register int i, n = n_array_size(arr1);
@@ -405,8 +457,10 @@ int n_array_eq_ex(const tn_array *arr1, const tn_array *arr2, t_fn_cmp cmpf)
 
     return 1;
 }
+#endif
 
 
+#ifdef MODULE_n_array_dup
 tn_array *n_array_dup(const tn_array *arr, t_fn_dup dup_fn)
 {
     tn_array *dupl;
@@ -431,8 +485,10 @@ tn_array *n_array_dup(const tn_array *arr, t_fn_dup dup_fn)
 
     return dupl;
 }
+#endif
 
 
+#ifdef MODULE_n_array_sorts
 
 #define SWAP_void(a, b)               \
             { register void *tmp = a; \
@@ -553,6 +609,7 @@ tn_array *n_array_qsort_ex(tn_array *arr, t_fn_cmp cmpf)
     return arr;
 }
 
+
 tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf)
 {
     if (cmpf == NULL)
@@ -566,9 +623,10 @@ tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf)
     isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
     return arr;
 }
+#endif
 
 
-
+#ifdef MODULE_n_array_bsearch_ex
 static
 void *bsearch_voidp_arr(void *const *arr, size_t arr_size, const void *data,
 			t_fn_cmp cmpf)
@@ -627,8 +685,10 @@ void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf)
 
     return ptr;
 }
+#endif
 
 
+#ifdef MODULE_n_array_map
 void n_array_map(tn_array *arr, void (*map_fn) (void *))
 {
     register size_t i, n;
@@ -639,8 +699,10 @@ void n_array_map(tn_array *arr, void (*map_fn) (void *))
 	map_fn(arr->data[i]);
 
 }
+#endif
 
 
+#ifdef MODULE_n_array_map_arg
 void n_array_map_arg(tn_array *arr, void (*map_fn) (void *, void *), void *arg)
 {
     register size_t i, n;
@@ -651,12 +713,16 @@ void n_array_map_arg(tn_array *arr, void (*map_fn) (void *, void *), void *arg)
 	map_fn(arr->data[i], arg);
 
 }
+#endif
+
 
 #ifndef NDEBUG
+#ifdef MODULE_n_array_dump_stats
 void n_array_dump_stats(const tn_array *arr, const char *name)
 {
 
     printf("\nArray \"%s\" [memsize, items, start_index] = %d, %d, %d\n",
            name ? name : "", arr->allocated, arr->items, arr->start_index);
 }
+#endif
 #endif

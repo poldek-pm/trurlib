@@ -27,18 +27,35 @@
 #include <string.h>
 
 #ifdef USE_N_ASSERT
-#include "nassert.h"
+# include "nassert.h"
 #else
 #include <assert.h>
-#define n_assert(expr) assert(expr)
+# define n_assert(expr) assert(expr)
 #endif
 
 #ifdef USE_XMALLOCS
-#include "xmalloc.h"
+# include "xmalloc.h"
 #endif
 
 #include "trurl_internal.h"
 #include "nlist.h"
+
+#ifndef MODULES
+# define MODULE_n_list_new
+# define MODULE_n_list_free
+# define MODULE_n_list_push
+# define MODULE_n_list_pop
+# define MODULE_n_list_shift
+# define MODULE_n_list_unshift
+# define MODULE_n_list_remove_nth
+# define MODULE_n_list_remove_ex
+# define MODULE_n_list_lookup_ex
+# define MODULE_n_list_contains_ex
+# define MODULE_n_list_nth
+# define MODULE_n_list_iterator
+# define MODULE_n_list_size
+# define MODULE_n_list_map_arg
+#endif
 
 struct list_node {
     void *data;
@@ -56,7 +73,7 @@ struct trurl_list {
     t_fn_cmp cmp_fn;
 };
 
-
+#ifdef MODULE_n_list_new
 tn_list *n_list_new(unsigned int flags, t_fn_free freef, t_fn_cmp cmpf)
 {
     tn_list *l;
@@ -77,7 +94,10 @@ tn_list *n_list_new(unsigned int flags, t_fn_free freef, t_fn_cmp cmpf)
 
     return l;
 }
+#endif
 
+
+#ifdef MODULE_n_list_free
 void n_list_free(tn_list *l)
 {
     register struct list_node *node, *next_node;
@@ -93,8 +113,10 @@ void n_list_free(tn_list *l)
 
     free(l);
 }
+#endif
 
 
+#ifdef MODULE_n_list_push
 tn_list *n_list_push(tn_list *l, void *data)
 {
     struct list_node *node;
@@ -123,8 +145,10 @@ tn_list *n_list_push(tn_list *l, void *data)
 
     return l;
 }
+#endif
 
 
+#ifdef MODULE_n_list_pop
 void *n_list_pop(tn_list *l)
 {
     void *data;
@@ -159,8 +183,10 @@ void *n_list_pop(tn_list *l)
     l->items--;
     return data;
 }
+#endif
 
 
+#ifdef MODULE_n_list_shift
 void *n_list_shift(tn_list *l)
 {
     register struct list_node *node;
@@ -186,8 +212,10 @@ void *n_list_shift(tn_list *l)
 
     return data;
 }
+#endif
 
 
+#ifdef MODULE_n_list_unshift
 tn_list *n_list_unshift(tn_list *l, void *data)
 {
     struct list_node *node;
@@ -209,8 +237,10 @@ tn_list *n_list_unshift(tn_list *l, void *data)
 
     return l;
 }
+#endif
 
 
+#ifdef MODULE_n_list_remove_nth
 void *n_list_remove_nth(tn_list *l, int nth)
 {
     void *data;
@@ -259,8 +289,10 @@ void *n_list_remove_nth(tn_list *l, int nth)
 
     return data;
 }
+#endif
 
 
+#ifdef MODULE_n_list_remove_ex
 int n_list_remove_ex(tn_list *l, const void *data, t_fn_cmp cmpf)
 {
     register struct list_node *node, *prev_node;
@@ -334,8 +366,10 @@ int n_list_remove_ex(tn_list *l, const void *data, t_fn_cmp cmpf)
 
     return removed;
 }
+#endif
 
 
+#ifdef MODULE_n_list_lookup_ex
 void *n_list_lookup_ex(const tn_list *l, const void *data, t_fn_cmp cmpf)
 {
     register struct list_node *node;
@@ -356,14 +390,18 @@ void *n_list_lookup_ex(const tn_list *l, const void *data, t_fn_cmp cmpf)
 
     return NULL;
 }
+#endif
 
 
+#ifdef MODULE_n_list_contains_ex
 int n_list_contains_ex(const tn_list *l, const void *data, t_fn_cmp cmpf)
 {
     return (n_list_lookup_ex(l, data, cmpf) != NULL);
 }
+#endif
 
 
+#ifdef MODULE_n_list_nth
 void *n_list_nth(const tn_list *l, int nth)
 {
     register struct list_node *node;
@@ -377,8 +415,10 @@ void *n_list_nth(const tn_list *l, int nth)
 
     return NULL;
 }
+#endif
 
 
+#ifdef MODULE_n_list_iterator
 void n_list_iterator_start(const tn_list *l, tn_list_iterator *li)
 {
     li->node = l->head;
@@ -403,14 +443,19 @@ void *n_list_iterator_get(tn_list_iterator *li)
     li->node = node;
     return data;
 }
+#endif
 
 
+#ifdef MODULE_n_list_size
 int n_list_size(const tn_list *l)
 {
     return l->items;
 }
+#endif
 
-void n_list_map_arg(const tn_list *l, void (*map_fn)(void *, void *), void *arg)
+
+#ifdef MODULE_n_list_map_arg
+void n_list_map_arg(const tn_list *l, void (*map_fn)(void *,void *), void *arg)
 {
     register struct list_node *node;
 
@@ -422,3 +467,4 @@ void n_list_map_arg(const tn_list *l, void (*map_fn)(void *, void *), void *arg)
     for (node = l->head; node != NULL; node = node->next) 
 	map_fn(node->data, arg);
 }
+#endif

@@ -1,24 +1,26 @@
 # Makefile for trurlib
 # $Id$
 #
-#
+# Parameters
+# - without_dbhash=[01]  (default 0)
+# - modules=[on|off]     (default off)
+# - prefix=/install/prefix
 
 PROJ_DIR     = $(shell pwd)
 VERSION      = $(shell cat VERSION)
 INSTALL_ROOT = /usr/local
 
-ifdef prefix
-	INSTALL_ROOT = $(prefix)
+ifdef DESTDIR
+	INSTALL_ROOT = $(DESTDIR)
 endif
 
 DEF_USE_N_ASSERT  = -DUSE_N_ASSERT
 DEF_USE_XMALLOCS  = -DUSE_XMALLOCS
 
 DEFINES  = $(DEF_USE_XMALLOCS) $(DEF_USE_N_ASSERT)
-INCLUDE  = -Itrurl
+CPPFLAGS = -Itrurl $(DEFINES)
 override CFLAGS += -pedantic -g -Wall -W $(DEFINES) 
-LFLAGS 	 = 
-LIBS	 = 
+LDLAGS 	 = 
 CC 	 = gcc 
 SHELL 	 = /bin/sh
 RANLIB   = ranlib
@@ -32,14 +34,73 @@ NSTR_OBJECTS = \
 	nstr_concat.o 
 
 
+MOD_CPPFLAGS = -DMODULES -DMODULE
+
+modules ?= off
+ifeq ($(modules),off)
+   NARRAY_OBJECTS  = narray.o 
+   NLIST_OBJECTS   = nlist.o 
+   NHASH_OBJECTS   = nhash.o
+
+else 
+   NARRAY_OBJECTS = \
+	n_array_new.o \
+	n_array_ctl_growth.o \
+	n_array_clean.o \
+	n_array_free.o \
+	n_array_grow_priv.o \
+	n_array_nth.o \
+	n_array_remove_nth.o \
+	n_array_set_nth.o \
+	n_array_push.o \
+	n_array_pop.o \
+	n_array_shift.o \
+	n_array_unshift.o \
+	n_array_uniq_ex.o \
+	n_array_eq_ex.o \
+	n_array_dup.o \
+	n_array_sorts.o \
+	n_array_bsearch_ex.o \
+	n_array_map.o \
+	n_array_map_arg.o \
+	n_array_dump_stats.o
+
+   NLIST_OBJECTS = \
+	n_list_new.o \
+	n_list_free.o \
+	n_list_push.o \
+	n_list_pop.o \
+	n_list_shift.o \
+	n_list_unshift.o \
+	n_list_remove_nth.o \
+	n_list_remove_ex.o \
+	n_list_lookup_ex.o \
+	n_list_contains_ex.o \
+	n_list_nth.o \
+	n_list_iterator.o \
+	n_list_size.o \
+	n_list_map_arg.o
+
+   NHASH_OBJECTS = \
+	n_hash_new.o \
+	n_hash_put.o \
+	n_hash_get.o \
+	n_hash_exists.o \
+	n_hash_remove.o \
+	n_hash_free.o \
+	n_hash_map.o \
+	n_hash_map_arg.o
+endif
+
+
 OBJECTS = \
-	xmalloc.o    \
-	nassert.o    \
-	nhash.o      \
-	nlist.o      \
-	narray.o     \
-	trurl_die.o  \
-	trurl_cmpf.o \
+	xmalloc.o        \
+	nassert.o        \
+	$(NARRAY_OBJECTS)  \
+        $(NLIST_OBJECTS) \
+	$(NHASH_OBJECTS) \
+	trurl_die.o      \
+	trurl_cmpf.o     \
 	$(NSTR_OBJECTS)
 
 SHOBJECTS = $(addsuffix s, $(OBJECTS))
@@ -72,24 +133,42 @@ ifeq ($(without_dbhash),0)
   OBJECTS    += ndbhash.o
   HEADERS    += ndbhash.h
   TEST_PROGS += test_dbhash
-  LIBS       += -ldb1  
+  LDFLAGS    += -ldb1  
 endif
 
 
 ####### Implicit rules
-%.o:	%.cc
-	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $<
+n_array_%.o: narray.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(MOD_CPPFLAGS)_n_array_$* -o $@ $<
+
+n_array_%.os: narray.c
+	$(CC) -c -fPIC $(CFLAGS) $(CPPFLAGS) $(MOD_CPPFLAGS)_n_array_$* -o $@ $<
+
+
+n_list_%.o: nlist.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(MOD_CPPFLAGS)_n_list_$* -o $@ $<
+
+
+n_list_%.os: nlist.c
+	$(CC) -c -fPIC $(CFLAGS) $(CPPFLAGS) $(MOD_CPPFLAGS)_n_list_$* -o $@ $<
+
+
+n_hash_%.o: nhash.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(MOD_CPPFLAGS)_n_hash_$* -o $@ $<
+
+
+n_hash_%.os: nhash.c
+	$(CC) -c -fPIC $(CFLAGS) $(CPPFLAGS) $(MOD_CPPFLAGS)_n_hash_$* -o $@ $<
 
 %.o:	%.c
-	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $<
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
 
 %.os:	%.c
-	$(CC) -c -fPIC $(CFLAGS) $(INCLUDE) -o $@ $<
+	$(CC) -c -fPIC $(CFLAGS) $(CPPFLAGS) -o $@ $<
 
 
 test_%:  test_%.o 
-	$(CC) $(CFLAGS) $< -o $@ $(LFLAGS) -L. -ltrurl $(LIBS) 
-
+	$(CC) $(CFLAGS) $< -o $@ $(LFLAGS) -L. -ltrurl $(LDFLAGS) 
 
 all: static
 
@@ -110,7 +189,7 @@ symlink:
 	@if [ ! -d trurl ]; then ln . trurl -s; fi;
 
 dep:
-	gcc -MM $(DEFINES) $(INCLUDE) *.c >.depend
+	gcc -MM $(CPPFLAGS) *.c >.depend
 
 tags: 
 	etags -e *.c *.h
@@ -175,7 +254,7 @@ dist:   distclean
 	cd $$TMPDIR                           ;\
 	arch_name=`basename $$DISTDIR`        ;\
 	tar cvpf $$arch_name.tar $$arch_name  ;\
-	gzip -9 $$arch_name.tar && rm -rf $$DISTDIR
+	gzip -9f $$arch_name.tar && rm -rf $$DISTDIR
 
 rpm:    dist
 	@rpm -ta /tmp/trurlib-$(VERSION).tar.gz 

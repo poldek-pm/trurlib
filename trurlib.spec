@@ -2,7 +2,7 @@
 Summary:	trurlib 
 Name:		trurlib
 Version:	0.4
-Release:	1
+Release:	2
 License:	LGPL
 Group:		Development/Libraries
 Group(pl):	Programowanie/Biblioteki
@@ -25,13 +25,14 @@ Static library and header files of trurlib
 %setup -q 
 
 %build
-make static CFLAGS='-O2 -fomit-frame-pointer -DNDEBUG'
-make shared without_dbhash=1 CFLAGS='-O2 -fomit-frame-pointer -DNDEBUG'
+CFLAGS="$RPM_OPT_FLAGS -fomit-frame-pointer -DNDEBUG"
+make static modules=on CFLAGS="$CFLAGS"
+make shared modules=on without_dbhash=1 CFLAGS="$CFLAGS"
  
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT%{_prefix}
-make install prefix=$RPM_BUILD_ROOT%{_prefix}
+make install DESTDIR=$RPM_BUILD_ROOT%{_prefix}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -57,6 +58,9 @@ rm -rf $RPM_BUILD_ROOT
 All persons listed below can be reached at <cvs_login>@pld.org.pl
 
 $Log$
+Revision 1.2  2000/07/15 12:39:00  mis
+- modularized narray, nhash and nlist modules
+
 Revision 1.1  2000/06/09 16:37:19  mis
 - spec
 

@@ -21,15 +21,15 @@ Module is based on:
 #include <stdlib.h>
 
 #ifdef USE_N_ASSERT
-#include "nassert.h"
+# include "nassert.h"
 #else
-#include <assert.h>
-#define n_assert(expr) assert(expr)
+# include <assert.h>
+# define n_assert(expr) assert(expr)
 #endif
 
 
 #ifdef USE_XMALLOCS
-#include "xmalloc.h"
+# include "xmalloc.h"
 #endif
 
 #include "trurl_internal.h"
@@ -71,9 +71,16 @@ struct trurl_hash_table {
     unsigned int (*hash_fn) (const char*);
 };
 
-
-static unsigned int hash_string(const char *string);
-
+#ifndef MODULES
+# define MODULE_n_hash_new
+# define MODULE_n_hash_put
+# define MODULE_n_hash_get
+# define MODULE_n_hash_exists
+# define MODULE_n_hash_remove
+# define MODULE_n_hash_free
+# define MODULE_n_hash_map
+# define MODULE_n_hash_map_arg
+#endif
 
 
 /* Initialize the hash_table to the size asked for.  Allocates space
@@ -83,6 +90,11 @@ static unsigned int hash_string(const char *string);
 
    ** RET : new hash table or NULL
  */
+#ifdef MODULE_n_hash_new
+
+static unsigned int hash_string(const char *string);
+
+
 tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
                        unsigned int (*hashfn) (const char*))
 {
@@ -128,12 +140,14 @@ static unsigned int hash_string(const char *string)
     }
     return ret_val;
 }
-#endif
+#endif /* USE_HASHSTRING */
 
+#endif /* MODULE_n_hash_new */
 
 /*
  * Insert 'key' into hash table.
  */
+#ifdef MODULE_n_hash_put
 static
 tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
                     int replace)
@@ -215,17 +229,17 @@ tn_hash *n_hash_insert(tn_hash *ht, const char *key, const void *data)
     return n_hash_put(ht, key, data, 0);
 }
 
-
 tn_hash *n_hash_replace(tn_hash *ht, const char *key, const void *data)
 {
     return n_hash_put(ht, key, data, 1);
 }
-
+#endif
 
 /*
  * Look up a key and return the associated data.  Returns NULL if
  * the key is not in the table.
  */
+#ifdef MODULE_n_hash_get
 void *n_hash_get(const tn_hash *ht, const char *key)
 {
     unsigned val = ht->hash_fn(key) % ht->size;
@@ -241,7 +255,10 @@ void *n_hash_get(const tn_hash *ht, const char *key)
 
     return NULL;
 }
+#endif
 
+
+#ifdef MODULE_n_hash_exists
 int n_hash_exists(const tn_hash *ht, const char *key) 
 {
     unsigned val = ht->hash_fn(key) % ht->size;
@@ -257,12 +274,14 @@ int n_hash_exists(const tn_hash *ht, const char *key)
 
     return 0;
 }
+#endif
 
 
 /*
  * Delete a key from the hash table and return associated
  * data, or NULL if not present.
  */
+#ifdef MODULE_n_hash_remove
 void *n_hash_remove(tn_hash *ht, const char *key)
 {
     unsigned val = ht->hash_fn(key) % ht->size;
@@ -321,11 +340,13 @@ void *n_hash_remove(tn_hash *ht, const char *key)
     */
     return NULL;
 }
+#endif
 
 
 /*
  * Frees a complete table by iterating over it and freeing each node.
  */
+#ifdef MODULE_n_hash_free
 void n_hash_free(tn_hash *ht)
 {
     size_t i;
@@ -347,12 +368,14 @@ void n_hash_free(tn_hash *ht)
 
     free(ht);
 }
+#endif
 
 
 /*
  * Simply invokes the function given as the second parameter for each
  * node in the table, passing it the key and the associated data.
  */
+#ifdef MODULE_n_hash_map
 int n_hash_map(const tn_hash *ht, void (*map_fn) (const char *, void *))
 {
     register size_t i, n = 0;
@@ -371,11 +394,13 @@ int n_hash_map(const tn_hash *ht, void (*map_fn) (const char *, void *))
 
     return n;
 }
+#endif
 
 /*
  * Simply invokes the function given as the second parameter for each
  * node in the table, passing it the key, the associated data and given arg.
  */
+#ifdef MODULE_n_hash_map_arg
 int n_hash_map_arg(const tn_hash *ht,
 		   void (*map_fn) (const char *, void *, void *),
 		   void *arg)
@@ -396,3 +421,4 @@ int n_hash_map_arg(const tn_hash *ht,
 
     return n;
 }
+#endif
