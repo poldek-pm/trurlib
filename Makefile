@@ -6,7 +6,7 @@ PROJ_DIR=$(shell pwd)
 
 DEF_USE_N_ASSERT  = -DUSE_N_ASSERT
 DEF_USE_XMALLOCS  = -DUSE_XMALLOCS
-LIBC             =
+LIBC             = -DGLIBC_2_1
 
 DEFINES  = $(DEF_USE_XMALLOCS) $(DEF_USE_N_ASSERT) $(LIBC)
 INCLUDE  = -Itrurl
