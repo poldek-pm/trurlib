@@ -3,7 +3,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 # use libtool versioning 
-TRURL_VERINFO   = 3:0:3
+TRURL_VERINFO   = 4:0:4
 CFLAGS    = @CFLAGS@
 CPPFLAGS  = -I$(top_srcdir)/include/trurl
 INCLUDES  = 
