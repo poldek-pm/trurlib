@@ -141,7 +141,7 @@ tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf);
 #define n_array_sort(arr) n_array_sort_ex(arr, NULL)
 
 
-/*
+/* cmpf is always called as cmpf(arr[i], data);
  * NOTE: function does *not* sort array
  */
 void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
