@@ -33,3 +33,22 @@ tn_array *n_hash_keys(const tn_hash *ht)
     return n_hash_keys_ext(ht, 0);
 }
 
+tn_array *n_hash_values_ext(const tn_hash *ht, tn_fn_dup dupfn)
+{
+    register size_t i;
+    register struct hash_bucket *tmp;
+    tn_array *values; 
+
+    values = n_array_new(ht->items, NULL, NULL);
+    
+    for (i = 0; i < ht->size; i++) {
+        if (ht->table[i] == NULL)
+            continue;
+        
+        for (tmp = ht->table[i]; tmp != NULL; tmp = tmp->next)
+            n_array_push(values, dupfn ? dupfn(tmp->data) : tmp->data); 
+   }
+    
+    return values;
+}
+
