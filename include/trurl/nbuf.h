@@ -71,7 +71,7 @@ static inline int n_buf_write_int8(tn_buf *nbuf, int v)
 
 static inline int n_buf_write_int16(tn_buf *nbuf, int v) 
 {
-    uint16_t v_ = v;
+    uint16_t v_ = n_hton16(v);
     return n_buf_write(nbuf, &v_, sizeof(v_));
 }
 
@@ -87,7 +87,7 @@ static inline int n_buf_write_int16(tn_buf *nbuf, int v)
 
 static inline int n_buf_write_int32(tn_buf *nbuf, int v) 
 {
-    uint32_t v_ = v;
+    uint32_t v_ = n_hton32(v);
     return n_buf_write(nbuf, &v_, sizeof(v_));
 }
 
@@ -117,6 +117,18 @@ typedef struct trurl_buf_iterator tn_buf_it;
 void n_buf_it_init(tn_buf_it *bufi, tn_buf *buf);
 void *n_buf_it_get(tn_buf_it *bufi, size_t size);
 
+static inline
+int n_buf_it_read(tn_buf_it *bufi, void *buf, size_t size)
+{
+    char *p;
+    
+    if ((p = n_buf_it_get(bufi, size)) == NULL)
+        return -1;
+    memcpy(buf, p, size);
+    return size;
+}
+
+
 char *n_buf_it_gets_ext(tn_buf_it *bufi, size_t *len, int endl);
 #define n_buf_it_getz(it, len) n_buf_it_gets_ext(it, len, '\0')
 #define n_buf_it_gets(it, len) n_buf_it_gets_ext(it, len, '\n')
@@ -134,6 +146,9 @@ int n_buf_it_get_int8(tn_buf_it *nbufi, uint8_t *vp)
     return 1;
 }
 
+#define n_buf_it_read_int8(i, vp) n_buf_it_get_int8(i, vp)
+#define n_buf_it_read_uint8(i, vp) n_buf_it_get_int8(i, vp)
+
 static inline
 int n_buf_it_get_int16(tn_buf_it *nbufi, uint16_t *vp) 
 {
@@ -148,6 +163,9 @@ int n_buf_it_get_int16(tn_buf_it *nbufi, uint16_t *vp)
     return 1;
 }
 
+#define n_buf_it_read_int16(i, vp) n_buf_it_get_int16(i, vp)
+#define n_buf_it_read_uint16(i, vp) n_buf_it_get_int16(i, vp)
+
 static inline
 int n_buf_it_get_int32(tn_buf_it *nbufi, uint32_t *vp) 
 {
@@ -161,6 +179,8 @@ int n_buf_it_get_int32(tn_buf_it *nbufi, uint32_t *vp)
     *vp = n_ntoh32(*vp);
     return 1;
 }
+#define n_buf_it_read_int32(i, vp) n_buf_it_get_int32(i, vp)
+#define n_buf_it_read_uint32(i, vp) n_buf_it_get_int32(i, vp)
 
 #include <trurl/nstream.h>
 
