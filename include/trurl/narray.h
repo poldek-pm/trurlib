@@ -130,6 +130,9 @@ tn_array *n_array_remove_nth(tn_array *arr, int i);
 tn_array *n_array_push(tn_array *arr, void *data);
 #define n_array_push(a, d) n_array_push_inl(a, d)
 
+tn_array *n_array_concat_ex(tn_array *arr, tn_array *src, tn_fn_dup dup_fn);
+#define n_array_concat(arr, src) n_array_concat_ex(arr, src, NULL) 
+
 /* internal macros don't use */
 #define TN_ARRAY_INTERNAL_ISSORTED   (1 << 8)
 #define TN_ARRAY_set_sorted(arr) ((arr)->flags |= TN_ARRAY_INTERNAL_ISSORTED)

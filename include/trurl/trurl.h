@@ -29,11 +29,14 @@ void (*set_trurl_err_hook( void (*hook)(const char *err) ))(const char *err);
 #include <trurl/nassert.h>   /* n_assert    */
 
 #include <trurl/narray.h>    /* tn_array    */
+#include <trurl/nbuf.h>
 #include <trurl/nlist.h>     /* tn_list     */
 #include <trurl/nhash.h>     /* tn_hash     */
-#include <trurl/nbuf.h>
 
 #include <trurl/nstr.h>    /* n_str_*   */
 #include <trurl/n_snprintf.h>
 #include <trurl/nmalloc.h>
+#include <trurl/nstream.h>
+
+
 #endif     
