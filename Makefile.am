@@ -5,6 +5,7 @@ AUTOMAKE_OPTIONS = foreign
 # use libtool versioning 
 TRURL_VERINFO   = 3:0:3
 CFLAGS    = @CFLAGS@
+CPPFLAGS  = -I$(top_srcdir)/include/trurl
 INCLUDES  = 
 
 lib_LTLIBRARIES  = libtrurl.la
@@ -91,17 +92,17 @@ libtrurl_la_SOURCES = \
 
 pkgincludedir = $(includedir)/trurl
 pkginclude_HEADERS = \
-		nassert.h   \
-		nhash.h     \
-		nstr.h      \
-		tfn_types.h \
-		narray.h    \
-		nlist.h     \
-		nbuf.h	    \
-		trurl.h     \
-		ndie.h	    \
-		nmalloc.h   \
-		n_snprintf.h
+		include/trurl/nassert.h   \
+		include/trurl/nhash.h     \
+		include/trurl/nstr.h      \
+		include/trurl/tfn_types.h \
+		include/trurl/narray.h    \
+		include/trurl/nlist.h     \
+		include/trurl/nbuf.h	  \
+		include/trurl/trurl.h     \
+		include/trurl/ndie.h	  \
+		include/trurl/nmalloc.h   \
+		include/trurl/n_snprintf.h
 
 EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in test_*.c README NEWS
 

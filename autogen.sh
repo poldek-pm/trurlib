@@ -1,7 +1,7 @@
 #!/bin/sh
 # $Id$
 
-FILE=narray.h
+FILE=n_array_new.c
 PKG=trurlib
  
 if [ ! -f $FILE ]; then
