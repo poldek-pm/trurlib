@@ -28,6 +28,7 @@ void n_hash_free(tn_hash *ht);
 #define TN_HASH_REHASH     (1 << 2)  /* automatically grow and rehash
                                         if filled more than 80%  */
 int n_hash_ctl(tn_hash *ht, unsigned int flags);
+//int n_hash_ctl_bktallocfn(tn_hash *ht, );
 
 
 /* Removes all entries */
@@ -35,22 +36,20 @@ void n_hash_clean(tn_hash *ht);
 
 
 /*
-** Inserts a pointer to 'data' in the table, with a copy of 'key' as its
-** key.  Note that this makes a copy of the key, but NOT of the
-** associated data.
+** Inserts a pointer to 'data' in the table, with a copy of 'key' 
+** (if TN_HASH_NOCPKEY not set) as its key.  Note that this makes 
+** a copy of the key, but NOT of the associated data.
 */
 
 tn_hash *n_hash_insert(tn_hash *ht, const char *key, const void *data);
-
 tn_hash *n_hash_replace(tn_hash *ht, const char *key, const void *data);
 
-
 /*
-** Returns a pointer to the data associated with a key.  If the key has
-** not been inserted in the table, returns NULL.
+** Returns a pointer to the data associated with a key.
 */
 
 void *n_hash_get(const tn_hash *ht, const char *key);
+
 
 /*
 ** If the key has not been inserted in the table, returns 0,
@@ -80,4 +79,6 @@ int n_hash_map(const tn_hash *ht, void (*map_fn)(const char *, void *));
 int n_hash_map_arg(const tn_hash *ht,
                    void (*map_fn)(const char *, void *, void *), void *arg);
 
+
+int n_hash_stats(const tn_hash *ht);
 #endif /* TRURL_HASH_H */

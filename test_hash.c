@@ -29,18 +29,18 @@ void test_hash(void)
 
     n_hash_ctl(h, TN_HASH_REHASH);
 
-    for (i = 0; i < 4000; i++) {
+    for (i = 0; i < 40000; i++) {
 	char str[40];
-	sprintf(str, "key%.4d", i);
+	sprintf(str, "key%.8d", i);
 
 	n_hash_insert(h, str, "ma kota i psa");
         if (!n_hash_exists(h, str))
             printf("ERROR %s not exists\n", str);
     }
 
-    for (i = 0; i < 4000; i++) {
+    for (i = 0; i < 40000; i++) {
 	char str[40];
-	sprintf(str, "key%.4d", i);
+	sprintf(str, "key%.8d", i);
 
 	if (!n_hash_exists(h, str))
             printf("ERROR %s not exists\n", str);

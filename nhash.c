@@ -35,7 +35,8 @@ Module is based on:
 #include "trurl_internal.h"
 #include "nhash.h"
 
-#define USE_HASHSTRING 1
+#define USE_HASHSTRING_GLIBC_DB 1
+#define USE_HASHSTRING_CDB 0
 
 /*
    ** A hash table consists of an array of these buckets.  Each bucket
@@ -82,6 +83,7 @@ struct trurl_hash_table {
 # define MODULE_n_hash_free
 # define MODULE_n_hash_map
 # define MODULE_n_hash_map_arg
+# define MODULE_n_hash_stats
 #endif
 
 
@@ -120,9 +122,24 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
     return ht;
 }
 
-#if USE_HASHSTRING
+#if USE_HASHSTRING_GLIBC_DB
 # include "hash-string.h"
-#else
+#elif USE_HASHSTRING_CDB
+# define CDB_HASHSTART 5381
+
+static unsigned int hash_string(const char *s)
+{
+  unsigned int v;
+
+  v = CDB_HASHSTART;
+  while (*s) {
+      v += (v << 5);
+      v ^= *s;
+      s++;
+  }
+  return v;
+}
+# else
 
 /*
 ** Hashes a string to produce an unsigned int, which should be
@@ -231,7 +248,6 @@ tn_hash *n_hash_put_node(tn_hash *ht, struct hash_bucket *node)
     ** This spot in the table is already in use.  See if the current string
     ** has already been inserted, and if so,  die or replace it
     */
-
     for (ptr = ht->table[val]; NULL != ptr; ptr = ptr->next) {
 	if (strcmp(node->key, ptr->key) == 0) {
             trurl_die("n_hash_put_node: key '%s' already in table\n", node->key);
@@ -288,8 +304,9 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
     ** This spot in the table is already in use.  See if the current string
     ** has already been inserted, and if so,  die or replace it
     */
-
+//    printf("INUSE %s, ", key);
     for (ptr = ht->table[val]; NULL != ptr; ptr = ptr->next) {
+        //      printf("%s, ", ptr->key);
 	if (strcmp(key, ptr->key) == 0) {
 	    if (!replace) {
 		trurl_die("n_hash_insert: key '%s' already in table\n", key);
@@ -302,7 +319,8 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
 	    return ht;
 	}
     }
-
+//    printf("\n");
+    
     
     if ((ptr = malloc(sizeof(*ptr))) == NULL)
 	return NULL;
@@ -522,15 +540,48 @@ int n_hash_map_arg(const tn_hash *ht,
     register struct hash_bucket *tmp;
 
     for (i = 0; i < ht->size; i++) {
-	if (ht->table[i] == NULL)
-            continue;
-        
         for (tmp = ht->table[i]; tmp != NULL; tmp = tmp->next) {
             map_fn(tmp->key, tmp->data, arg);
             n++;
         }
     }
 
+    return n;
+}
+#endif
+
+#ifdef MODULE_n_hash_stats
+#include <stdio.h>
+int n_hash_stats(const tn_hash *ht)
+{
+    register size_t i, n = 0;
+    register struct hash_bucket *tmp;
+    int ncolls = 0;
+    int nempts = 0;
+    int maxdeep = 0;
+
+    
+    for (i = 0; i < ht->size; i++) {
+        int deep;
+        
+	if (ht->table[i] == NULL) {
+            nempts++;
+            continue;
+        }
+        
+        deep = 1;
+        for (tmp = ht->table[i]->next; tmp != NULL; tmp = tmp->next) 
+            deep++;
+        
+        if (deep > 1)
+            ncolls++;
+        
+        if (deep > maxdeep)
+            maxdeep = deep;
+    }
+
+    printf("%p %d items, %d emptys, %d collisions, maxdeep %d\n", ht, 
+           ht->items, nempts, ncolls, maxdeep);
     return n;
 }
 #endif
