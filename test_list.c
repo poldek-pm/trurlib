@@ -30,13 +30,12 @@ int cmpstr_len(const void *a, const void *b)
     return strlen(a) - strlen(b);
 }
 
-
 void print_list(char *msg, const tn_list * l)
 {
     char *s;
     tn_list_iterator li;
     
-    li = n_list_iterator_start(l);
+    n_list_iterator_start(l, &li);
     printf("%s", msg);
     while ((s = n_list_iterator_get(&li))) {
 	printf("%s, ", s);

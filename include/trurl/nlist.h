@@ -77,9 +77,13 @@ int n_list_size(const tn_list *l);
 void *n_list_nth(const tn_list *l, int nth);
 
 
-typedef void* tn_list_iterator;
 /* iterator */
-const tn_list_iterator n_list_iterator_start(const tn_list *l);
+
+typedef struct {
+    void *node;
+} tn_list_iterator;
+
+void n_list_iterator_start(const tn_list *l, tn_list_iterator *li);
 void *n_list_iterator_get(tn_list_iterator *li);
 
 /*
@@ -98,7 +102,6 @@ int n_list_contains_ex(const tn_list *l, const void *data, t_fn_cmp cmp_f);
 
 void n_list_map_arg(const tn_list *l,
                     void (*map_fn)(void *, void *), void *arg);
-
 
 /* not finished yet
 #define n_list_push_v(l, d) n_list_append((l), (void*)(d))

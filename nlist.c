@@ -379,9 +379,9 @@ void *n_list_nth(const tn_list *l, int nth)
 }
 
 
-const tn_list_iterator n_list_iterator_start(const tn_list *l)
+void n_list_iterator_start(const tn_list *l, tn_list_iterator *li)
 {
-    return l->head;
+    li->node = l->head;
 }
 
 
@@ -393,14 +393,14 @@ void *n_list_iterator_get(tn_list_iterator *li)
     if (li == NULL)
         return NULL;
     
-    node = *(struct list_node**)li;
+    node = li->node;
     
     if (node == NULL)
 	return NULL;
 
     data = node->data;
     node = node->next;
-    *li = node;
+    li->node = node;
     return data;
 }
 
