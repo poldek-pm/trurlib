@@ -260,7 +260,15 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
                   
                 case ST_TOKEN:
                 case ST_QUOTE:
-                    storechr(token, toksize, &tokindex, st->line[++st->lindex]);
+                    
+                    if (strchr(st->white, nc) || strchr(st->brk, nc) || /* not an escape */
+                        strchr(st->quote, nc)) {
+                        storechr(token, toksize, &tokindex, st->line[++st->lindex]);
+                        
+                    } else {
+                        storechr(token, toksize, &tokindex, st->line[st->lindex]);
+                    }
+                    
                     break;
             }
           
