@@ -3,6 +3,12 @@
 #
 #
 PROJ_DIR=$(shell pwd)
+INSTALL_ROOT = /usr/local
+
+ifdef PREFIX
+INSTALL_ROOT=$(PREFIX)
+endif
+
 
 DEF_USE_N_ASSERT  = -DUSE_N_ASSERT
 DEF_USE_XMALLOCS  = -DUSE_XMALLOCS
@@ -12,7 +18,7 @@ DEFINES  = $(DEF_USE_XMALLOCS) $(DEF_USE_N_ASSERT) $(LIBC)
 INCLUDE  = -Itrurl
 CFLAGS	 = -O2 -pedantic -g -Wall -W $(DEFINES) 
 LFLAGS 	 = 
-LIBS	 = -ldb #-lccmalloc -ldl
+LIBS	 = -ldb1 #-lccmalloc -ldl
 CC 	 = gcc 
 SHELL 	 = /bin/sh
 RANLIB   = ranlib
@@ -33,6 +39,7 @@ OBJECTS = \
 	ndbhash.o    \
 	nlist.o      \
 	narray.o     \
+	nbuf.o	     \
 	trurl_die.o  \
 	$(NSTR_OBJECTS)
 
@@ -59,7 +66,9 @@ test_%:  test_%.o
 	$(CC) $(CFLAGS) $< -o $@ $(LFLAGS) -L. -ltrurl $(LIBS) 
 
 
-all: symlink $(TARGET) $(TEST_PROGS)
+all: symlink $(TARGET) 
+
+tests: $(TEST_PROGS)
 
 
 $(TARGET): $(OBJECTS)
@@ -77,6 +86,10 @@ tags:
 
 TAGS:   tags
 
+install: $(TARGET)
+	install -m 644 $(TARGET) $(INSTALL_ROOT)/lib/
+	install -d 755 $(INSTALL_ROOT)/include/trurl
+	install -m 644 *.h $(INSTALL_ROOT)/include/trurl
 
 .PHONY: clean distclean backup arch dist
 

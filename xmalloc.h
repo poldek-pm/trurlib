@@ -7,11 +7,15 @@
 #define __XMALLOCS_H
 
 void (*setxmallocs_handler( void(*handler)(void) )) (void);
-
 #ifdef USE_XMALLOCS
 
 #include <stddef.h>
 
+#undef xmalloc
+#undef xcalloc
+#undef xrealloc
+#undef xstrdup
+#undef xfree
 void *xmalloc(size_t size);
 void *xcalloc(size_t nmemb, size_t size);
 void *xrealloc(void *ptr, size_t size);
