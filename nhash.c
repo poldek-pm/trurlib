@@ -45,9 +45,9 @@ Module is based on:
  */
 
 struct hash_bucket {
-    char  *key;
     void  *data;
     struct hash_bucket *next;
+    char  *key;
 };
 
 
@@ -95,7 +95,6 @@ struct trurl_hash_table {
 
 static unsigned int hash_string(const char *string);
 
-
 tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
                        unsigned int (*hashfn) (const char*))
 {
@@ -120,18 +119,6 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
     return ht;
 }
 
-#ifdef MODULE_n_hash_ctl
-int n_hash_ctl(tn_hash *ht, unsigned int flags)
-{
-    if (ht->items > 0) {
-        trurl_die("n_hash_ctl: hash table not empty");
-        return 0;
-    }
-    ht->flags |= flags;
-    return 1;
-}
-#endif
-
 #if USE_HASHSTRING
 # include "hash-string.h"
 #else
@@ -155,6 +142,19 @@ static unsigned int hash_string(const char *string)
 #endif /* USE_HASHSTRING */
 
 #endif /* MODULE_n_hash_new */
+
+#ifdef MODULE_n_hash_ctl
+int n_hash_ctl(tn_hash *ht, unsigned int flags)
+{
+    if (ht->items > 0) {
+        trurl_die("n_hash_ctl: hash table not empty");
+        return 0;
+    }
+    ht->flags |= flags;
+    return 1;
+}
+#endif
+
 
 /*
  * Insert 'key' into hash table.
