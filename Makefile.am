@@ -3,7 +3,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 # use libtool versioning 
-TRURL_VERINFO   = 2:0:2
+TRURL_VERINFO   = 3:0:3
 CFLAGS    = @CFLAGS@
 INCLUDES  = 
 
