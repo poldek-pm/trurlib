@@ -19,3 +19,8 @@ ltmain.sh
 ltconfig
 *.tar.gz
 libtool
+*.spec
+.deps
+*.lo
+.libs
+.la
