@@ -20,27 +20,27 @@ void xfree(void *ptr);
 
      
 #ifdef malloc 
-# warning "malloc already defined!"
+# error "malloc already defined!"
 # undef malloc
 #endif 
 
 #ifdef calloc 
-# warning "calloc already defined!"
+# error "calloc already defined!"
 # undef calloc
 #endif 
 
 #ifdef realloc
-# warning "realloc already defined!"
+# error "realloc already defined!"
 # undef realloc
 #endif 
 
 #ifdef strdup 
-# warning "strdup already defined!"
+# error "strdup already defined!"
 # undef strdup
 #endif 
 
 #ifdef free 
-# warning "free already defined!"
+# error "free already defined!"
 # undef free
 #endif 
 

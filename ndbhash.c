@@ -26,17 +26,15 @@
 #include <limits.h>
 
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
-#ifdef GLIBC_2_1
+#if defined __GNU_LIBRARY__ && defined __GLIBC_MINOR__ && \
+            __GNU_LIBRARY__ == 6  && __GLIBC_MINOR__ > 0 
 # include <db_185.h>
 #else 
 # include <db.h>
 #endif
-
-/*#include <db.h>*/
-#include <sys/stat.h>
-#include <fcntl.h>
-
 
 
 #ifdef USE_N_ASSERT

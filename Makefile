@@ -6,9 +6,9 @@ PROJ_DIR=$(shell pwd)
 
 DEF_USE_N_ASSERT  = -DUSE_N_ASSERT
 DEF_USE_XMALLOCS  = -DUSE_XMALLOCS
-LIBC             = -DGLIBC_2_1
+LIBC              = -D__OPTIMIZE_SIZE__ 
 
-DEFINES  = $(DEF_USE_XMALLOCS) $(DEF_USE_N_ASSERT) $(LIBC)
+DEFINES  = $(DEF_USE_XMALLOCS) $(DEF_USE_N_ASSERT) $(LIBC) 
 INCLUDE  = -Itrurl
 CFLAGS	 = -O2 -pedantic -g -Wall -W $(DEFINES) 
 LFLAGS 	 = 
@@ -81,8 +81,8 @@ TAGS:   tags
 .PHONY: clean distclean backup arch dist
 
 clean:
-	-rm -f core *.o *.bak *~ *% *\#
-	-rm -f $(TARGET) $(TEST_PROGS) 
+	-rm -f core *.o *.bak *~ *% *\# 
+	-rm -f $(TARGET) $(TEST_PROGS) trurl
 
 
 distclean: clean

@@ -75,17 +75,10 @@ wzglêdnych. Niech to zawsze bêdzie
  - nstring.c jest nieukoñczony i _nie_ nadaje siê do u¿ytku.
 
  
-UWAGA:
-Kompilacja na glibc-2.1
-make LIBC=-DGLIBC_2_1 
-
 
 Przk³ady u¿ycia w test_* 
 
 Pytania, sugestie, etc >> pld-installer@pld.org.pl
-
-£atki(tylko przetestowany kod!) najlepiej do 
-ftp://dione.ids.pl/people/pld-inst/trurlib/ lub do mnie. 
 
 Pawe³ Gajda (mis@k2.net.pl)
 
