@@ -10,7 +10,10 @@ void n_hash_free(tn_hash *ht)
         ht->_refcnt--;
         return;
     }
-    
+#if ENABLE_TRACE    
+    if (ht->items > 32)
+        n_hash_stats(ht);
+#endif    
     for (i = 0; i < ht->size; i++) {
         while (ht->table[i] != NULL) {
             void *d = n_hash_remove(ht, ht->table[i]->key);

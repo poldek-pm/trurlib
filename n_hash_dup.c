@@ -13,7 +13,8 @@ tn_hash *n_hash_dup(const tn_hash *ht, tn_fn_dup dup_fn)
     h->items = 0;
     h->free_fn = ht->free_fn;
     h->hash_fn = ht->hash_fn;
-
+    h->flags = h->flags;
+    
     for (i = 0; i < ht->size; i++) {
         if (ht->table[i] == NULL)
             continue;
