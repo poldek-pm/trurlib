@@ -144,6 +144,9 @@ int n_array_bsearch_idx_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf)
 tn_array *n_array_dup(const tn_array *arr, t_fn_dup dupf);
 
 
+tn_array *n_array_remove_ex(tn_array *arr, const void *data, t_fn_cmp cmpf);
+#define n_array_remove(arr, data) n_array_remove(arr, data)
+
 /* 
    for(i=0; i<n_array_size(arr); i++) 
        map_fn(arr[i])
