@@ -160,6 +160,9 @@ int n_hash_ctl(tn_hash *ht, unsigned int flags)
  * Insert 'key' into hash table.
  */
 #ifdef MODULE_n_hash_put
+static
+tn_hash *n_hash_put_node(tn_hash *ht, struct hash_bucket *node);
+
 static void n_hash_rehash(tn_hash *ht)
 {
     size_t i, newsize, oldsize;
@@ -189,14 +192,59 @@ static void n_hash_rehash(tn_hash *ht)
 
         for (node = oldtable[i]; node != NULL; node = next_node) {
             next_node = node->next;
-            n_hash_insert(ht, node->key, node->data);
-            free(node);
+            n_hash_put_node(ht, node);
         }
     }
 
     ht->flags = oldflags;
     free(oldtable);
 }
+
+static
+tn_hash *n_hash_put_node(tn_hash *ht, struct hash_bucket *node)
+{
+    struct hash_bucket *ptr;
+    unsigned val = ht->hash_fn(node->key);
+    
+
+    if (ht->flags & TN_HASH_REHASH && ht->size - ht->items <= ht->size/5) 
+        n_hash_rehash(ht);
+    
+    val %= ht->size;
+    ptr =  ht->table[val];
+    /*
+       ** NULL means this bucket hasn't been used yet.  We'll simply
+       ** allocate space for our new bucket and put our data there, with
+       ** the table pointing at it.
+     */
+
+    if (ptr == NULL) {
+	node->next = NULL;
+	ht->items++;
+	ht->table[val] = node;
+
+	return ht;
+    }
+
+    /*
+    ** This spot in the table is already in use.  See if the current string
+    ** has already been inserted, and if so,  die or replace it
+    */
+
+    for (ptr = ht->table[val]; NULL != ptr; ptr = ptr->next) {
+	if (strcmp(node->key, ptr->key) == 0) {
+            trurl_die("n_hash_put_node: key '%s' already in table\n", node->key);
+            return NULL;
+        }
+    }
+    
+    node->next = ht->table[val];
+    ht->table[val] = node;
+
+    ht->items++;
+    return ht;
+}
+
 
 static
 tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
@@ -269,7 +317,6 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data,
     ht->items++;
     return ht;
 }
-
 
 tn_hash *n_hash_insert(tn_hash *ht, const char *key, const void *data)
 {
