@@ -34,18 +34,24 @@
 
 char *n_basedirnam(char *path, char **dirname, char **basename)
 {
-    char *s = strrchr(path, '/');
-
+    char *dn, *s = strrchr(path, '/');
+    
     if (s == NULL) {
-        *dirname = NULL;
-        *basename = path;
+        dn = NULL;
+        if (basename)
+            *basename = path;
+        
     } else {
         *s++ = '\0';
-        *dirname  = path;
-        *basename = s;
+        dn  = path;
+        if (basename)
+            *basename = s;
     }
     
-    return *dirname;
+    if (dirname)
+        *dirname = dn;
+    
+    return dn;
 }
 
 char *n_basenam(const char *path)
