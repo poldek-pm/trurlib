@@ -96,7 +96,8 @@ endif
 OBJECTS = \
 	xmalloc.o        \
 	nassert.o        \
-	$(NARRAY_OBJECTS)  \
+	nbuf.o		 \
+	$(NARRAY_OBJECTS)\
         $(NLIST_OBJECTS) \
 	$(NHASH_OBJECTS) \
 	trurl_die.o      \
@@ -105,6 +106,13 @@ OBJECTS = \
 
 SHOBJECTS = $(addsuffix s, $(OBJECTS))
 
+# fix-info-dir subset stuff
+FIXIDIRSRCS        =  xmalloc.c nassert.c trurl_die.c trurl_cmpf.c
+FIXIDIROBJS        =  $(NARRAY_OBJECTS) $(FIXIDIRSRCS:.c=.o)
+FIXIDIRARCH        =  trurlib-$(VERSION)fid
+FIXIDIRARCH_TARGET =  fid-arch
+FIXIDIRTARGET      =  narray.a
+
 HEADERS = \
 	nassert.h   \
 	nhash.h     \
@@ -112,6 +120,7 @@ HEADERS = \
 	tfn_types.h \
 	narray.h    \
 	nlist.h     \
+	nbuf.h	    \
 	trurl.h     \
 	xmalloc.h
 
@@ -178,18 +187,25 @@ tests: $(TEST_PROGS)
 
 
 $(STATIC_LIB): $(OBJECTS)
-	$(AR) cr $(STATIC_LIB) $(OBJECTS)
-	$(RANLIB) $(STATIC_LIB)
+	$(AR) cr $@ $?
+	$(RANLIB) $@
 
 $(SHARED_LIB): $(SHOBJECTS)
-	gcc -shared -Wl,-soname=$(SONAME) $(CFLAGS) -o  $(SHARED_LIB) \
-	     $(SHOBJECTS)
+	gcc -shared -Wl,-soname=$(SONAME) $(CFLAGS) -o $@ $?
+
+# for fix-info-dir
+$(FIXIDIRTARGET): $(FIXIDIROBJS)
+	$(AR) cr $@ $?
+	$(RANLIB) $@
 
 symlink: 
 	@if [ ! -d trurl ]; then ln . trurl -s; fi;
 
 dep:
-	gcc -MM $(CPPFLAGS) *.c >.depend
+	gcc -MM $(CPPFLAGS) *.c > .depend
+	@for f in $(TEST_PROGS); do                    \
+		echo "$$f: $(STATIC_LIB)" >> .depend;  \
+	done;                                          
 
 tags: 
 	etags -e *.c *.h
@@ -210,10 +226,20 @@ clean: TEST_PROGS += test_dbhash
 clean:  
 	-rm -f core *.o *.os *.bak *~ *% *\# 
 	-rm -f $(STATIC_LIB) $(TEST_PROGS) $(SHARED_LIB) trurl
-
+	-rm -f $(FIXIDIRTARGET) 
+	-rm -rf $(FIXIDIRARCH)
 
 distclean: clean
 	-rm -f .depend TAGS gmon.out .swp 
+
+$(FIXIDIRARCH_TARGET): clean narray.o
+	 @DEPS=`gcc -MM $(CPPFLAGS) $(FIXIDIRSRCS) narray.c | \
+	 sed -e 's|^.*: ||g' -e 's|\\\||g' ` ; \
+	 echo $$DEPS; \
+	 mkdir $(FIXIDIRARCH); \
+	 cp -a $$DEPS $(FIXIDIRSRCS) Makefile VERSION $(FIXIDIRARCH); \
+	 tar cvpzf /tmp/$(FIXIDIRARCH).tar.gz $(FIXIDIRARCH);               \
+	 rm -rf $(FIXIDIRARCH); 
 
 #
 # Make copy of $(PROJ_DIR). Copies are stored in ../$(PROJ_DIR)-ARCH as  
