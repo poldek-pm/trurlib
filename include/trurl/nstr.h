@@ -31,7 +31,7 @@ tn_array *n_str_etokl_ext(const char *line, const char *white,
                           const char *brk, const char *quote,
                           char escape);
 
-#define n_str_etokl(line) n_str_etokl_ext(line, NULL, NULL, NULL, 0)
+#define n_str_etokl(line) n_str_etokl_ext(line, NULL, NULL, NULL, '\\')
 
 #include <string.h>
 #define n_str_eq(s, p) (strcmp(s, p) == 0)

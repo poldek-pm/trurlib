@@ -240,7 +240,7 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
                     break;
             }
           
-        } else if (c == st->escape) {
+        } else if (st->escape != '\0' && c == st->escape) {
             char nc;
             
             nc = st->line[st->lindex + 1];
@@ -297,7 +297,6 @@ tn_array *n_str_etokl_ext(const char *line, const char *white,
     const char       *default_white = " \t", 
         *default_brk   = ";|", 
         *default_quote = "\"'";
-    char             default_escape = '\\';
     char             *token;
     tn_array         *tl;
     struct lp_state  st;
@@ -312,29 +311,25 @@ tn_array *n_str_etokl_ext(const char *line, const char *white,
     if (quote == NULL)
         quote = default_quote;
     
-    if (escape == '\0')
-        escape = default_escape;
+    lp_init(&st, line, white, brk, quote, escape);
+    toksize = strlen(line) + 1;
+    token = alloca(toksize + 1);
 
+    tl = n_array_new(4, free, (tn_fn_cmp)strcmp);
 
-   lp_init(&st, line, white, brk, quote, escape);
-   toksize = strlen(line) + 1;
-   token = alloca(toksize + 1);
-
-   tl = n_array_new(4, free, (tn_fn_cmp)strcmp);
-
-   while (lp_parse(&st, token, toksize, &toklen) > 0) {
+    while (lp_parse(&st, token, toksize, &toklen) > 0) {
        
-       if (toklen > 0)
-           n_array_push(tl, n_strdupl(token, toklen));
+        if (toklen > 0)
+            n_array_push(tl, n_strdupl(token, toklen));
        
-       if (st.is_break) {
-           char break_str[2];
+        if (st.is_break) {
+            char break_str[2];
 
-           break_str[0] = st.is_break;
-           break_str[1] = '\0';
-           n_array_push(tl, n_strdup(break_str));
-       }
-   }
+            break_str[0] = st.is_break;
+            break_str[1] = '\0';
+            n_array_push(tl, n_strdup(break_str));
+        }
+    }
    
-   return tl;
+    return tl;
 }
