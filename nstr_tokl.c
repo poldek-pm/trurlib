@@ -280,7 +280,7 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
   
 
  l_end:
-    printf("%d, %d\n", tokindex, toksize);
+//    printf("%d, %d\n", tokindex, toksize);
     n_assert(tokindex < toksize);
     token[tokindex] = '\0';
     if (toklen)
