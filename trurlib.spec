@@ -7,7 +7,7 @@ License:	LGPL
 Group:		Development/Libraries
 Group(pl):	Programowanie/Biblioteki
 Source:		%{name}-%{version}.tar.gz
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+BuildRoot:	/tmp/%{name}-%{version}-root-%(id -u -n)
 
 %description
 trurlib
@@ -58,6 +58,9 @@ rm -rf $RPM_BUILD_ROOT
 All persons listed below can be reached at <cvs_login>@pld.org.pl
 
 $Log$
+Revision 1.5  2000/09/20 18:33:51  mis
+- %{tmpdir} -> /tmp, distribution spec shouldn't be PLD dependent
+
 Revision 1.4  2000/09/20 16:30:26  mis
 - current working version is v0.42
 
