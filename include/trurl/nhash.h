@@ -30,6 +30,10 @@ void n_hash_free(tn_hash *ht);
 int n_hash_ctl(tn_hash *ht, unsigned int flags);
 
 
+/* Removes all entries */
+void n_hash_clean(tn_hash *ht);
+
+
 /*
 ** Inserts a pointer to 'data' in the table, with a copy of 'key' as its
 ** key.  Note that this makes a copy of the key, but NOT of the
