@@ -6,10 +6,6 @@ mclean:
 	@if [ -f Makefile ]; then         \
 		$(MAKE) maintainer-clean; \
 	fi
-	rm -f mkinstalldirs install-sh missing *.tar.gz *.spec
-	rm -f config.h.in configure Makefile.in config.h 
-	rm -f config.sub config.guess aclocal.m4
-	rm -f libtool ltconfig ltmain.sh stamp-h* 
 
 
 backup:

@@ -111,20 +111,27 @@ test_list_LDADD = libtrurl.la
 test_hash_LDADD = libtrurl.la
 test_nstr_LDADD = libtrurl.la
 
+MAINTAINERCLEANFILES =	mkinstalldirs install-sh missing *.tar.gz *.spec \
+			config.h.in configure Makefile.in config.h \
+			config.sub config.guess aclocal.m4 \
+			libtool ltconfig ltmain.sh stamp-h* 
+
+DISTCLEANFILES = TAGS gmon.out trurl $(distdir)/.deps libtrurl.a
+CLEANFILES = $(EXTRA_PROGRAMS) core *.o *.bak *~ *% *\# \#* 
 
 symlink: 
 	@if [ ! -d trurl ]; then ln . trurl -s; fi;
 
 tests:  symlink $(EXTRA_PROGRAMS)
 
-all-local:
+all-local: symlink
 	@ln -sf .libs/libtrurl.a libtrurl.a
 
-dist-hook:
-	rm -rf $(distdir)/.deps
+#dist-hook:
+#	rm -rf $(distdir)/.deps
 
-clean-local:
-	-rm -f core *.o *.bak *~ *% *\# TAGS gmon.out trurl \#*
-	-rm -f $(EXTRA_PROGRAMS)
+#clean-local:
+#	-rm -f core *.o *.bak *~ *% *\# TAGS gmon.out trurl \#*
+#	-rm -f $(EXTRA_PROGRAMS)
 
 include Makefile.extra
