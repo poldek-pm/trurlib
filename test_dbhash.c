@@ -16,7 +16,8 @@
 #include "nassert.h"
 #include "xmalloc.h"
 
-#include <trurl/trurl.h>
+#include <trurl/nhash.h>
+#include <trurl/ndbhash.h>
 #include "nstring.h"
 
 #include <sys/types.h>

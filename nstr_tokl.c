@@ -23,6 +23,7 @@
    $Id$
  */
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef USE_N_ASSERT
 #include "nassert.h"
