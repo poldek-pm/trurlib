@@ -10,6 +10,10 @@
 #error "m_assert already defined"
 #endif
 
+void (*n_assert_set_hook( void(*hook)(const char*, const char*, int) ) )
+     (const char*, const char*, int);
+
+/* obsoleted  */
 void (*n_assert_sethook( void(*hook)(const char*, const char*, int) ) )
      (const char*, const char*, int);
 

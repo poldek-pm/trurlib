@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "ndie.h"
+#include "n_snprintf.h"
 
 static t_fn_die_hook die_hook;
 
@@ -50,14 +51,12 @@ static void trurl_vdie(const char *fmt, va_list ap)
 
     if (die_hook != NULL) {
         char msg[1024];
-
-        strcpy(msg, "die: ");
-        vsprintf(&msg[strlen(msg)], fmt, ap);
+        n_snprintf(msg, sizeof(msg), fmt, ap);
         die_hook(msg);
 
     } else {
         int len;
-        fprintf(stderr, "die: ");
+        fprintf(stderr, "n_die: ");
         vfprintf(stderr, fmt, ap);
         len = strlen(fmt);
 

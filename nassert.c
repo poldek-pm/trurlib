@@ -31,11 +31,17 @@ typedef void (*assert_hook_f) (const char *, const char *, int);
 
 static assert_hook_f assert_hook;
 
-assert_hook_f n_assert_sethook(assert_hook_f hook)
+assert_hook_f n_assert_set_hook(assert_hook_f hook)
 {
     assert_hook_f tmp = assert_hook;
     assert_hook = hook;
     return tmp;
+}
+
+/* backward compat */
+assert_hook_f n_assert_sethook(assert_hook_f hook)
+{
+    return n_assert_set_hook(hook);
 }
 
 
