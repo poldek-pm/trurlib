@@ -6,7 +6,7 @@ void n_array_map_arg(tn_array *arr, void (*map_fn) (void *, void *), void *arg)
 {
     register size_t i, n;
 
-    n = arr->items;
+    n = arr->items + arr->start_index;
 
     for (i = arr->start_index; i < n; i++)
 	map_fn(arr->data[i], arg);

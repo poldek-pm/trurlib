@@ -22,13 +22,14 @@ tn_array *n_array_remove_nth(tn_array *arr, int i)
     /* if slot is not empty, free node data */
     if (arr->data[pos] != NULL && arr->free_fn != NULL)
 	arr->free_fn(arr->data[pos]);
-    
-    
-    memmove(&arr->data[pos], &arr->data[pos + 1],
-	    (arr->allocated - 1 - pos) * sizeof(*arr->data));
+
+    if (pos == arr->items) 
+        arr->data[pos] = NULL;
+    else 
+        memmove(&arr->data[pos], &arr->data[pos + 1],
+                (arr->allocated - 1 - pos) * sizeof(*arr->data));
 
     arr->data[arr->allocated - 1] = NULL;
     arr->items--;
-    SETARR_UNSORTED(arr);
     return arr;
 }
