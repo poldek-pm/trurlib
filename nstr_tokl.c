@@ -128,7 +128,6 @@ struct lp_state {
     int       state;      
     char      curr_quote; 
     char      is_break;
-    int       is_quoted;
 };
 
 static inline
@@ -179,7 +178,6 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
     st->state = ST_WHITE;       /* initialize state */
     st->curr_quote = 0;           /* initialize previous quote char */
     st->is_break = 0;
-    st->is_quoted = 0;
   
     if((c = st->line[st->lindex]) == '\0')
         return 0;
@@ -208,14 +206,13 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
                 case ST_WHITE: 
                     st->state = ST_QUOTE;
                     st->curr_quote = *p;
-                    st->is_quoted = 1;	
                     break;
   
                 case ST_QUOTE:
                     if (*p != st->curr_quote)
                         storechr(token, toksize, &tokindex, c);
                     else {
-                        st->state = ST_WHITE;
+                        st->state = ST_TOKEN;
                         st->curr_quote = 0;
                     }
                     break;
