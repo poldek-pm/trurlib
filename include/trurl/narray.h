@@ -13,8 +13,8 @@
 #include <trurl/n_obj_ref.h>
 
 
-/* WARN: never ever access array members directly */
-struct trurl_array_private {
+/* WARN: _never_ ever access array members directly */
+typedef struct trurl_array_private {
     uint16_t    _refcnt;
     uint16_t    flags;
     
@@ -26,10 +26,10 @@ struct trurl_array_private {
     
     t_fn_free   free_fn;
     t_fn_cmp    cmp_fn;
-};
+} tn_array;
 
 
-typedef struct trurl_array_private tn_array;
+//typedef struct trurl_array_private tn_array;
 
 tn_array *n_array_new_ex(int size, t_fn_free freef, t_fn_cmp cmpf, void **data);
 #define n_array_new(size, freef, cmpf) n_array_new_ex(size, freef, cmpf, NULL)
@@ -45,12 +45,12 @@ tn_array *n_array_init_ex(tn_array *arr, int size,
    don't work with external cmp functions
  */
 #define TN_ARRAY_AUTOSORTED        (1 << 1)
-
+#ifndef SWIG
 static inline tn_array *n_array_ctl(tn_array *arr, unsigned flags) {
     arr->flags |= flags;
     return arr;
 }
-
+#endif
 #define n_array_ctl_growth(arr, inctype)  ((void) 0) /* backward API compat */
 #define n_array_has_free_fn(arr) (arr)->free_fn
 
@@ -74,11 +74,16 @@ tn_array *n_array_dup(const tn_array *arr, t_fn_dup dupf);
    for(i=0; i < n_array_size(arr); i++) 
         ...
 */
-static inline int n_array_size(const tn_array *arr)
+
+int n_array_size(const tn_array *arr);
+#define n_array_size(arr) n_array_size_inl(arr)
+
+#ifndef SWIG
+static inline int n_array_size_inl(const tn_array *arr)
 {
     return arr->items;
 }
-
+#endif
 #define n_array_isempty(arr) (n_array_size(arr) == 0)
 
 
@@ -90,6 +95,7 @@ void *n_array_nth(const tn_array *arr, int i);
 
 extern const char *n_errmsg_array_nth_oob;
 
+#ifndef SWIG
 static inline void *n_array_nth_inl(const tn_array *arr, register int i)
 {
     if ((size_t) i >= arr->items || i < 0)
@@ -97,7 +103,7 @@ static inline void *n_array_nth_inl(const tn_array *arr, register int i)
     
     return arr->data[arr->start_index + i];
 }
-
+#endif
 
 /*
   NOTE:
@@ -131,7 +137,7 @@ tn_array *n_array_push(tn_array *arr, void *data);
 #define TN_ARRAY_is_sorted(arr)  ((arr)->flags &  TN_ARRAY_INTERNAL_ISSORTED)
 
 tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size);
-
+#ifndef SWIG
 static inline tn_array *n_array_push_inl(tn_array *arr, void *data) {
 
     if (arr->items == arr->allocated) {
@@ -144,6 +150,7 @@ static inline tn_array *n_array_push_inl(tn_array *arr, void *data) {
     TN_ARRAY_clr_sorted(arr);
     return arr;
 }
+#endif
 #if 0
 #ifndef TN_ARRAY_INTERNAL
 # undef TN_ARRAY_INTERNAL_ISSORTED

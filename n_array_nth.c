@@ -18,3 +18,9 @@ void *n_array_nth(const tn_array *arr, int i)
     
     return arr->data[arr->start_index + i];
 }
+
+#undef n_array_size
+int n_array_size(const tn_array *arr)
+{
+    return arr->items;
+}
