@@ -1,0 +1,16 @@
+# $Id$ 
+
+TRURL library contains some useful data structures and routines:
+- dynamic array 
+- linked list 
+ (both with Perl-like interface)
+- hash table
+- some string functions
+- xmalloc()s 
+
+and some other n stuff.
+
+Build:
+$ ./configure
+$ make
+$ make install DESTDIR/

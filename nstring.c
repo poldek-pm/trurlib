@@ -140,7 +140,6 @@ tn_string *n_string_append_ptr(tn_string * str, const char *src)
 
     if (str->s == src) {	/* self */
 	len = str->len;
-/*        p = alloca(len+1); */
 	strcpy(p, src);
 
     } else {

@@ -1,6 +1,6 @@
 /* 
    TRURLib
-   Copyright (C) 1999 Pawel A. Gajda (mis@k2.net.pl)
+   Copyright (C) 1999, 2000 Pawel A. Gajda (mis@k2.net.pl)
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -18,33 +18,44 @@
    Boston, MA 02111-1307, USA.
  */
 
-
 /*
    $Id$
  */
 
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+
 #ifdef USE_N_ASSERT
-#include "nassert.h"
+# include "nassert.h"
 #else
 #include <assert.h>
-#define n_assert(expr) assert(expr)
+# define n_assert(expr) assert(expr)
 #endif
 
 #ifdef USE_XMALLOCS
 # include "xmalloc.h"
 #endif
 
-#include <stddef.h>
+#include "trurl_internal.h"
+#include "nlist.h"
 
-char *n_strncpy(char *dest, const char *src, size_t n)
-{
-    while ((*dest++ = *src++)) {
-        n--;
-        if (n == 0) 
-            break;
-    }
-    dest--;
-    *dest = '\0';
-    return dest;
-}
+#ifndef MODULES
+#endif
+
+struct list_node {
+    void *data;
+    struct list_node *next;
+};
+
+struct trurl_list {
+    unsigned int flags;
+    int items;
+
+    struct list_node *head;
+    struct list_node *tail;
+
+    t_fn_free free_fn;
+    t_fn_cmp cmp_fn;
+};
 
