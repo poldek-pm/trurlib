@@ -3,7 +3,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 # use libtool versioning 
-TRURL_VERINFO   = 0:1:0
+TRURL_VERINFO   = 1:0:1
 CFLAGS    = @CFLAGS@
 INCLUDES  = 
 
@@ -100,7 +100,7 @@ pkginclude_HEADERS = \
 		trurl.h     \
 		xmalloc.h
 
-EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in test_*.c README.PL
+EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in test_*.c README NEWS
 
 EXTRA_PROGRAMS = \
 		test_common \

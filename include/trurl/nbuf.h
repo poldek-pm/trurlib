@@ -19,7 +19,10 @@ void n_buf_free(tn_buf *buf);
 
 tn_buf *n_buf_ctl(tn_buf *buf, unsigned flags);
 
-int n_buf_add(tn_buf *buf, const void *data, int size);
+int n_buf_addata(tn_buf *buf, const void *data, int size, int with_zero);
+
+#define n_buf_add(buf, data, size) n_buf_addata(buf, data, size, 0)
+#define n_buf_addz(buf, data, size) n_buf_addata(buf, data, size, 1)
 
 int n_buf_addstring(tn_buf *buf, const char *str, int with_zero);
 #define n_buf_addstr(buf, str)  n_buf_addstring(buf, str, 0)

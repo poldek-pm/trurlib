@@ -169,18 +169,23 @@ void *n_buf_ptr(const tn_buf *buf)
 }
 
 
-int n_buf_add(tn_buf *buf, const void *data, int size)
+int n_buf_addata(tn_buf *buf, const void *data, int size, int zero)
 {
     int offs;
+
+    if (zero)
+        zero = 1;
     
-    if (buf->allocated - buf->size < (unsigned)size) 
-        if (n_buf_grow(buf, buf->allocated + size) == NULL)
+    if (buf->allocated - buf->size < (unsigned)size + zero) 
+        if (n_buf_grow(buf, buf->allocated + size + zero) == NULL)
 	    return -1;
 
     memcpy(&buf->data[buf->size], data, size);
     offs = buf->size;
     buf->size += size;
-
+    if (zero)
+        buf->data[buf->size] = '\0';
+    
     return offs;
 }
 
