@@ -128,6 +128,25 @@ static char *do_s_gets(void *stream, char *buf, size_t size)
 }
 
 
+static int zlib_fseek_wrap(void *stream, long offset, int whence) 
+{
+    z_off_t rc, off = offset;
+
+    rc = gzseek(stream, off, whence);
+    if (rc > 0)
+        rc = 0;
+
+#if ZLIB_TRACE
+    if (rc < 0) {
+        int ec;
+        printf("zlib_fseek: %s\n", gzerror(stream, &ec));
+    }
+#endif 
+    return rc;
+}
+
+
+
 static tn_stream *n_stream_new(int type)
 {
     tn_stream *st;
@@ -158,7 +177,7 @@ static tn_stream *n_stream_new(int type)
             st->read  = gzread;
             st->write = (int (*)(void*, const void*, size_t))gzwrite;
             st->gets  = (char *(*)(void*, char*, size_t))gzgets;
-            st->seek  = (int (*)(void*, long, int))gzseek;
+            st->seek  = (int (*)(void*, long, int))zlib_fseek_wrap;
             st->tell  = (long (*)(void*))gztell;
             st->flush = do_gz_flush;
             st->close = gzclose;
@@ -230,7 +249,6 @@ static int do_open(tn_stream *st, const char *path, const char *mode,
                    int type, int real_type) 
 { 
     int rc = 1;
-    void *stream = NULL;
 
     
     real_type = determine_type(path, &type);
@@ -250,8 +268,9 @@ static int do_open(tn_stream *st, const char *path, const char *mode,
             n_assert(0);
     }
 
-#ifdef HAVE_FOPENCOOKIE    
+#ifdef HAVE_FOPENCOOKIE 
     if (real_type != type) {
+        void *stream = NULL;
         switch (type) {
             case TN_STREAM_STDIO:
                 stream = fopencookie(st->stream, mode, gzio_cookie);
