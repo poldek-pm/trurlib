@@ -3,8 +3,8 @@
 
   $Id$
 */
-#ifndef __TRURL_LIST_H
-#define __TRURL_LIST_H
+#ifndef TRURL_LIST_H
+#define TRURL_LIST_H
 
 #include "tfn_types.h"
 
@@ -111,4 +111,4 @@ void n_list_map_arg(const tn_list *l,
 #define n_list_lookup_v(l, d, f) n_list_lookup(l, (void*)(d), f);
 */
 
-#endif /* __TRURL_LIST_H */
+#endif /* TRURL_LIST_H */

@@ -1,5 +1,5 @@
-#ifndef __TRURL_NASSERT_H
-#define __TRURL_NASSERT_H
+#ifndef TRURL_NASSERT_H
+#define TRURL_NASSERT_H
 
 
 #ifdef n_assert

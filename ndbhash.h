@@ -3,8 +3,8 @@
   
   $Id$
  */
-#ifndef __TRURL_DBHASH_H
-#define __TRURL_DBHASH_H
+#ifndef TRURL_DBHASH_H
+#define TRURL_DBHASH_H
 
 #include <stddef.h>         /* For size_t     */
 
@@ -47,4 +47,4 @@ int n_dbhash_map_arg(tn_dbhash *ht,
 
 
 
-#endif /* __TRURL_DBHASH_H */
+#endif /* TRURL_DBHASH_H */

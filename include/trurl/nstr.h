@@ -4,8 +4,8 @@
   $Id$
 */
 
-#ifndef __TRURL_STR_H
-#define __TRURL_STR_H
+#ifndef TRURL_STR_H
+#define TRURL_STR_H
 
 
 char *n_str_tok(const char *s, char *tok, size_t toklen, char *brk);
@@ -42,4 +42,4 @@ int n_str_len(const char *s, ...);
 char *n_str_concat(const char *s, ...);
 char *n_str_vconcat(const char *s, va_list ap);
 
-#endif /* __TRURL_STR_H */
+#endif /* TRURL_STR_H */
