@@ -24,6 +24,8 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
 
 void n_hash_free(tn_hash *ht);
 
+int n_hash_size(const tn_hash *ht);
+
 #define TN_HASH_NOCPKEY    (1 << 1)  /* do not make own copies of the keys */
 #define TN_HASH_REHASH     (1 << 2)  /* automatically grow and rehash
                                         if filled more than 80%  */

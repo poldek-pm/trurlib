@@ -29,6 +29,12 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
     return ht;
 }
 
+int n_hash_size(const tn_hash *ht) 
+{
+    return ht->items;
+}
+
+
 #if USE_HASHSTRING_GLIBC_DB
 # include "hash-string.h"
 #elif USE_HASHSTRING_CDB
