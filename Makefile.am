@@ -104,8 +104,12 @@ pkginclude_HEADERS = \
 		include/trurl/nmalloc.h   \
 		include/trurl/n_snprintf.h
 
-EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in test_*.c README NEWS
+EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in \
+	     test_array.c test_common.c test_hash.c \
+	     test_list.c test_nstr.c \
+	     README NEWS
 
+check_PROGRAMS = 
 EXTRA_PROGRAMS = \
 		test_common \
 		test_array  \
@@ -127,19 +131,9 @@ MAINTAINERCLEANFILES =	mkinstalldirs install-sh missing *.tar.gz *.spec \
 DISTCLEANFILES = TAGS gmon.out trurl $(distdir)/.deps libtrurl.a
 CLEANFILES = $(EXTRA_PROGRAMS) core *.o *.bak *~ *% *\# \#* 
 
-symlink: 
-	@if [ ! -d trurl ]; then ln . trurl -s; fi;
-
 tests:  symlink $(EXTRA_PROGRAMS)
 
-all-local: symlink
+all-local: 
 	@ln -sf .libs/libtrurl.a libtrurl.a
-
-#dist-hook:
-#	rm -rf $(distdir)/.deps
-
-#clean-local:
-#	-rm -f core *.o *.bak *~ *% *\# TAGS gmon.out trurl \#*
-#	-rm -f $(EXTRA_PROGRAMS)
 
 include Makefile.extra
