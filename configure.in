@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id$
 
 AC_INIT(narray.h)
-AM_INIT_AUTOMAKE(trurlib, 0.43.4)
+AM_INIT_AUTOMAKE(trurlib, 0.43.5)
 
 dnl Checks for programs.
 AC_PROG_CC

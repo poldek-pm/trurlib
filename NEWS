@@ -1,3 +1,6 @@
+0.43.5 
+- fixed 0.43.4
+
 0.43.4
 - bugfixes
 - added n_hash_size()
