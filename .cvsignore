@@ -23,6 +23,6 @@ libtool
 .deps
 *.lo
 .libs
-.la
+*.la
 stamp-h1
 autom4te.cache

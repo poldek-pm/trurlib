@@ -89,7 +89,8 @@ libtrurl_la_SOURCES = \
 	$(NARRAY_SRCS)   \
         $(NLIST_SRCS)    \
 	$(NHASH_SRCS)    \
-	$(NSTR_SRCS)
+	$(NSTR_SRCS)     \
+	ntuple.c
 
 pkgincludedir = $(includedir)/trurl
 pkginclude_HEADERS = \
@@ -107,7 +108,8 @@ pkginclude_HEADERS = \
 		include/trurl/nstream.h    \
 		include/trurl/nstore.h     \
 		include/trurl/n2h.h        \
-		include/trurl/n_obj_ref.h
+		include/trurl/n_obj_ref.h  \
+		include/trurl/ntuple.h
 
 EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in \
 			 test_common.c \

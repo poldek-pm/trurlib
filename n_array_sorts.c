@@ -17,8 +17,7 @@
    ** quicksort.c -- quicksort integer array
    ** public domain by Raymond Gardner     12/91
  */
-static
-void qsort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
+void trurl_qsort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 {
     register unsigned i, j, ln, rn;
 
@@ -49,20 +48,19 @@ void qsort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 	rn = arr_size - ++j;
 
 	if (ln < rn) {
-	    qsort_voidp_arr(arr, ln, cmpf);
+	    trurl_qsort_voidp_arr(arr, ln, cmpf);
 	    arr += j;
 	    arr_size = rn;
 
 	} else {
-	    qsort_voidp_arr(&arr[j], rn, cmpf);
+	    trurl_qsort_voidp_arr(&arr[j], rn, cmpf);
 	    arr_size = ln;
 	}
     }
 }
 
 
-static
-void isort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
+void trurl_isort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 {
     register size_t i, j;
 
@@ -116,17 +114,17 @@ static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int 
     switch (alg) {
         case SORT_SORT:
             if (arr->items > 10) 
-                qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+                trurl_qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
             else 
-                isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+                trurl_isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
             break;
 
         case SORT_QSORT:
-            qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+            trurl_qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
             break;
             
         case SORT_ISORT:
-            isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+            trurl_isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
             break;
     }
     
