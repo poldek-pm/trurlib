@@ -60,6 +60,11 @@ struct trurl_list {
     t_fn_dup dup_fn;
 };
 
+static int default_cmpf(const void* a,  const void *b) 
+{
+    return (a == b) ? 0 : 1;
+}
+
 
 tn_list *n_list_new(unsigned int flags,
 		    t_fn_free freef,
@@ -77,7 +82,10 @@ tn_list *n_list_new(unsigned int flags,
     l->head = l->tail = NULL;
 
     l->free_fn = freef;
-    l->cmp_fn = cmpf;
+    if(cmpf != NULL)
+        l->cmp_fn = cmpf;
+    else 
+        l->cmp_fn = default_cmpf;
     l->dup_fn = dupf;
 
     return l;
@@ -289,18 +297,16 @@ int n_list_remove_ex(tn_list *l, const void *data, t_fn_cmp cmpf)
 
     /* remove from the beginning */
     while (node != NULL && cmpf(node->data, data) == 0) {
-
 	if (l->free_fn != NULL)
 	    l->free_fn(node->data);
 
 	l->head = l->head->next;
-
 	free(node);
-
 	node = l->head;
-
 	l->items--;
 	removed++;
+        if (l->items > 1) 
+            n_assert(l->head->next);
     }
 
     if (l->head == NULL) {
@@ -311,19 +317,17 @@ int n_list_remove_ex(tn_list *l, const void *data, t_fn_cmp cmpf)
 	return removed;
 
     } else {
-
 	for (prev_node = l->head, node = l->head->next; node != NULL;
 	     prev_node = node, node = node->next) {
 
 	    if (cmpf(node->data, data) == 0) {
-
 		if (node->data != NULL && l->free_fn != NULL)
 		    l->free_fn(node->data);
 
 		n_assert(prev_node != NULL);
-
 		prev_node->next = node->next;
-
+                if (node == l->tail)
+                    l->tail = prev_node;
 		free(node);
 
 		n_assert(l->items > 0);
