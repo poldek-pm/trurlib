@@ -232,6 +232,28 @@ void *n_buf_it_get(tn_buf_it *bufi, size_t size)
 }
 
 
+char *n_buf_it_gets_ext(tn_buf_it *bufi, size_t *len, int endl) 
+{
+    unsigned char *ptr;
+    tn_buf *buf;
+
+    buf = bufi->nbuf;
+    
+    if (bufi->offs + 1 > buf->size)
+        return NULL;
+
+    ptr = &buf->data[bufi->offs];
+    *len = bufi->offs;
+    
+    while (bufi->offs < buf->size && buf->data[bufi->offs] != endl)
+        bufi->offs++;
+
+    *len = bufi->offs - *len;
+    bufi->offs++;               /* skip '\0' */
+    return ptr;
+}
+
+
 #undef n_buf_add
 // legacy: provide n_buf_add symbol 
 int n_buf_add(tn_buf *buf, const void *data, int size) 

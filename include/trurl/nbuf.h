@@ -45,19 +45,23 @@ int n_buf_printf(tn_buf *nbuf, const char *fmt, ...);
 
 
 #include <trurl/n2h.h>
-#define n_buf_add_int8(nbuf, v)  \
-        n_buf_write(nbuf, &v, sizeof(v));
+#define n_buf_add_int8(nbuf, v)              \
+     do {                                    \
+         uint8_t v_ = v;                     \
+         n_buf_write(nbuf, &v_, sizeof(v_)); \
+     } while(0);
 
+#define n_buf_putc(nbuf, c) n_buf_add_int8(nbuf, c)
 
-#define n_buf_add_int16(nbuf, v)           \
-    do {                                   \
+#define n_buf_add_int16(nbuf, v)             \
+    do {                                     \
          uint16_t nv = n_hton16(v);          \
          n_buf_write(nbuf, &nv, sizeof(nv)); \
     } while(0);
 
 
-#define n_buf_add_int32(nbuf, v)           \
-    do {                                   \
+#define n_buf_add_int32(nbuf, v)             \
+    do {                                     \
          uint32_t nv = n_hton32(v);          \
          n_buf_write(nbuf, &nv, sizeof(nv)); \
     } while(0);
@@ -77,7 +81,6 @@ static inline void *n_buf_ptr(const tn_buf *buf)
 }
 
 
-
 struct trurl_buf_iterator {
     tn_buf *nbuf;
     size_t  offs;
@@ -87,6 +90,9 @@ typedef struct trurl_buf_iterator tn_buf_it;
 void n_buf_it_init(tn_buf_it *bufi, tn_buf *buf);
 void *n_buf_it_get(tn_buf_it *bufi, size_t size);
 
+char *n_buf_it_gets_ext(tn_buf_it *bufi, size_t *len, int endl);
+#define n_buf_it_getz(it, len) n_buf_it_gets_ext(it, len, '\0');
+#define n_buf_it_gets(it, len) n_buf_it_gets_ext(it, len, '\n');
 
 static inline
 int n_buf_it_get_int8(tn_buf_it *nbufi, uint8_t *vp) 
