@@ -37,6 +37,6 @@ void (*set_trurl_err_hook( void (*hook)(const char *err) ))(const char *err);
 #include <trurl/n_snprintf.h>
 #include <trurl/nmalloc.h>
 #include <trurl/nstream.h>
-
+#include <trurl/ntuple.h>
 
 #endif     
