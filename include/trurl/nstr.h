@@ -33,6 +33,9 @@ tn_array *n_str_etokl_ext(const char *line, const char *white,
 
 #define n_str_etokl(line) n_str_etokl_ext(line, NULL, NULL, NULL, 0)
 
+#include <string.h>
+#define n_str_eq(s, p) (strcmp(s, p) == 0)
+#define n_str_ne(s, p) (strcmp(s, p) != 0)
 
 /*
   Calculate length of strings 
@@ -65,5 +68,6 @@ char *n_strncpy(char *dest, const char *src, size_t n);
 /* WARN: it modifies path! */
 int n_basedirnam(char *path, char **dirname, char **basename);
 char *n_basenam(const char *path);
+
 
 #endif /* TRURL_STR_H */
