@@ -84,6 +84,7 @@ else
    NHASH_OBJECTS = \
 	n_hash_new.o \
 	n_hash_ctl.o \
+	n_hash_clean.o \
 	n_hash_put.o \
 	n_hash_get.o \
 	n_hash_exists.o \

@@ -78,6 +78,7 @@ struct trurl_hash_table {
 # define MODULE_n_hash_get
 # define MODULE_n_hash_exists
 # define MODULE_n_hash_remove
+# define MODULE_n_hash_clean
 # define MODULE_n_hash_free
 # define MODULE_n_hash_map
 # define MODULE_n_hash_map_arg
@@ -435,6 +436,26 @@ void *n_hash_remove(tn_hash *ht, const char *key)
     ** Signal this by returning NULL.
     */
     return NULL;
+}
+#endif
+
+
+
+#ifdef MODULE_n_hash_clean
+void n_hash_clean(tn_hash *ht)
+{
+    size_t i;
+    for (i = 0; i < ht->size; i++) {
+	while (ht->table[i] != NULL) {
+	    void *d = n_hash_remove(ht, ht->table[i]->key);
+	    if (ht->free_fn != NULL && d != NULL)
+		ht->free_fn(d);
+            
+            ht->table[i] = NULL;
+	}
+    }
+
+    ht->items = 0;
 }
 #endif
 
