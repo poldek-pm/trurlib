@@ -9,16 +9,14 @@ ifdef PREFIX
 INSTALL_ROOT=$(PREFIX)
 endif
 
-
 DEF_USE_N_ASSERT  = -DUSE_N_ASSERT
 DEF_USE_XMALLOCS  = -DUSE_XMALLOCS
-LIBC              = -D__OPTIMIZE_SIZE__ 
 
-DEFINES  = $(DEF_USE_XMALLOCS) $(DEF_USE_N_ASSERT) $(LIBC) 
+DEFINES  = $(DEF_USE_XMALLOCS) $(DEF_USE_N_ASSERT)
 INCLUDE  = -Itrurl
-CFLAGS	 = -O2 -pedantic -g -Wall -W $(DEFINES) 
+override CFLAGS += -pedantic -g -Wall -W $(DEFINES) 
 LFLAGS 	 = 
-LIBS	 = -ldb1 #-lccmalloc -ldl
+LIBS	 = 
 CC 	 = gcc 
 SHELL 	 = /bin/sh
 RANLIB   = ranlib
@@ -36,7 +34,6 @@ OBJECTS = \
 	xmalloc.o    \
 	nassert.o    \
 	nhash.o      \
-	ndbhash.o    \
 	nlist.o      \
 	narray.o     \
 	trurl_die.o  \
@@ -50,8 +47,13 @@ TEST_PROGS = \
 		test_array  \
 	        test_list   \
 		test_hash   \
-	        test_dbhash \
 		test_nstr  
+
+ifndef WHITHOUT_DBHASH
+  OBJECTS    += ndbhash.o
+  TEST_PROGS += test_dbhash
+  LIBS       += -ldb1  
+endif
 
 
 ####### Implicit rules
