@@ -90,7 +90,7 @@ libtrurl_la_SOURCES = \
 	nstream.c        \
 	nstore.c         \
 	$(NARRAY_SRCS)   \
-    $(NLIST_SRCS)    \
+        $(NLIST_SRCS)    \
 	$(NHASH_SRCS)    \
 	$(NSTR_SRCS)
 
@@ -109,7 +109,8 @@ pkginclude_HEADERS = \
 		include/trurl/n_snprintf.h \
 		include/trurl/nstream.h    \
 		include/trurl/nstore.h     \
-		include/trurl/n2h.h 
+		include/trurl/n2h.h        \
+                include/trurl/n_obj_ref.h
 
 EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in test_*.c README NEWS
 
@@ -130,7 +131,7 @@ test_stream_LDADD =  libtrurl.la -lz
 MAINTAINERCLEANFILES =	mkinstalldirs install-sh missing *.tar.gz *.spec \
 			config.h.in configure Makefile.in config.h \
 			config.sub config.guess aclocal.m4 \
-			libtool ltconfig ltmain.sh stamp-h* 
+			libtool ltconfig ltmain.sh stamp-h* depcomp
 
 DISTCLEANFILES = TAGS gmon.out trurl $(distdir)/.deps libtrurl.a
 CLEANFILES = $(EXTRA_PROGRAMS) core *.o *.bak *~ *% *\# \#* 
