@@ -114,6 +114,19 @@ char *n_strdup(const char *s)
 }
 
 
+void *n_memdup(const void *ptr, size_t size)
+{
+    register void *new;
+
+    if ((new = n_malloc(size)) == NULL) {
+        nomem();
+        return NULL;
+    }
+
+    return memcpy(new, ptr, size);
+}
+
+
 void n_free(void *ptr)
 {
     n_assert(ptr != NULL);

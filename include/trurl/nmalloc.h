@@ -18,4 +18,6 @@ void n_free(void *ptr);
 
 char *n_strdupl(const char *s, size_t length);
 
+void *n_memdup(const void *ptr, size_t size);
+
 #endif /* NMALLOC_H */

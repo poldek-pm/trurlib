@@ -93,7 +93,7 @@ static inline t_fn_cmp autosort(tn_array *arr, t_fn_cmp cmpf, int *set_sorted)
         cmpf = arr->cmp_fn;
         
     } else if (cmpf != arr->cmp_fn) {
-        SETARR_UNSORTED(arr);
+        TN_ARRAY_clr_sorted(arr);
         *set_sorted = 0;
     }
 
@@ -110,7 +110,7 @@ static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int 
 
     cmpf = autosort(arr, cmpf, &set_sorted);
 
-    if ((arr->flags & TN_ARRAY_AUTOSORTED) && ISARR_SORTED(arr))
+    if ((arr->flags & TN_ARRAY_AUTOSORTED) && TN_ARRAY_is_sorted(arr))
         return arr;
     
     switch (alg) {
@@ -131,11 +131,12 @@ static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int 
     }
     
     
-    if (set_sorted)    
-        arr->flags |= ARR_SORTED;
+    if (set_sorted)
+        TN_ARRAY_set_sorted(arr);
     
     return arr;
 }
+
 
 tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf) 
 {

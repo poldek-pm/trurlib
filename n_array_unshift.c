@@ -19,6 +19,6 @@ tn_array *n_array_unshift(tn_array *arr, void *data)
     }
 
     arr->items++;
-    SETARR_UNSORTED(arr);
+    TN_ARRAY_clr_sorted(arr);
     return arr;
 }

@@ -8,20 +8,14 @@
 #define TRURL_ARRAY_H
 
 #include <stdint.h>
-#include "tfn_types.h"
-#include "ndie.h"
+#include <trurl/tfn_types.h>
+#include <trurl/ndie.h>
 #include <trurl/n_obj_ref.h>
 
-#define TN_ARRAY_CONSTSIZE         (1 << 0)
-
-/* if changed array sorts itself in bsearch_* functions
-   don't work with external cmp functions
- */
-#define TN_ARRAY_AUTOSORTED        (1 << 1)
 
 /* WARN: never ever access array members directly */
 struct trurl_array_private {
-    int16_t     _refcnt;
+    uint16_t    _refcnt;
     uint16_t    flags;
     
     size_t      items;
@@ -34,13 +28,27 @@ struct trurl_array_private {
     t_fn_cmp    cmp_fn;
 };
 
+
 typedef struct trurl_array_private tn_array;
 
-tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf);
-tn_array *n_array_ctl(tn_array *arr, unsigned flags);
+tn_array *n_array_new_ex(int size, t_fn_free freef, t_fn_cmp cmpf, void **data);
+#define n_array_new(size, freef, cmpf) n_array_new_ex(size, freef, cmpf, NULL)
+
+
+#define TN_ARRAY_CONSTSIZE         (1 << 0)
+/* if changed, an array sorts itself in bsearch_* functions;
+   don't work with external cmp functions
+ */
+#define TN_ARRAY_AUTOSORTED        (1 << 1)
+
+static inline tn_array *n_array_ctl(tn_array *arr, unsigned flags) {
+    arr->flags |= flags;
+    return arr;
+}
 
 #define n_array_ctl_growth(arr, inctype)  ((void) 0) /* backward API compat */
 #define n_array_has_free_fn(arr) (arr)->free_fn
+
 
 void n_array_free(tn_array *arr);
 
@@ -49,15 +57,13 @@ void n_array_free(tn_array *arr);
  */
 tn_array *n_array_clean(tn_array *arr);
 
-
 /* Clone an array (only structure is cloned, not content) */
 tn_array *n_array_clone(const tn_array *arr);
 
 /* 
-   for(i=0; i<n_array_size(arr); i++) 
-       ...
+   for(i=0; i < n_array_size(arr); i++) 
+        ...
 */
-//#define n_array_size(arr) (*(int*)arr)
 static inline int n_array_size(const tn_array *arr)
 {
     return arr->items;
@@ -65,18 +71,23 @@ static inline int n_array_size(const tn_array *arr)
 
 #define n_array_isempty(arr) (n_array_size(arr) == 0)
 
+
 /*
   foo = arr[i];
-
 */
-//void *n_array_nth(const tn_array *arr, int i);
-static inline void *n_array_nth(const tn_array *arr, register int i)
+void *n_array_nth(const tn_array *arr, int i);
+#define n_array_nth(a, i) n_array_nth_inl(a, i)
+
+extern const char *n_errmsg_array_nth_oob;
+
+static inline void *n_array_nth_inl(const tn_array *arr, register int i)
 {
     if ((size_t) i >= arr->items || i < 0)
-	n_die("n_array_nth: index(%d) out of bounds(%d)\n", i, arr->items);
+        n_die(n_errmsg_array_nth_oob, i, arr->items);
     
     return arr->data[arr->start_index + i];
 }
+
 
 /*
   NOTE:
@@ -101,11 +112,39 @@ tn_array *n_array_remove_nth(tn_array *arr, int i);
 
 */
 tn_array *n_array_push(tn_array *arr, void *data);
+#define n_array_push(a, d) n_array_push_inl(a, d)
 
+/* internal macros don't use */
+#define TN_ARRAY_INTERNAL_ISSORTED   (1 << 8)
+#define TN_ARRAY_set_sorted(arr) ((arr)->flags |= TN_ARRAY_INTERNAL_ISSORTED)
+#define TN_ARRAY_clr_sorted(arr) ((arr)->flags &= ~TN_ARRAY_INTERNAL_ISSORTED)
+#define TN_ARRAY_is_sorted(arr)  ((arr)->flags &  TN_ARRAY_INTERNAL_ISSORTED)
+
+tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size);
+
+static inline tn_array *n_array_push_inl(tn_array *arr, void *data) {
+
+    if (arr->items == arr->allocated) {
+        if (n_array_grow_priv_(arr, arr->allocated + 1) == 0)
+            return 0;
+    }
+    
+    arr->data[arr->start_index + arr->items] = data;
+    arr->items++;
+    TN_ARRAY_clr_sorted(arr);
+    return arr;
+}
+#if 0
+#ifndef TN_ARRAY_INTERNAL
+# undef TN_ARRAY_INTERNAL_ISSORTED
+# undef TN_ARRAY_set_sorted
+# undef TN_ARRAY_clr_sorted
+# undef TN_ARRAY_is_sorted
+#endif
+#endif
 
 /*
   foo = arr[ LAST_INDEX-- ];
-
 */
 void *n_array_pop(tn_array *arr);
 
@@ -113,7 +152,6 @@ void *n_array_pop(tn_array *arr);
 /*
   foo = arr[0];
   memmove(&arr[0], &arr[1..LAST_INDEX]);
-
 */
 void *n_array_shift(tn_array *arr);
 
@@ -121,15 +159,13 @@ void *n_array_shift(tn_array *arr);
 /*
   memmove(&arr[1], &arr[1..LAST_INDEX]);
   arr[0] = foo;
-
 */
 tn_array *n_array_unshift(tn_array *arr, void *data);
 
 
 /*
   return arr1 == arr2
-  
- */
+*/
 int n_array_eq_ex(const tn_array *arr1, const tn_array *arr2, t_fn_cmp cmpf);
 #define n_array_eq(arr1, arr2) n_array_eq_ex(arr1, arr2, NULL)
 
@@ -155,7 +191,7 @@ tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf);
 
 
 /* cmpf is always called as cmpf(arr[i], data);
- * NOTE: function does *not* sort array
+ * NOTE: function does *not* sort an array
  */
 void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
 #define n_array_bsearch(arr, data) n_array_bsearch_ex(arr, data, NULL)
@@ -193,6 +229,5 @@ void n_array_map_arg(tn_array *arr, void (*map_fn)(void *, void *), void *arg);
 
 /* for debugging */
 void n_array_dump_stats(const tn_array *arr, const char *name);
-
 
 #endif /* TRURL_ARRAY_H */

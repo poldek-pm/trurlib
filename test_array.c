@@ -8,6 +8,7 @@
 
 
 #include "trurl.h"
+#undef n_array_push
 //#include "nstring.h"
 
 
@@ -376,13 +377,13 @@ void test_array_sort(void)
 
     for (i=0; i<100; i++) {
         snprintf(buf, sizeof(buf), "%.3d", i);
-	n_array_push(a, n_strdup(buf));
+        n_array_push(a, n_strdup(buf));
     }
     n_array_sort(a);
     for (i = 0; i < n_array_size(a); i++) {
-	char *p = n_array_nth(a, i);
+        char *p = n_array_nth(a, i);
 
-	printf("%s\n", p);
+        printf("%s\n", p);
     }
 
     n_array_free(a);
@@ -429,12 +430,13 @@ void test_array_remove(void)
 
 
 int main()
-{	
-    //test_array_basic();
+{
+
+    test_array_basic();
     //test_array_growth();
     //test_array_basic();
     //test_array_growth();
-    test_array_remove();
+    //test_array_remove();
     /* test_array_big(); */
     //test_array_sort();
     return 0;

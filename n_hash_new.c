@@ -41,7 +41,7 @@ int n_hash_size(const tn_hash *ht)
 # define CDB_HASHSTART 5381
 static unsigned int hash_string(const char *s)
 {
-  unsigned int v;
+  register unsigned int v;
 
   v = CDB_HASHSTART;
   while (*s) {

@@ -228,12 +228,14 @@ void n_buf_it_init(tn_buf_it *bufi, tn_buf *buf)
 void *n_buf_it_get(tn_buf_it *bufi, size_t size) 
 {
     unsigned char *ptr;
+    register int boff = bufi->offs;
     
-    if (bufi->offs + size > bufi->nbuf->size)
+    if (boff + size > bufi->nbuf->size)
         return NULL;
 
-    ptr = &bufi->nbuf->data[bufi->offs];
-    bufi->offs += size;
+    ptr = &bufi->nbuf->data[boff];
+    boff += size;
+    bufi->offs = boff;
     return ptr;
 }
 
