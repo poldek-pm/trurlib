@@ -37,8 +37,9 @@ Module is based on:
 
 struct hash_bucket {
     void  *data;
-    struct hash_bucket *next;
     char  *key;
+    struct hash_bucket *next;
+    char  _buf[0];
 };
 
 
@@ -63,14 +64,6 @@ struct trurl_hash_table {
     unsigned int  (*hash_fn) (const char*);
 };
 
-#ifndef MODULES
-#endif
+int n_hash_dohash(const tn_hash *ht, const char *s, int *slen);
 
-
-/* Initialize the hash_table to the size asked for.  Allocates space
-   ** for the correct number of pointers and sets them to NULL.  If it
-   ** can't allocate sufficient memory, signals error by setting the size
-   ** of the table to 0.
-
-   ** RET : new hash table or NULL
- */
+#define n_hash_nextslotv(key, klen) (klen + (int)key[klen - 1])

@@ -115,7 +115,22 @@ struct trurl_buf_iterator {
 
 typedef struct trurl_buf_iterator tn_buf_it;
 void n_buf_it_init(tn_buf_it *bufi, tn_buf *buf);
-void *n_buf_it_get(tn_buf_it *bufi, size_t size);
+//void *n_buf_it_get(tn_buf_it *bufi, size_t size);
+static inline
+void *n_buf_it_get(tn_buf_it *bufi, size_t size) 
+{
+    unsigned char *ptr;
+    register int boff = bufi->offs;
+    
+    if (boff + size > bufi->nbuf->size)
+        return NULL;
+
+    ptr = &bufi->nbuf->data[boff];
+    boff += size;
+    bufi->offs = boff;
+    return ptr;
+}
+
 
 static inline
 int n_buf_it_read(tn_buf_it *bufi, void *buf, size_t size)

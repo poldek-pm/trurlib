@@ -55,7 +55,6 @@ NLIST_SRCS = \
 NHASH_SRCS = \
 	n_hash_clean.c  \
         n_hash_ctl.c    \
-        n_hash_exists.c \
         n_hash_free.c   \
         n_hash_get.c    \
         n_hash_int.h    \

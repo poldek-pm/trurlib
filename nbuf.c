@@ -225,6 +225,7 @@ void n_buf_it_init(tn_buf_it *bufi, tn_buf *buf)
     bufi->offs = 0;
 }
 
+#if 0
 void *n_buf_it_get(tn_buf_it *bufi, size_t size) 
 {
     unsigned char *ptr;
@@ -238,7 +239,7 @@ void *n_buf_it_get(tn_buf_it *bufi, size_t size)
     bufi->offs = boff;
     return ptr;
 }
-
+#endif
 
 char *n_buf_it_gets_ext(tn_buf_it *bufi, size_t *len, int endl) 
 {
