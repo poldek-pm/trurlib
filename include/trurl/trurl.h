@@ -1,6 +1,6 @@
 /* 
   TRURLib
-  Copyright (C) 1999, 2000 Pawel Gajda (mis@k2.net.pl)
+  Copyright (C) 1999, 2000 Pawel A. Gajda (mis@k2.net.pl)
  
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Library General Public
@@ -21,8 +21,8 @@
 /*
   $Id$
 */
-#ifndef __TRURLIB_H
-#define __TRURLIB_H
+#ifndef TRURLIB_H
+#define TRURLIB_H
 
 #ifdef USE_XMALLOCS
 # include <trurl/xmalloc.h>
@@ -35,7 +35,7 @@ void (*set_trurl_err_hook( void (*hook)(const char *err) ))(const char *err);
 #include <trurl/narray.h>    /* tn_array    */
 #include <trurl/nlist.h>     /* tn_list     */
 #include <trurl/nhash.h>     /* tn_hash     */
-
+#include <trurl/nbuf.h>
 
 #include <trurl/nstr.h>    /* n_str_*   */
 
