@@ -22,11 +22,9 @@ char *n_str_tok(const char *s, char *tok, size_t toklen, char *brk);
        by this function, and you *must* release it by n_str_tokl_free().
        Returns NULL if there was insufficient memory.
 */
-const char **n_str_tokl(const char *s, char *delim);
+const char **n_str_tokl_n(const char *s, char *delim, int *ntokens);
+#define n_str_tokl(s, delim) n_str_tokl_n(s, delim, NULL)
 void n_str_tokl_free(const char **tokens);
-
-
-
 
 
 /*
@@ -46,7 +44,6 @@ int n_str_len(const char *s, ...);
 */
 char *n_str_concat(const char *s, ...);
 char *n_str_vconcat(const char *s, va_list ap);
-
 
 
 /*

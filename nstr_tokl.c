@@ -41,7 +41,7 @@
   tokens[0] = s
   tokens[1] = token1
  */
-const char **n_str_tokl(const char *s, char *delim)
+const char **n_str_tokl_n(const char *s, char *delim, int *ntokens)
 {
     char **tokens, *scpy;
     char *p;
@@ -81,7 +81,7 @@ const char **n_str_tokl(const char *s, char *delim)
                 
                 tokens = tmp;
                 tokens_size += ALLOC_STEP;
-                for (i=n; i<tokens_size; i++)
+                for (i=n; i < tokens_size; i++)
                     tokens[i] = NULL;
             }
         }
@@ -89,9 +89,21 @@ const char **n_str_tokl(const char *s, char *delim)
     if (tokens != NULL)
         tokens++;		/* hide tokens[0] */
 
+    if (ntokens) {
+        if (tokens)
+            *ntokens = n;
+        else
+            ntokens = 0;
+    }
+
     return (const char **) tokens;
 }
 
+#undef n_str_tokl
+const char **n_str_tokl(const char *s, char *delim) 
+{
+    return n_str_tokl_n(s, delim, NULL);
+}
 
 void n_str_tokl_free(const char **tokens)
 {
