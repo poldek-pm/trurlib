@@ -20,7 +20,7 @@ tn_hash *n_hash_dup(const tn_hash *ht, tn_fn_dup dup_fn)
         
         for (tmp = ht->table[i]; tmp != NULL; tmp = tmp->next) {
             void *data = tmp->data;
-            if (dup_fn)
+            if (data && dup_fn)
                 data = dup_fn(data);
             
             n_hash_insert(h, tmp->key, data);
