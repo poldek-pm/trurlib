@@ -25,3 +25,4 @@ libtool
 .libs
 .la
 stamp-h1
+autom4te.cache
