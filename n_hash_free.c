@@ -11,7 +11,6 @@ void n_hash_free(tn_hash *ht)
         return;
     }
     
-    
     for (i = 0; i < ht->size; i++) {
         while (ht->table[i] != NULL) {
             void *d = n_hash_remove(ht, ht->table[i]->key);

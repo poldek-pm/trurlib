@@ -25,13 +25,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef USE_N_ASSERT
-#include "nassert.h"
-#else
-#include <assert.h>
-#define n_assert(expr) assert(expr)
-#endif
-
 #include "nmalloc.h"
 #include "nstr.h"
 
@@ -46,18 +39,18 @@ char *n_str_vconcat(const char *s, va_list ap)
     __va_copy(save_ap, ap);
 
     while ((p = va_arg(ap, char *)) != NULL) {	/* calculate length of args */
-	len += strlen(p);
+        len += strlen(p);
     }
 
     if ((rstr = n_malloc(len + 1)) == NULL)
-	return NULL;
+        return NULL;
 
     strcpy(rstr, s);
 
     __va_copy(ap, save_ap);
     
     while ((p = va_arg(ap, char *)) != NULL) {
-	strcat(rstr, p);
+        strcat(rstr, p);
     }
 
     __va_copy(ap, save_ap);
@@ -66,7 +59,7 @@ char *n_str_vconcat(const char *s, va_list ap)
 }
 
 
-char *n_str_concat(const char *s,...)
+char *n_str_concat(const char *s, ...)
 {
     char *rstr;
     va_list ap;

@@ -25,13 +25,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef USE_N_ASSERT
-#include "nassert.h"
-#else
-#include <assert.h>
-#define n_assert(expr) assert(expr)
-#endif
-
 #include "nstr.h"
 
 int n_str_vlen(const char *s, va_list ap)
@@ -45,7 +38,7 @@ int n_str_vlen(const char *s, va_list ap)
     __va_copy(save_ap, ap);
 
     while ((p = va_arg(ap, char *)) != NULL) {	/* calculate length of args */
-	len += strlen(p);
+        len += strlen(p);
     }
 
     __va_copy(ap, save_ap);

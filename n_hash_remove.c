@@ -9,7 +9,7 @@ void *n_hash_remove(tn_hash *ht, const char *key)
     struct hash_bucket *ptr, *last = NULL;
 
     if (ht->table[val] == NULL)
-	return 0;
+        return 0;
 
     /*
     ** Traverse the list, keeping track of the previous node in the list.
@@ -20,40 +20,40 @@ void *n_hash_remove(tn_hash *ht, const char *key)
     */
 
     for (last = NULL, ptr = ht->table[val]; ptr != NULL;
-	 last = ptr, ptr = ptr->next) {
+         last = ptr, ptr = ptr->next) {
 
-	if (strcmp(key, ptr->key) == 0) {
+        if (strcmp(key, ptr->key) == 0) {
 
-	    if (last != NULL) {
-		data = ptr->data;
+            if (last != NULL) {
+                data = ptr->data;
 
-		last->next = ptr->next;
+                last->next = ptr->next;
                 if (!(ht->flags & TN_HASH_NOCPKEY))
                     free(ptr->key);
 
                 free(ptr);
-		ht->items--;
+                ht->items--;
 
-		return data;
-	    }
-	    /* If 'last' still equals NULL, it means that we need to
+                return data;
+            }
+            /* If 'last' still equals NULL, it means that we need to
             ** delete the first node in the list. This simply consists
             ** of putting our own 'next' pointer in the array holding
             ** the head of the list.  We then dispose of the current
             ** node as above.
             */
-	    else {
-		ht->table[val] = ptr->next;
-		data = ptr->data;
+            else {
+                ht->table[val] = ptr->next;
+                data = ptr->data;
 
                 if (!(ht->flags & TN_HASH_NOCPKEY))
                     free(ptr->key);
-		free(ptr);
-		ht->items--;
+                free(ptr);
+                ht->items--;
 
-		return data;
-	    }
-	}
+                return data;
+            }
+        }
     }
 
     /*

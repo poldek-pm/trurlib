@@ -17,10 +17,10 @@
 static char *vconcat(const char *s, va_list * ap);
 static char *concat(const char *s,...);
 
-struct string {
-    char *s;
-    size_t len;
-    size_t size;
+struct trurl_string {
+    int16_t   _refcnt;
+    int16_t   len;
+    char      s[0];
 };
 
 

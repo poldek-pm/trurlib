@@ -58,9 +58,26 @@ void test_strlen(void)
 }
 
 
-int main()
+#include <trurl/narray.h>
+void test_(char *line)
 {
-#define TEST_STRTOKL 1
+    tn_array *tl;
+    int i;
+
+    printf("\nTEST n_str_etokl (%s)\n", line);
+    tl = n_str_etokl(line);
+    for (i=0; i < n_array_size(tl); i++) {
+        char *s = n_array_nth(tl, i);
+        printf("%d. %s\n", i, *s ? s : "BREAK");
+    }
+    
+}
+
+
+int main(int argc, char *argv[])
+{
+    test_(argv[1]);
+#define TEST_STRTOKL 0
 #if TEST_STRTOKL
     test_strtokl();
 #endif

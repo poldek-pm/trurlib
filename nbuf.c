@@ -205,7 +205,7 @@ int n_buf_write_ex(tn_buf *buf, const void *ptr, int size, int zero)
     
     if (buf->allocated - buf->off < (unsigned)size + zero) 
         if (n_buf_grow(buf, buf->allocated + size + zero) == NULL)
-	    return -1;
+            return -1;
 
     memcpy(&buf->data[buf->off], ptr, size);
     buf->off += size;
