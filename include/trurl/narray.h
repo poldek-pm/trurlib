@@ -7,6 +7,7 @@
 #ifndef TRURL_ARRAY_H
 #define TRURL_ARRAY_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include <trurl/tfn_types.h>
 #include <trurl/ndie.h>
