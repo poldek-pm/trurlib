@@ -17,7 +17,6 @@ NARRAY_SRCS  = \
 	n_array_clone.c \
         n_array_ctl.c   \
         n_array_dump_stats.c    \
-        n_array_dup.c   \
         n_array_eq_ex.c \
         n_array_free.c  \
         n_array_grow_priv.c     \
@@ -110,9 +109,16 @@ pkginclude_HEADERS = \
 		include/trurl/nstream.h    \
 		include/trurl/nstore.h     \
 		include/trurl/n2h.h        \
-                include/trurl/n_obj_ref.h
+		include/trurl/n_obj_ref.h
 
-EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in test_*.c README NEWS
+EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in \
+			 test_common.c \
+			 test_array.c \
+			 test_list.c \
+			 test_hash.c \
+			 test_nstr.c \
+			 test_stream.c \
+			 README NEWS
 
 EXTRA_PROGRAMS = \
 		test_common \
