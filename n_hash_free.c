@@ -14,7 +14,8 @@ void free_slot(struct hash_bucket *node, tn_hash *ht)
             DBGF("free %s %p\n", node->key, node->data);
             ht->free_fn(node->data);
         }
-        free(node);
+        if (ht->na == NULL)
+            free(node);
     }
 }
 
@@ -43,5 +44,9 @@ void n_hash_free(tn_hash *ht)
     ht->size = 0;
     ht->items = 0;
 
-    free(ht);
+    if (ht->na == NULL)
+        free(ht);
+        
+    else if (ht->flags & TN_HASH_INTERNAL_SELFNA)
+        n_alloc_free(ht->na);
 }

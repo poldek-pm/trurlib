@@ -10,6 +10,7 @@
 
 #include <stddef.h>           /* For size_t     */
 #include <trurl/n_obj_ref.h>
+#include <trurl/nmalloc.h>
 
 typedef struct trurl_hash_table tn_hash;
 
@@ -23,6 +24,7 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
 
 #define n_hash_new(a, b) n_hash_new_ex(a, b, NULL)
 
+tn_hash *n_hash_new_na(tn_alloc *na, size_t size, void (*freefn) (void *));
 
 void n_hash_free(tn_hash *ht);
 

@@ -81,9 +81,11 @@ struct hash_bucket *new_bucket(tn_hash *ht, const char *key, int klen)
 
     if ((ht->flags & TN_HASH_NOCPKEY) == 0)
         key_len = klen > 0 ? klen + 1 : (int)strlen(key) + 1;
-    
-    if ((ptr = n_malloc(sizeof(*ptr) + key_len)) == NULL)
-        return NULL;
+
+    if (ht->na)
+        ptr = ht->na->na_malloc(ht->na, sizeof(*ptr) + key_len);
+    else
+        ptr = n_malloc(sizeof(*ptr) + key_len);
     
     if (key_len == 0) {
         ptr->key = (char*)key;
@@ -121,7 +123,6 @@ tn_hash *n_hash_put_ll(tn_hash *ht, const char *key, const void *data,
         ht->table[val] = ptr;
         return ht;
     }
-
     
 
     DBGF("INUSE %s, ", key);

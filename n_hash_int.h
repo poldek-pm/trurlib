@@ -43,15 +43,7 @@ struct hash_bucket {
 };
 
 
-/*
-   ** This is what you actually declare an instance of to create a table.
-   ** You then call 'construct_table' with the address of this structure,
-   ** and a guess at the size of the table.  Note that more nodes than this
-   ** can be inserted in the table, but performance degrades as this
-   ** happens.  Performance should still be quite adequate until 2 or 3
-   ** times as many nodes have been inserted as the table was created with.
- */
-
+#define TN_HASH_INTERNAL_SELFNA (1 << 9)
 struct trurl_hash_table {
     uint16_t    _refcnt;
     uint16_t    flags;
