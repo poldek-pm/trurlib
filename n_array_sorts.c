@@ -63,18 +63,31 @@ void trurl_qsort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 void trurl_isort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 {
     register size_t i, j;
+    
+#if ENABLE_TRACE   
+    int n = 0;
+    if (arr_size > 1000)
+        DBGF("%d\n", arr_size);
+#endif    
 
     for (i = 1; i < arr_size; i++) {
-	register void *tmp = arr[i];
+        register void *tmp = arr[i];
 
-	j = i;
+        j = i;
+#if ENABLE_TRACE
+        if (arr_size > 1000 && i % 100 == 0)
+            DBGF("(%d) iter = %d, n = %d\n", arr_size, i, n);
+#endif        
 
-	while (j > 0 && cmpf(tmp, arr[j - 1]) < 0) {
-	    arr[j] = arr[j - 1];
-	    j--;
-	}
+        while (j > 0 && cmpf(tmp, arr[j - 1]) < 0) {
+            arr[j] = arr[j - 1];
+            j--;
+#if ENABLE_TRACE
+            n++;
+#endif            
+        }
 
-	arr[j] = tmp;
+        arr[j] = tmp;
     }
 }
 
