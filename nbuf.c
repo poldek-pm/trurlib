@@ -60,7 +60,8 @@ tn_buf *n_buf_new(int initial_size)
     
     buf->allocated = initial_size;
     buf->size = 0;
-
+    buf->flags = 0;
+    
     if (initial_size == 0) {
         buf->data = NULL;
         
@@ -78,7 +79,7 @@ tn_buf *n_buf_new(int initial_size)
 
 tn_buf *n_buf_init(tn_buf *buf, void *buffer, int size)
 {
-    n_assert(buf->data = NULL);
+    n_assert(buf->data == NULL);
     
     buf->data = buffer;
     buf->allocated = size;
@@ -159,7 +160,7 @@ int n_buf_size(const tn_buf *buf)
 }
 
 
-void *n_buf_dptr(const tn_buf *buf)
+void *n_buf_ptr(const tn_buf *buf)
 {
     return buf->data;
 }
