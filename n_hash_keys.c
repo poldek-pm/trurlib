@@ -33,7 +33,7 @@ tn_array *n_hash_keys(const tn_hash *ht)
     return n_hash_keys_ext(ht, 0);
 }
 
-tn_array *n_hash_values_ext(const tn_hash *ht, tn_fn_dup dupfn)
+tn_array *n_hash_values(const tn_hash *ht)
 {
     register size_t i;
     register struct hash_bucket *tmp;
@@ -46,8 +46,8 @@ tn_array *n_hash_values_ext(const tn_hash *ht, tn_fn_dup dupfn)
             continue;
         
         for (tmp = ht->table[i]; tmp != NULL; tmp = tmp->next)
-            n_array_push(values, dupfn ? dupfn(tmp->data) : tmp->data); 
-   }
+            n_array_push(values, tmp->data); 
+    }
     
     return values;
 }
