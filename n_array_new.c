@@ -7,24 +7,25 @@ tn_array *n_array_new(int initial_size, t_fn_free freef, t_fn_cmp cmpf)
     tn_array *arr;
 
     if ((arr = n_calloc(1, sizeof(*arr))) == NULL)
-	return NULL;
+        return NULL;
 
     n_assert(initial_size >= 0);
     if (initial_size < 1)
-	initial_size = 2;
+        initial_size = 2;
 
     if ((arr->data = n_malloc(initial_size * sizeof(*arr->data))) == NULL) {
-	free(arr);
-	arr = NULL;
+        free(arr);
+        arr = NULL;
 
     } else {
-	register int i;
+        register int i;
 
-	for (i = 0; i < initial_size; i++)
-	    arr->data[i] = NULL;
+        for (i = 0; i < initial_size; i++)
+            arr->data[i] = NULL;
 
-	arr->allocated = initial_size;
-	arr->flags = 0;
+        arr->_refcnt = 0;
+        arr->allocated = initial_size;
+        arr->flags = 0;
         arr->free_fn = freef;
         
         if (cmpf)

@@ -51,11 +51,11 @@ const char **n_str_tokl(const char *s, char *delim)
     tokens_size = 8;
 
     if ((tokens = n_calloc(tokens_size, sizeof(*tokens))) == NULL)
-	return NULL;
+        return NULL;
 
     if ((tokens[0] = n_calloc(slen + 1, sizeof(char))) == NULL) {
-	free(tokens);
-	return NULL;
+        free(tokens);
+        return NULL;
     }
     	
     scpy = tokens[0];
@@ -63,31 +63,31 @@ const char **n_str_tokl(const char *s, char *delim)
     p = (char *) s;
 
     while (p != NULL && *p) {
-	p = n_str_tok(p, scpy, slen, delim);
-	tokens[n++] = scpy;
-	scpy += strlen(scpy) + 1;
+        p = n_str_tok(p, scpy, slen, delim);
+        tokens[n++] = scpy;
+        scpy += strlen(scpy) + 1;
 
-	if (n == tokens_size) {
-	    char **tmp;
+        if (n == tokens_size) {
+            char **tmp;
             size_t new_size = (tokens_size + ALLOC_STEP) * sizeof(*tokens);
-	    if ((tmp = n_realloc(tokens, new_size)) == NULL) {
-		free(tokens[0]);
-		free(tokens);
-		tokens = NULL;
-		break;
+            if ((tmp = n_realloc(tokens, new_size)) == NULL) {
+                free(tokens[0]);
+                free(tokens);
+                tokens = NULL;
+                break;
 
-	    } else {
+            } else {
                 int i;
                 
-		tokens = tmp;
-		tokens_size += ALLOC_STEP;
+                tokens = tmp;
+                tokens_size += ALLOC_STEP;
                 for (i=n; i<tokens_size; i++)
                     tokens[i] = NULL;
-	    }
-	}
+            }
+        }
     }
     if (tokens != NULL)
-	tokens++;		/* hide tokens[0] */
+        tokens++;		/* hide tokens[0] */
 
     return (const char **) tokens;
 }

@@ -29,14 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifdef USE_N_ASSERT
-# include "nassert.h"
-#else
-# include <assert.h>
-# define n_assert(expr) assert(expr)
-#endif
-
-
 #include "trurl_internal.h"
 #include "narray.h"
 #include "nmalloc.h"

@@ -21,6 +21,7 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
         free(ht);
         return NULL;
     }
+
     ht->size = size;
     ht->items = 0;
     ht->free_fn = freefn;

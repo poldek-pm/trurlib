@@ -32,27 +32,27 @@ char *n_str_tok(const char *s, char *tok, size_t toklen, char *delim)
     char *lim, *p;
 
     if (!*s)
-	return NULL;
+        return NULL;
 
     lim = tok + toklen - 1;
 
     s += strspn(s, delim);
         
     while (*s && tok <= lim) {
-	for (p = delim; *p; p++) {
-	    if (*s == *p) {
-		*tok = '\0';
-		for (++s, p = delim; *s && *p; ++p) {
-		    if (*s == *p) {
-			++s;
-			p = delim;
-		    }
-		}
-		return (char *) s;
-	    }
-	}
+        for (p = delim; *p; p++) {
+            if (*s == *p) {
+                *tok = '\0';
+                for (++s, p = delim; *s && *p; ++p) {
+                    if (*s == *p) {
+                        ++s;
+                        p = delim;
+                    }
+                }
+                return (char *) s;
+            }
+        }
 
-	*tok++ = *s++;
+        *tok++ = *s++;
     }
     *tok = '\0';
     return (char *) s;
@@ -70,16 +70,16 @@ main(int argc, char *argv[])
     char *ptr, buf[256];
 
     if (3 > argc) {
-	puts("Usage: STPTOK \"string\" \"token_string\"");
-	return EXIT_FAILURE;
+        puts("Usage: STPTOK \"string\" \"token_string\"");
+        return EXIT_FAILURE;
     } else
-	ptr = argv[1];
+        ptr = argv[1];
 
     do {
-	ptr = stptok(ptr, buf, sizeof(buf), argv[2]);
+        ptr = stptok(ptr, buf, sizeof(buf), argv[2]);
 
-	printf("stptok(\"%s\", \"%s\")\n  buf: \"%s\"\n  "
-	       "returned: \"%s\"\n", argv[1], argv[2], buf, ptr);
+        printf("stptok(\"%s\", \"%s\")\n  buf: \"%s\"\n  "
+               "returned: \"%s\"\n", argv[1], argv[2], buf, ptr);
 
     } while (ptr && *ptr);
 

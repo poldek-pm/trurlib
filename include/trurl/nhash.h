@@ -7,7 +7,9 @@
 #ifndef TRURL_HASH_H
 #define TRURL_HASH_H
 
+
 #include <stddef.h>           /* For size_t     */
+#include <trurl/n_obj_ref.h>
 
 typedef struct trurl_hash_table tn_hash;
 

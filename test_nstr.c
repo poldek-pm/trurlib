@@ -23,7 +23,15 @@ void test_strtokl(void)
     p = tokens;
 
     while (*p) {
-	printf("token: %s\n", *p++);
+        printf("token: %s\n", *p++);
+    }
+    n_str_tokl_free(tokens);
+
+    printf("2\n");
+    tokens = n_str_tokl("alas", ":");
+    p = tokens;
+    while (*p) {
+        printf("token: %s\n", *p++);
     }
 
     n_str_tokl_free(tokens);
@@ -52,7 +60,7 @@ void test_strlen(void)
 
 int main()
 {
-
+#define TEST_STRTOKL 1
 #if TEST_STRTOKL
     test_strtokl();
 #endif

@@ -20,13 +20,6 @@ Module is based on:
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef USE_N_ASSERT
-# include "nassert.h"
-#else
-# include <assert.h>
-# define n_assert(expr) assert(expr)
-#endif
-
 
 #include "trurl_internal.h"
 #include "nhash.h"
@@ -59,11 +52,12 @@ struct hash_bucket {
  */
 
 struct trurl_hash_table {
+    uint16_t    _refcnt;
+    uint16_t    flags;
+
     size_t size;
     struct hash_bucket **table;
     size_t items;
-    
-    unsigned int  flags;
     
     void          (*free_fn) (void *);
     unsigned int  (*hash_fn) (const char*);

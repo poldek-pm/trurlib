@@ -7,8 +7,10 @@
 #ifndef TRURL_ARRAY_H
 #define TRURL_ARRAY_H
 
+#include <stdint.h>
 #include "tfn_types.h"
 #include "ndie.h"
+#include <trurl/n_obj_ref.h>
 
 #define TN_ARRAY_CONSTSIZE         (1 << 0)
 
@@ -19,12 +21,15 @@
 
 /* WARN: never ever access array members directly */
 struct trurl_array_private {
+    int16_t     _refcnt;
+    uint16_t    flags;
+    
     size_t      items;
-    void        **data;
     size_t      allocated;
-    unsigned    flags;
     size_t      start_index;
 
+    void        **data;
+    
     t_fn_free   free_fn;
     t_fn_cmp    cmp_fn;
 };

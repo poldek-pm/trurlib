@@ -26,19 +26,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef USE_N_ASSERT
-# include "nassert.h"
-#else
-#include <assert.h>
-# define n_assert(expr) assert(expr)
-#endif
-
 #include "trurl_internal.h"
 #include "nlist.h"
 #include "nmalloc.h"
-
-#ifndef MODULES
-#endif
 
 struct list_node {
     void *data;
@@ -46,7 +36,9 @@ struct list_node {
 };
 
 struct trurl_list {
-    unsigned int flags;
+    uint16_t    _refcnt;
+    uint16_t    flags;
+
     int items;
 
     struct list_node *head;

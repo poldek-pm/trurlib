@@ -6,6 +6,7 @@
 #ifndef TRURL_LIST_H
 #define TRURL_LIST_H
 
+#include "n_obj_ref.h"
 #include "tfn_types.h"
 
 typedef struct trurl_list tn_list;
