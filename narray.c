@@ -572,13 +572,17 @@ tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf)
 	trurl_die("n_array_sort_ex: compare function is NULL\n");
 	return NULL;
     }
-    
+#if 0
+    /* there is error in qsort_viodp_arr  - PawelK*/
     if (arr->items > 10) {
 	qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
 
     } else {
 	isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
     }
+#else
+	isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+#endif
 
     return arr;
 }
