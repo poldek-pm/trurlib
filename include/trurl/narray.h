@@ -196,6 +196,7 @@ tn_array *n_array_unshift(tn_array *arr, void *data);
 int n_array_eq_ex(const tn_array *arr1, const tn_array *arr2, t_fn_cmp cmpf);
 #define n_array_eq(arr1, arr2) n_array_eq_ex(arr1, arr2, NULL)
 
+tn_array *n_array_reverse(tn_array *arr);
 
 /*
   Remove all duplicates

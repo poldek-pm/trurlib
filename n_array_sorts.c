@@ -163,3 +163,20 @@ tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf)
 {
     return n_array_sort_internal(arr, cmpf, SORT_ISORT);
 }
+
+
+tn_array *n_array_reverse(tn_array *arr)
+{
+    int i, j;
+
+    i = arr->start_index;
+    j = arr->items - 1;
+
+    while (i < j) {
+        SWAP_void(arr->data[i], arr->data[j]);
+        i++;
+        j--;
+    }
+    
+    return arr;
+}

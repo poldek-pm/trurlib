@@ -411,6 +411,10 @@ void test_array_remove(void)
     n_array_unshift(arr, n_strdup("blada"));
     print_array_str(arr, "start", "\n");
 
+
+    n_array_reverse(arr);
+    print_array_str(arr, "start", "\n");
+
     n_array_remove(arr, "dupa");
     print_array_str(arr, "removed dupa", "\n");
 
@@ -441,6 +445,7 @@ int main()
     //test_array_growth();
     //test_array_basic();
     //test_array_growth();
+    
     test_array_remove();
     /* test_array_big(); */
     //test_array_sort();
