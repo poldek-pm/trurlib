@@ -1,3 +1,6 @@
+0.43.6
+- added n_*snprinf.h with *snprintf() wrappers
+
 0.43.5 
 - fixed 0.43.4
 
