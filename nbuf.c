@@ -47,27 +47,18 @@ tn_buf *n_buf_new(int initial_size)
 {
     tn_buf *buf;
 
-    if ((buf = n_malloc(sizeof(*buf))) == NULL)
+    if ((buf = n_calloc(1, sizeof(*buf))) == NULL)
         return NULL;
 
-    n_assert(initial_size >= 0);
-    
-    buf->allocated = initial_size;
-    buf->size = 0;
-    buf->flags = 0;
-    buf->off = 0;
-    
     if (initial_size == 0) {
         buf->data = NULL;
-        
-    } else if ((buf->data = n_malloc(initial_size)) != NULL) {
-        buf->data[0] = '\0';
-
-    } else {
-        free(buf);
-        buf = NULL;
+        return buf;
     }
     
+    buf->data = NULL;
+    buf->allocated = initial_size;
+    buf->data = n_malloc(initial_size);
+    buf->data[0] = '\0';
     return buf;
 }
 
@@ -465,19 +456,27 @@ int n_buf_restore_ex(tn_stream *st, tn_buf **bptr, int sizebits,
     }
 
     //printf("n_buf_restore %d, %lu\n", size, n_stream_tell(st));
-    buf = alloca(size);
-    if (n_stream_read(st, buf, size) != (int)size)
+    if (process_buf == NULL) {
+        buf = n_malloc(size);
+    } else {
+        buf = alloca(size);
+    }
+     
+    if (n_stream_read(st, buf, size) != (int)size) {
+        if (process_buf == NULL)
+            free(buf);
         return 0;
+    }
+
+    nbuf = n_buf_new(0);
+    n_buf_init(nbuf, buf, size);
 
     if (process_buf == NULL) {
-        nbuf = n_buf_new(size);
-        n_buf_addata(nbuf, buf, size, 0);
+        nbuf->flags &= ~(TN_BUF_CONSTDATA); /* managed by buffer */
         *bptr = nbuf;
         rc = 1;
         
     } else {
-        nbuf = n_buf_new(0);
-        n_buf_init(nbuf, buf, size);
         rc = process_buf(nbuf, arg);
         n_buf_free(nbuf);
     }
