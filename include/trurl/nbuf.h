@@ -11,6 +11,7 @@
 #define TN_BUF_CONSTDATA         (1 << 1)
 
 #include <stdarg.h>
+#include <string.h>
 
 struct trurl_buf {
     unsigned char *data;
