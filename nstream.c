@@ -105,7 +105,6 @@ static cookie_io_functions_t gzio_cookie = {
 
 #endif /* HAVE_FOPENCOOKIE */
 
-
 static int do_gz_flush(void *stream)
 {
     return gzflush(stream, Z_FULL_FLUSH);
@@ -128,6 +127,7 @@ static char *do_s_gets(void *stream, char *buf, size_t size)
 }
 
 
+
 static int do_gz_getc(void *stream) 
 {
     register int c = gzgetc(stream);
@@ -137,6 +137,8 @@ static int do_gz_getc(void *stream)
     return c; 
 }
 
+
+#if HAVE_GZUNGETC               /* zlib >= 1.2.0.2 */
 static int do_gz_ungetc(int c, void *stream) 
 {
     register int cc = gzungetc(c, stream);
@@ -145,6 +147,7 @@ static int do_gz_ungetc(int c, void *stream)
     n_assert(cc == c);
     return cc;
 }
+#endif
 
 static int zlib_fseek_wrap(void *stream, long offset, int whence) 
 {
@@ -198,7 +201,11 @@ static tn_stream *n_stream_new(int type)
             st->write = (int (*)(void*, const void*, size_t))gzwrite;
             st->gets  = (char *(*)(void*, char*, size_t))gzgets;
             st->getc  = do_gz_getc;
+#if HAVE_GZUNGETC
             st->ungetc = do_gz_ungetc;
+#else
+            st->ungetc = NULL;
+#endif            
             st->seek  = (int (*)(void*, long, int))zlib_fseek_wrap;
             st->tell  = (long (*)(void*))gztell;
             st->flush = do_gz_flush;
