@@ -42,13 +42,34 @@ void test_buf(void)
            n_buf_ptr(nbuf));
 }
 
+void test_buf2(void)
+{
+    tn_buf *nbuf;
+    tn_buf_it it;
+    char *line;
+    int len;
+    
+    nbuf = n_buf_new(4);
+    n_buf_printf(nbuf, "dupa");
+    
+    n_buf_it_init(&it, nbuf);
+    
+    line = n_buf_it_gets(&it, &len);
+
+    printf("line = (%s), len = %d\n", line, len);
+    printf("%d, %d (%s)\n", n_buf_size(nbuf), strlen(n_buf_ptr(nbuf)),
+           n_buf_ptr(nbuf));
+    
+}
+
 
 int main()
 {
 
     void *p;
 
-    test_buf();
+    test_buf2();
+    exit(0);
     
     printf("n_assert test:");
     n_assert_sethook(assert_hook);

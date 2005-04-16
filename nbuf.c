@@ -202,9 +202,11 @@ int n_buf_write_ex(tn_buf *buf, const void *ptr, int size, int zero)
 {
     if (zero)
         zero = 1;
-    
-    if (buf->allocated - buf->off < (unsigned)size + zero) 
-        if (n_buf_grow(buf, buf->allocated + size + zero) == NULL)
+
+    /* size + zero + 1 - gets() must guarantee that buf is longer
+       than returned string */
+    if (buf->allocated - buf->off < (unsigned)size + zero + 1) 
+        if (n_buf_grow(buf, buf->allocated + size + zero + 1) == NULL)
             return -1;
 
     memcpy(&buf->data[buf->off], ptr, size);
