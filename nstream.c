@@ -57,8 +57,10 @@ int gzfseek(void *stream, _IO_off64_t *offset, int whence)
     z_off_t rc, off = *offset;
     
     rc = gzseek(stream, off, whence);
-    if (rc >= 0)
+    if (rc >= 0) {
+	*offset = rc;
         rc = 0;
+    }
 #if ZLIB_TRACE
     printf("zfseek (%p, %ld, %lld, %d) = %d\n", stream, off, *offset, whence, rc);
 #endif    
@@ -310,7 +312,7 @@ static int do_open(tn_stream *st, const char *path, const char *mode,
                     
                 } else {
                     st->stream = stream;
-                    fseek(st->stream, 0, SEEK_SET); /* glibc BUG (?) */
+                    fseek(st->stream, 0, SEEK_SET); /* XXX glibc BUG (?) */
                     st->type = type;
                 };
                 break;
