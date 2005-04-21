@@ -87,6 +87,13 @@ void n_array_free(tn_array *arr)
     free(arr);
 }
 
+void n_array_cfree(tn_array **arrptr) 
+{
+    if (*arrptr) {
+        n_array_free(*arrptr);
+        *arrptr = NULL;
+    }
+}
 
 void n_array_free_na(tn_alloc *na, tn_array *arr)
 {

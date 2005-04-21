@@ -64,6 +64,7 @@ tn_fn_cmp n_array_ctl_set_cmpfn(tn_array *arr, tn_fn_cmp cmp_fn);
 tn_fn_cmp n_array_ctl_get_cmpfn(tn_array *arr);
 
 void n_array_free(tn_array *arr);
+void n_array_cfree(tn_array **arrptr);
 void n_array_free_na(tn_alloc *na, tn_array *arr);
 
 /*
