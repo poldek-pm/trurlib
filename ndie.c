@@ -51,7 +51,7 @@ static void trurl_vdie(const char *fmt, va_list ap)
 
     if (die_hook != NULL) {
         char msg[1024];
-        n_snprintf(msg, sizeof(msg), fmt, ap);
+        n_vsnprintf(msg, sizeof(msg), fmt, ap);
         die_hook(msg);
 
     } else {
