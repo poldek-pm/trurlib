@@ -18,7 +18,7 @@
 # include "config.h"
 #endif
 
-#ifdef HAVE_FOPENCOOKIE
+#ifdef OFF_HAVE_FOPENCOOKIE  /* disabled cookies, too much troubles with them */
 # define _GNU_SOURCE 1
 #endif
 
@@ -36,7 +36,7 @@
 
 #define ZLIB_TRACE 0
 
-#ifdef HAVE_FOPENCOOKIE
+#ifdef OFF_HAVE_FOPENCOOKIE
 #ifndef __GLIBC_MINOR__
 # error "glibc2 or later is required"
 #endif
@@ -105,7 +105,7 @@ static cookie_io_functions_t gzio_cookie = {
     (cookie_close_function_t*)gzclose
 };
 
-#endif /* HAVE_FOPENCOOKIE */
+#endif /* OFF_HAVE_FOPENCOOKIE */
 
 static int do_gz_flush(void *stream)
 {
@@ -234,7 +234,7 @@ static int determine_type(const char *path, int *type)
 
     real_type = *type;
     
-#ifdef HAVE_FOPENCOOKIE
+#ifdef OFF_HAVE_FOPENCOOKIE
     if (*type == TN_STREAM_GZIO) {
         *type = TN_STREAM_STDIO;
         real_type = TN_STREAM_GZIO;
@@ -243,7 +243,7 @@ static int determine_type(const char *path, int *type)
 #endif
     
     if ((p = strrchr(path, '.')) && strcmp(p, ".gz") == 0) {
-#ifdef HAVE_FOPENCOOKIE
+#ifdef OFF_HAVE_FOPENCOOKIE
         *type = TN_STREAM_STDIO;
         real_type = TN_STREAM_GZIO;
 #else
@@ -299,7 +299,7 @@ static int do_open(tn_stream *st, const char *path, const char *mode,
             n_assert(0);
     }
 
-#ifdef HAVE_FOPENCOOKIE 
+#ifdef OFF_HAVE_FOPENCOOKIE 
     if (real_type != type) {
         void *stream = NULL;
         switch (type) {
