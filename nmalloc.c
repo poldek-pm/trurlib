@@ -21,8 +21,6 @@
 /*
    $Id$
  */
-
-
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -147,18 +145,21 @@ void n_cfree(void *ptr)
 
 static void *malloc_malloc(tn_alloc *na, size_t size)
 {
+    na = na;
     return n_malloc(size);
 }
 
 static
 void *malloc_calloc(tn_alloc *na, size_t size)
 {
+    na = na;
     return n_calloc(size, 1);
 }
 
 static
 void *malloc_realloc(tn_alloc *na, void *ptr, size_t size, size_t newsize)
 {
+    na = na; size = size;
     return n_realloc(ptr, newsize);
 }
 
@@ -166,14 +167,17 @@ void *malloc_realloc(tn_alloc *na, void *ptr, size_t size, size_t newsize)
 static
 void malloc_free(tn_alloc *na, void *ptr)
 {
+    na = na;
     return n_free(ptr);
 }
 
-
-
 #define obstack_chunk_alloc n_malloc
-#define obstack_chunk_free  n_free
-#include <obstack.h>
+#define obstack_chunk_free  free
+#if HAVE_OBSTACK
+# include <obstack.h>
+#else
+# include "lib/obstack.h"
+#endif
 
 static
 void *aobstack_malloc(tn_alloc *na, size_t size)
@@ -193,6 +197,7 @@ void *aobstack_calloc(tn_alloc *na, size_t size)
 static
 void aobstack_free(tn_alloc *na, void *ptr)
 {
+    na = na;
     ptr = ptr;
 }
 

@@ -3,13 +3,16 @@
 AUTOMAKE_OPTIONS = foreign
 
 # use libtool versioning 
-TRURL_VERINFO   = 4:0:4
+TRURL_VERINFO   = 5:0:5
 CPPFLAGS  = -I$(top_srcdir)/include/trurl -I$(top_srcdir)/include
 INCLUDES  = 
 AM_CFLAGS = @AM_CFLAGS@
 
+SUBDIRS   = lib
+DIST_SUBDIRS = $(SUBDIRS)
+
 lib_LTLIBRARIES  = libtrurl.la
-libtrurl_la_LDFLAGS = -version-info $(TRURL_VERINFO)
+libtrurl_la_LDFLAGS = -version-info $(TRURL_VERINFO) -export-symbols libtrurl.sym
 
 NARRAY_SRCS  = \
 	n_array_bsearch_ex.c    \
@@ -92,6 +95,8 @@ libtrurl_la_SOURCES = \
 	$(NSTR_SRCS)     \
 	ntuple.c
 
+libtrurl_la_LIBADD = lib/libsys.la
+
 pkgincludedir = $(includedir)/trurl
 pkginclude_HEADERS = \
 		include/trurl/nassert.h    \
@@ -111,7 +116,7 @@ pkginclude_HEADERS = \
 		include/trurl/n_obj_ref.h  \
 		include/trurl/ntuple.h
 
-EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in \
+EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in libtrurl.sym \
 			 test_common.c \
 			 test_array.c \
 			 test_list.c \
