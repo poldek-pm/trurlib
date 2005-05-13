@@ -63,6 +63,8 @@ n_calloc
 n_cfree
 n_die
 n_die_set_hook
+n_errmsg_array_nth_oob
+n_errmsg_tuple_nth_oob
 n_free
 n_hash_clean
 n_hash_ctl
