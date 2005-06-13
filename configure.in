@@ -28,6 +28,17 @@ AC_TYPE_SIZE_T
 dnl Checks for library functions.
 AC_CHECK_FUNCS(strdup strspn)
 
+dnl unaligned accesses (XXX: todo cross compliation), stolen from libpcap
+case "$host_cpu" in
+	alpha*|arm*|hp*|mips*|sh*|sparc*|ia64|nv1)
+		AC_DEFINE(HAVE_CPU_UNALIGNED_ACCESS, 0, 
+           [Define to 0 if CPU does not like unaligned access.])
+		;;
+	*) 
+        AC_DEFINE(HAVE_CPU_UNALIGNED_ACCESS, 1)
+        ;;
+esac
+
 dnl Disabled cookies usage; they make too much troubles.
 dnl AC_CHECK_FUNCS(fopencookie,,,$CONF_IN_LDFLAGS)
 
