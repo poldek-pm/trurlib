@@ -58,7 +58,7 @@ int n_stream_set_write_hook(tn_stream *st,
     return 1;
 }
     
-
+/* returns the number of bytes read */
 int n_stream_gets(tn_stream *st, char *buf, size_t size);
 int n_stream_getline(tn_stream *st, char **bufptr, size_t size);
 
