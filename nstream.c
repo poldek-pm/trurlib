@@ -183,35 +183,35 @@ static tn_stream *n_stream_new(int type)
     
     switch (type) {
         case TN_STREAM_STDIO:
-            st->open  = (void *(*)(const char *, const char *))fopen;
-            st->dopen = (void *(*)(int, const char *))fdopen;
-            st->read  = (int (*)(void*, void*, size_t))do_s_read;
-            st->write = (int (*)(void*, const void*, size_t))do_s_write;
-            st->gets  = do_s_gets;
-            st->getc  = (int (*)(void*))getc;
-            st->ungetc = (int (*)(int, void*))ungetc;
-            st->seek  = (int (*)(void*, long, int))fseek;
-            st->tell  = (long (*)(void*))ftell;
-            st->flush = (int (*)(void*))fflush;
-            st->close = (int (*)(void*))fclose;
+            st->st_open  = (void *(*)(const char *, const char *))fopen;
+            st->st_dopen = (void *(*)(int, const char *))fdopen;
+            st->st_read  = (int (*)(void*, void*, size_t))do_s_read;
+            st->st_write = (int (*)(void*, const void*, size_t))do_s_write;
+            st->st_gets  = do_s_gets;
+            st->st_getc  = (int (*)(void*))getc;
+            st->st_ungetc = (int (*)(int, void*))ungetc;
+            st->st_seek  = (int (*)(void*, long, int))fseek;
+            st->st_tell  = (long (*)(void*))ftell;
+            st->st_flush = (int (*)(void*))fflush;
+            st->st_close = (int (*)(void*))fclose;
             break;
             
         case TN_STREAM_GZIO:
-            st->open  = gzopen;
-            st->dopen = gzdopen;
-            st->read  = gzread;
-            st->write = (int (*)(void*, const void*, size_t))gzwrite;
-            st->gets  = (char *(*)(void*, char*, size_t))gzgets;
-            st->getc  = do_gz_getc;
+            st->st_open  = gzopen;
+            st->st_dopen = gzdopen;
+            st->st_read  = gzread;
+            st->st_write = (int (*)(void*, const void*, size_t))gzwrite;
+            st->st_gets  = (char *(*)(void*, char*, size_t))gzgets;
+            st->st_getc  = do_gz_getc;
 #if HAVE_GZUNGETC
-            st->ungetc = do_gz_ungetc;
+            st->st_ungetc = do_gz_ungetc;
 #else
-            st->ungetc = NULL;
+            st->st_ungetc = NULL;
 #endif            
-            st->seek  = (int (*)(void*, long, int))zlib_fseek_wrap;
-            st->tell  = (long (*)(void*))gztell;
-            st->flush = do_gz_flush;
-            st->close = gzclose;
+            st->st_seek  = (int (*)(void*, long, int))zlib_fseek_wrap;
+            st->st_tell  = (long (*)(void*))gztell;
+            st->st_flush = do_gz_flush;
+            st->st_close = gzclose;
             break;
             
         default:
@@ -356,7 +356,7 @@ tn_stream *n_stream_dopen(int fd, const char *mode, int type)
     if ((st = n_stream_new(type)) == NULL)
         return NULL;
     
-    if ((stream = st->dopen(fd, mode))) {
+    if ((stream = st->st_dopen(fd, mode))) {
         st->stream = stream;
         st->fd = fd;
         
@@ -375,7 +375,7 @@ int n_stream_vprintf(tn_stream *st, const char *fmt, va_list ap)
     int  n;
 
     n = vsnprintf(buf, sizeof(buf), fmt, ap);
-    return st->write(st->stream, buf, n);
+    return st->st_write(st->stream, buf, n);
 }
 
 
@@ -395,7 +395,7 @@ int n_stream_printf(tn_stream *st, const char *fmt, ...)
 inline
 int n_stream_gets(tn_stream *st, char *buf, size_t size)
 {
-    if (st->gets(st->stream, buf, size))
+    if (st->st_gets(st->stream, buf, size))
 		return strlen(buf);
 	
 	return 0;
@@ -429,7 +429,7 @@ int n_stream_getline(tn_stream *st, char **bufptr, size_t size)
             size *= 2;
             buf = n_realloc(buf, size);
         }
-        c = st->getc(st->stream);
+        c = st->st_getc(st->stream);
         if (c == EOF) 
             break;
         

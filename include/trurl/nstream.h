@@ -22,17 +22,17 @@ struct trurl_stream_private {
     int   fd;
 
     
-    void  *(*open) (const char*, const char *);
-    void  *(*dopen)(int, const char *);
-    int   (*read)  (void*, void*, size_t);
-    char  *(*gets) (void*, char*, size_t);
-    int   (*getc)  (void*);
-    int   (*ungetc)  (int, void *);
-    int   (*write) (void*, const void*, size_t);
-    int   (*seek)  (void*, long, int);
-    long  (*tell)  (void*); 
-    int   (*flush) (void*);
-    int   (*close)  (void*);
+    void  *(*st_open) (const char*, const char *);
+    void  *(*st_dopen)(int, const char *);
+    int   (*st_read)  (void*, void*, size_t);
+    char  *(*st_gets) (void*, char*, size_t);
+    int   (*st_getc)  (void*);
+    int   (*st_ungetc)  (int, void *);
+    int   (*st_write) (void*, const void*, size_t);
+    int   (*st_seek)  (void*, long, int);
+    long  (*st_tell)  (void*); 
+    int   (*st_flush) (void*);
+    int   (*st_close)  (void*);
     int   (*_write_hook)(const void*, size_t, void *);
     void   *_write_hook_arg;        
 };
@@ -64,7 +64,7 @@ int n_stream_getline(tn_stream *st, char **bufptr, size_t size);
 
 static inline
 int n_stream_read(tn_stream *st, void *buf, size_t size) {
-    return st->read(st->stream, buf, size);
+    return st->st_read(st->stream, buf, size);
 }
 
 static inline
@@ -72,7 +72,7 @@ int n_stream_read_uint8(tn_stream *st, uint8_t *val)
 {
     uint8_t v;
     
-    if (st->read(st->stream, &v, sizeof(v)) != sizeof(v))
+    if (st->st_read(st->stream, &v, sizeof(v)) != sizeof(v))
         return 0;
     
     *val = v;
@@ -84,7 +84,7 @@ int n_stream_read_uint16(tn_stream *st, uint16_t *val)
 {
     uint16_t v;
     
-    if (st->read(st->stream, &v, sizeof(v)) != sizeof(v))
+    if (st->st_read(st->stream, &v, sizeof(v)) != sizeof(v))
         return 0;
         
     v = n_ntoh16(v);
@@ -98,7 +98,7 @@ int n_stream_read_uint32(tn_stream *st, uint32_t *val)
     uint32_t v;
     
     *val = 0;
-    if (st->read(st->stream, &v, sizeof(v)) != sizeof(v))
+    if (st->st_read(st->stream, &v, sizeof(v)) != sizeof(v))
         return 0;
         
     *val = n_ntoh32(v);
@@ -111,7 +111,7 @@ int n_stream_write(tn_stream *st, const void *buf, size_t size) {
         if (!st->_write_hook(buf, size, st->_write_hook_arg))
             return size;        /* fake write */
     
-    return st->write(st->stream, buf, size);
+    return st->st_write(st->stream, buf, size);
 }
 
 static inline
@@ -137,25 +137,25 @@ int n_stream_write_uint32(tn_stream *st, uint32_t v)
 
 static inline
 int n_stream_seek(tn_stream *st, long offset, int whence) {
-    return st->seek(st->stream, offset, whence);
+    return st->st_seek(st->stream, offset, whence);
 }
 
 
 static inline
 long n_stream_tell(tn_stream *st) {
-    return st->tell(st->stream);
+    return st->st_tell(st->stream);
 }
 
 
 static inline
 int n_stream_flush(tn_stream *st) {
-    return st->flush(st->stream);
+    return st->st_flush(st->stream);
 }
 
 static inline
 void n_stream_close(tn_stream *st) {
     if (st->stream)
-        st->close(st->stream);
+        st->st_close(st->stream);
     st->stream = NULL;
     free(st);
 }
