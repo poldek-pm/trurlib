@@ -77,7 +77,9 @@ tn_array *n_array_clean(tn_array *arr);
  */
 tn_array *n_array_clone_ex(const tn_array *arr, t_fn_dup dupf);
 /* aliases for n_array_clone_ex */
-tn_array *n_array_clone(const tn_array *arr); 
+/* clone only the structure  */
+tn_array *n_array_clone(const tn_array *arr);
+/* clone the structure and the data */
 tn_array *n_array_dup(const tn_array *arr, t_fn_dup dupf);
 
 /* 
