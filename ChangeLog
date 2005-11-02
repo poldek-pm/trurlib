@@ -1,0 +1,692 @@
+2005-10-17  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nstream.h, nstream.c:
+	- prefixed nstream members to avoid conflicts with stdio macros (thanks to Olivier Thauvin (olivier.thauvin att aerov jussieu fr)
+
+	* include/trurl/narray.h: - more comments
+
+2005-06-13  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nstream.h: - comments
+
+	* configure.in, nmalloc.c:
+	- do not make unalign obstack on sparc, alpha, etc
+
+2005-05-13  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* lib/obstack.c: - missing include
+
+	* libtrurl.sym: - missing symbols
+
+	* libtrurl.sym: - symtab
+
+	* configure.in, lib/.cvsignore, lib/Makefile.am, lib/obstack.c, lib/obstack.h, nmalloc.c, Makefile.am:
+	- be more portable (obstack)
+
+2005-05-12  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nstream.c:
+	- disabled usage of stdio cookies, too much troubles with them
+
+	* configure.in:
+	- disaled usage of stdio cookies, too much troubles with them
+
+	* ndie.c: - horrible bug
+
+2005-04-21  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/narray.h, n_array_new.c: - new n_array_cfree()
+
+2005-04-16  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nstream.c:
+	- cookie's gzfseek() fix: set offset to proper value (qboosh at pld-linux org)
+
+	* nbuf.c, test_common.c: - bugfix
+
+2005-04-11  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* configure.in, nstream.c:
+	- tolerate missing gzungetc() (not used in fact)
+
+2004-11-16  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/narray.h, n_array_sorts.c, test_array.c:
+	- +n_array_reverse()
+
+2004-11-03  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/n_obj_ref.h, include/trurl/trurl.h, include/trurl/nbuf.h:
+	- be c++ friendly
+
+2004-10-23  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Makefile.am, include/trurl/nstr.h, nstr.c, test_nstr.c:
+	- n_str_strip_ws()
+
+2004-10-15  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nassert.h, nassert.c, ndie.c:
+	- set_hook() schema for both die and assert; die() cosmetics
+
+2004-10-14  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nstream.h, nstream.c, test_stream.c:
+	- +n_stream_getline()
+
+2004-10-07  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* n_hash_dup.c: - dup()ed hash could not inherit NOCPKEY
+
+2004-10-05  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/narray.h, n_array_new.c: - cleanup
+
+2004-10-04  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nstr_tokl.c: - do not assume that WHITE is after quoted string
+
+	* nstr_tokl.c: - normal characters are not escapeable
+
+	* include/trurl/nstr.h, nstr_tokl.c: - no default escape char
+
+2004-10-02  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/narray.h, n_array_new.c: - +n_array_ctl_get_cmpfn()
+
+	* configure.in: - missing check
+
+	* n_array_sorts.c: - trace
+
+2004-09-30  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/narray.h: - SWIGing
+
+2004-09-27  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* test_stream.c: - more tests
+
+2004-09-26  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/trurl.h: - missing inc
+
+	* test_array.c: - more tests
+
+2004-09-21  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nstr.h, nstr_tok.c, nstr_tokl.c: - delim is const char
+
+2004-09-12  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/Attic/nobstack.h, Attic/test_obstack.c, Makefile.am, nmalloc.c:
+	- obsoleted obstack.h
+
+2004-09-01  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Makefile.am: - 'symlink' is useless
+
+	* include/trurl/narray.h: - missing include
+
+2004-08-06  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/n_array_dup.c, include/trurl/narray.h, n_array_new.c:
+	- +n_array_ctl_set*fn
+
+	* nmalloc.c: - smaller min. chunks
+
+2004-07-23  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* n_hash_keys.c: - fix
+
+	* include/trurl/nhash.h, n_hash_keys.c: - +n_hash_values()
+
+2004-07-14  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nhash.h, n_hash_free.c, n_hash_int.h, n_hash_new.c, n_hash_put.c:
+	- tn_alloc support
+
+	* nbuf.c, include/trurl/nbuf.h: - n_ref() aware
+
+2004-07-13  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nmalloc.c: - refcount-able
+
+2004-07-12  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* n_hash_new.c, n_hash_put.c, trurl_internal.h, Attic/hash-string.h, Makefile.am, n_hash_int.h:
+	- cleanups
+
+	* nmalloc.c: - bugfix
+
+2004-07-11  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* .cvsignore, Makefile.am, include/trurl/ntuple.h, n_array_sorts.c, ntuple.c:
+	- +ntuple - python-like, semi-array
+
+	* include/trurl/narray.h: - bugfix
+
+2004-07-09  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/n_array_free.c, Makefile.am, include/trurl/narray.h, include/trurl/nmalloc.h, n_array_new.c, nmalloc.c:
+	- +tn_alloc
+
+	* n_hash_map.c: - dump()
+
+2004-06-24  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nbuf.c: - improved restore()
+
+2004-06-23  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nhash.h, n_hash_free.c, n_hash_get.c, n_hash_int.h, n_hash_new.c, n_hash_put.c, nbuf.c:
+	- fixes && improvements
+
+2004-06-22  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/n_hash_exists.c, Makefile.am, include/trurl/nbuf.h, n_hash_int.h, nbuf.c:
+	- improvements
+
+	* n_hash_dup.c, n_hash_free.c, n_hash_get.c, n_hash_map.c, n_hash_new.c, n_hash_put.c, n_hash_remove.c, n_hash_stats.c, test_hash.c, trurl_internal.h:
+	- hash table improvements
+
+2004-05-06  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* n_array_dump_stats.c, n_hash_stats.c, nstr_tokl.c:
+	- type fixes, incl. SEGV on 64-bit archs (qboosh)
+
+2004-03-22  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/narray.h, include/trurl/trurl.h, n_array_push.c:
+	- n_array_concat()
+
+2004-02-23  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/narray.h, n_array_nth.c: - SWIG'ed
+
+2004-02-22  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/Attic/nobstack.h, Attic/test_obstack.c, Makefile.am:
+	- glibc's obstack wrapper
+
+2004-02-17  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Makefile.am: - 'make distcheck' fixes (wiget at pld-linux org)
+
+	* n_array_clone.c, include/trurl/narray.h:
+	- merged _dup() and _clone() funcs
+
+2004-01-05  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nstr.h, nstr_basenam.c:
+	- + n_dirname() alias for n_basedirnam()
+
+	* nstr_tokl.c: - commented out debug message
+
+	* include/trurl/nbuf.h: - new n_buf_it_read()
+	- bugfixes
+	- n_buf_it_read_*int*() aliases to n_buf_it_get_int*
+
+	* include/trurl/nstr.h: - new n_str_[eq,ne] macros
+
+2003-12-31  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nbuf.h: - replaced macros with inline funcs
+
+2003-12-30  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nmalloc.h, n_hash_free.c, n_hash_remove.c, nbuf.c, nstr_concat.c, nstr_len.c, nstring.c, test_nstr.c:
+	- nothing shocking
+
+	* Makefile.am: - fixed *.h list
+
+	* nstream.c: - bugfix (added gzseek stdio-like wrapper)
+
+2003-04-30  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nstr.h, nstr_tokl.c: - + n_str_etokl() (line tokenizer)
+
+2003-04-23  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nstr.h, nstr_tokl.c: + n_str_tokl_n()
+
+2003-04-14  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nmalloc.h: + n_strdupap()
+
+2003-02-07  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nbuf.h: - missing inclusion
+
+	* n_hash_put.c: - do not free NULL pointers...
+
+2003-01-18  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* autogen.sh: - added --no-configure option
+
+	* include/trurl/narray.h, n_array_new.c: - +n_array_init()
+
+	* configure.in: - missing zlib
+
+2003-01-14  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nmalloc.h, nmalloc.c:
+	 +n_cfree() (frees and sets to NULL a pointer)
+
+2003-01-06  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* n_hash_dup.c: - bugfix
+
+2002-12-13  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nmalloc.h, include/trurl/narray.h, n_array_ctl.c, n_array_int.h, n_array_new.c, n_array_nth.c, n_array_push.c, n_array_set_nth.c, n_array_sorts.c, n_array_unshift.c, n_hash_new.c, nbuf.c, nmalloc.c, test_array.c:
+	- + n_memdup()
+	- few n_array's improvements
+
+2002-12-12  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/n_obj_ref.h, include/trurl/narray.h, include/trurl/nhash.h, include/trurl/nlist.h, Attic/n_array_dup.c, Attic/n_array_free.c, n_array_clone.c, n_array_int.h, n_array_new.c, n_hash_free.c, n_hash_int.h, n_hash_new.c, n_list_free.c, n_list_int.h, n_list_new.c, nstr_tok.c, nstr_tokl.c, test_nstr.c:
+	- + n_(array|hash|list)_ref()
+	- cleanups
+
+2002-12-10  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nhash.h, Makefile.am, n_hash_dup.c: + n_hash_dup()
+
+2002-12-02  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nbuf.h: - n_buf_it_get* fixes
+
+	* nbuf.c: - buffer with constant data may be cleaned too
+
+2002-11-13  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nmalloc.c, nstream.c: - cosmetics
+
+	* include/trurl/nhash.h, n_hash_keys.c: - improved n_hash_keys()
+
+	* include/trurl/nbuf.h, nbuf.c: - n_buf_gets() and co
+
+2002-11-07  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* ndie.c: - missing include
+
+	* include/trurl/nhash.h, Makefile.am, configure.in, n_hash_keys.c, n_hash_new.c:
+	- new fn n_hash_keys()
+	- released as 0.44.0
+
+2002-11-04  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/n2h.h, include/trurl/nbuf.h, include/trurl/nstream.h, nmalloc.c, nstream.c, test_common.c, test_stream.c, Makefile.am, Makefile.extra, configure.in, n_array_remove_ex.c, n_hash_int.h, n_hash_new.c, nbuf.c, ndie.c:
+	- improved tn_buf: moved add_intXX() from poldek, stdio like interface
+	  is added
+	- tn_stream fixes
+	- moved n2h from poldek
+	- killed gcc's warnings
+
+2002-10-29  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nbuf.h, include/trurl/nstore.h, include/trurl/nstream.h, Makefile.extra, configure.in, nbuf.c, nstore.c, nstream.c, test_array.c, test_stream.c, Makefile.am:
+	- new tn_steam module with support for transparent access to compressed
+	  files and stdio-like interface.
+	- new n_buf_(re)store*() functions
+
+	* Makefile.am: - updated library version info
+
+2002-10-18  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* configure.in:
+	- ,,automake requires 'AM_CONFIG_HEADER', not 'AC_CONFIG_HEADER' ''
+
+2002-10-18  Artur Frysiak  <wiget@pld.org.pl>
+
+	* .cvsignore: more ignores
+
+	* Attic/acconfig.h, configure.in, Makefile.am: - make distcheck passed
+
+2002-10-17  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Makefile.am, autogen.sh, configure.in:
+	- adaptation to include/trurl headers location
+
+2002-10-16  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/narray.h: - +n_array_has_free_fn()
+
+2002-06-03  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nbuf.c: - minor bugfix
+
+2002-05-06  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Makefile.am, NEWS, configure.in, include/trurl/narray.h, n_array_int.h, n_array_nth.c:
+	- make n_array_nth() inline (speed!)
+
+	* Attic/trurl_die.c, include/trurl/ndie.h, ndie.c:
+	- make n_die() public
+
+	* include/trurl/nbuf.h, nbuf.c: - new n_buf_*printf()
+
+	* Makefile.am, nmalloc.c, xmalloc.c:
+	- fixed static link: moved xmalloc*()s to separate module
+
+	* Makefile.am: - released as 0.43.7
+
+2002-04-26  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* NEWS, README: - updated && merged with PL versions
+
+	* Attic/CHANGES.PL, Attic/README.PL: - obsoleted
+
+2002-04-25  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nmalloc.h, nmalloc.c, test_common.c: - nicer fn name
+
+	* Attic/xmalloc.h, include/trurl/trurl.h, nstr_tok.c, nstr_tokl.c, nstring.c, test_array.c, test_common.c, test_list.c, xmalloc.c, include/trurl/nmalloc.h, n_array_grow_priv.c, n_array_int.h, n_array_new.c, n_hash_int.h, n_hash_new.c, n_hash_put.c, n_list_int.h, n_list_new.c, n_list_push.c, n_list_unshift.c, nbuf.c, nmalloc.c, nstr_basenam.c, nstr_concat.c, nstr_cpy.c, nstr_len.c, configure.in, n_array_clone.c, Makefile.am:
+	- xmalloc()s -> n_malloc()s
+
+2002-04-21  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Makefile.am: - released as 0.43.6
+
+2002-04-05  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/n_snprintf.h: - bugfix
+
+	* include/trurl/trurl.h: - +#include <trurl/n_snprintf.h>
+
+	* NEWS, configure.in, include/trurl/n_snprintf.h, Makefile.am:
+	- n_snprintf.h with [v]snprintf wrappers which always returns
+	  the number of characters printed
+	- released as 0.43.6
+
+2002-03-15  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Makefile.am, NEWS, configure.in: - released as 0.43.5
+
+	* nbuf.c: - be 0.43.3 compatibile and provide n_buf_add symbol too
+
+2002-03-13  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* NEWS: - released as 0.43.4
+
+2002-03-12  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nstr.h, nstr_concat.c, nstr_len.c:
+	- copy va_list via __va_copy() macro (to be portable to PPC)
+
+2002-02-19  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* .cvsignore, Makefile.am, configure.in, include/trurl/nbuf.h, nbuf.c:
+	- added n_buff_addz(); pre 0.43.4
+
+	* Attic/ndbhash.c, Attic/ndbhash.h, Attic/test_dbhash.c:
+	- removed dead code
+
+2002-02-08  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* test_array.c: - one more test
+
+2002-02-07  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* n_array_remove_ex.c, test_array.c: - bugfix
+
+	* include/trurl/nhash.h, n_hash_new.c: - added n_hash_size
+
+2001-09-06  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Makefile.am, configure.in, n_array_sorts.c: - fixed AUTOSORTED
+	- simplified sort code
+
+2001-06-09  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* configure.in, NEWS: - 0.43.2
+
+	* n_array_clone.c: - fixed buggy func
+
+	* include/trurl/narray.h, nbuf.c: - bugfix
+
+2001-04-24  Tomasz K³oczko  <kloczek@pld.org.pl>
+
+	* Makefile.am: - removed VERSION from EXTRA_DIST.
+
+	* Attic/VERSION, configure.in: - changed version to 0.43.1,
+	- removed usinf VERSION file.
+
+2001-04-23  Rafa³ Kleger-Rudomin  <klakier@pld.org.pl>
+
+	* configure.in: - AC_PROG_LIBTOOL -> AM_PROG_LIBTOOL
+
+2001-02-10  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Makefile.am, include/trurl/narray.h, n_array_clone.c: - new function
+
+2001-02-08  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/ChangeLog: - don't like ChangeLog from whole installer
+
+	* Makefile.am, configure.in: - cosmetics (up to new automake)
+
+	* n_array_map.c, n_array_map_arg.c, n_array_remove_nth.c: - bugfix
+
+	* include/trurl/narray.h, n_array_remove_ex.c: - new function
+
+2001-02-02  Nobody  <nobody@pld.org.pl>
+
+	* Attic/ChangeLog: - ChangeLog update by changelog.sh
+	  (by Arkadiusz Miskiewicz <misiek@pld.org.pl>)
+
+2000-11-28  Nobody  <nobody@pld.org.pl>
+
+	* Attic/ChangeLog: - ChangeLog update by changelog.sh
+	  (by Arkadiusz Miskiewicz <misiek@pld.org.pl>)
+
+2000-11-24  Nobody  <nobody@pld.org.pl>
+
+	* Attic/ChangeLog: - ChangeLog update by changelog.sh
+	  (by Arkadiusz Miskiewicz <misiek@pld.org.pl>)
+
+2000-11-24  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/VERSION: - marked as 0.431
+
+	* .cvsignore, Makefile.am: - added spec to EXTRA_DIST
+
+2000-11-12  Nobody  <nobody@pld.org.pl>
+
+	* Attic/ChangeLog: - ChangeLog update by changelog.sh
+	  (by Arkadiusz Miskiewicz <misiek@pld.org.pl>)
+
+2000-11-10  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/mkmake.sh, autogen.sh: - be more traditional
+
+2000-11-09  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Makefile.am, Makefile.extra: - make trurl -> . symlink
+	- am's *CLEAN variables are used instead of removals in mclean goal
+
+2000-11-08  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nbuf.c: - fixed some bugs
+
+2000-10-31  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* configure.in: - check for db*.h headers instead of library
+
+	* Makefile.am: - use libtool version-info
+
+2000-10-29  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/narray.c, Attic/nhash.c, Attic/nlist.c, Attic/trurlib.spec, n_list_nth.c, n_list_pop.c, n_list_push.c, n_list_remove_ex.c, n_list_remove_nth.c, n_list_shift.c, n_list_size.c, n_list_unshift.c, nstr_cpy.c, nstring.c, trurlib.spec.in, Attic/VERSION, Attic/acconfig.h, Attic/mkmake.sh, Attic/n_array_dup.c, Attic/n_array_free.c, Attic/n_hash_exists.c, Makefile.am, Makefile.extra, NEWS, README, configure.in, mkarch.sh, n_array_bsearch_ex.c, n_array_clean.c, n_array_ctl.c, n_array_dump_stats.c, n_array_eq_ex.c, n_array_grow_priv.c, n_array_int.h, n_array_map.c, n_array_map_arg.c, n_array_new.c, n_array_nth.c, n_array_pop.c, n_array_push.c, n_array_remove_nth.c, n_array_set_nth.c, n_array_shift.c, n_array_sorts.c, n_array_uniq_ex.c, n_array_unshift.c, n_hash_clean.c, n_hash_ctl.c, n_hash_free.c, n_hash_get.c, n_hash_int.h, n_hash_map.c, n_hash_map_arg.c, n_hash_new.c, n_hash_put.c, n_hash_remove.c, n_hash_stats.c, n_list_contains_ex.c, n_list_free.c, n_list_int.h, n_list_iterator.c, n_list_lookup_ex.c, n_list_map_arg.c, n_list_new.c, .cvsignore, AUTHORS, Attic/ChangeLog, Attic/Makefile, COPYING, INSTALL:
+	- automake/autoconf support
+
+2000-10-25  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* xmalloc.c: - allow NULL as xrealloc() arg
+
+2000-10-17  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nbuf.h, nbuf.c: - nbuf redesign
+
+2000-10-01  Tomasz K³oczko  <kloczek@pld.org.pl>
+
+	* configure.in: - generated by autoscan.
+
+2000-09-20  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/Makefile, include/trurl/nstr.h, nstr_basenam.c:
+	- basename() functions added
+
+	* Attic/trurlib.spec:
+	- %{tmpdir} -> /tmp, distribution spec shouldn't be PLD dependent
+
+	* Attic/Makefile, Attic/VERSION, Attic/trurlib.spec:
+	- current working version is v0.42
+
+	* Attic/Makefile: - bugfix
+
+	* include/trurl/nstr.h, nstr_cpy.c: - n_strncpy() added
+
+2000-09-07  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nstr_tok.c: - bugfix
+
+	* Attic/Makefile: - misarch goal added
+
+	* Attic/nhash.c, include/trurl/nhash.h, test_hash.c:
+	- added hash function from D. J. Bernstein's cdb
+	- n_hash_stats() added
+
+	* Attic/narray.c, include/trurl/narray.h, test_array.c:
+	- removed growth control (nobody needs it)
+	- autosort option added
+	- cosmetics
+
+2000-08-07  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/tfn_types.h: - typedefs tn_fn_map{1,2,3} added
+
+2000-08-03  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* include/trurl/nhash.h, Attic/Makefile, Attic/nhash.c:
+	- added n_hash_clean()
+
+2000-08-02  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nstr_tokl.c: - yet another bug is killed
+
+	* nstr_tokl.c: - another horrible bug is fixed
+
+2000-07-28  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nbuf.c: - fixed horrible bug
+
+2000-07-27  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/nhash.c: - do not remalloc buckets during rehashing
+
+	* Attic/Makefile, Attic/nhash.c: - bugfix: n_hash_ctl.o is compiled now
+
+2000-07-20  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/VERSION, Attic/trurlib.spec: - version 0.41
+
+	* Attic/Makefile:
+	- added fid-arch goal, which creates subset of library for fix-info-dir
+
+	* include/trurl/trurl.h: - nbuf header added
+
+	* include/trurl/nbuf.h, nbuf.c: - initial version
+
+	* Attic/narray.c, include/trurl/narray.h:
+	- added n_array_bsearch_idx() (returns index of finded item)
+
+	* Attic/nhash.c, include/trurl/nhash.h, test_hash.c:
+	- more flexible hash table: grow with rehashing and do not always copy keys,
+	  n_hash_ctl() added
+
+	* Attic/ndbhash.c, Attic/ndbhash.h, Attic/nlist.c, Attic/trurl_die.c, include/trurl/nassert.h, include/trurl/nlist.h, include/trurl/nstr.h, include/trurl/tfn_types.h, nassert.c, nstr_concat.c, nstr_len.c, nstr_tokl.c, trurl_cmpf.c, trurl_internal.h, xmalloc.c:
+	- cosmetics
+
+2000-07-15  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/Makefile, Attic/narray.c, Attic/nhash.c, Attic/nlist.c, Attic/trurlib.spec, trurl_internal.h:
+	- modularized narray, nhash and nlist modules
+
+2000-06-09  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/Makefile, Attic/trurlib.spec: - spec
+
+	* Attic/test_dbhash.c, nstr_tokl.c, test_array.c, test_common.c, test_hash.c, test_list.c, test_nstr.c, xmalloc.c:
+	- minor #include fixes
+
+2000-05-22  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/nlist.c, include/trurl/nlist.h, test_list.c:
+	- fixed list iterator
+
+	* Attic/nlist.c: - bugfix
+
+2000-05-19  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* .cvsignore: *** empty log message ***
+
+	* Attic/Makefile, Attic/README.PL, Attic/VERSION, Attic/hash-string.h, Attic/narray.c, Attic/nhash.c, Attic/nlist.c, include/trurl/narray.h, include/trurl/nhash.h, include/trurl/nlist.h, include/trurl/tfn_types.h, include/trurl/trurl.h, test_array.c, test_list.c:
+	- allowed interlaced iterations on list (new tn_list_iterator type)
+	- removed libc's qsort() i bsearch() functions from array
+	- removed useless dup_fn member from list and array
+	- reduced args list of n_array_new() (narray_ctl_growth() added)
+
+2000-05-04  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/xmalloc.h: - undef glibc's strdup macro
+
+	* Attic/VERSION: *** empty log message ***
+
+	* include/trurl/narray.h: - comment
+
+	* Attic/Makefile: - allow override CFLAGS
+	- allow compilation without ndbhash
+
+2000-03-25  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/Makefile, Attic/narray.c, Attic/nhash.c, Attic/nlist.c, include/trurl/narray.h, include/trurl/nlist.h, include/trurl/nstr.h, trurl_cmpf.c, trurl_internal.h:
+	- added n_list_map_arg()
+	- added default compare function for array and list
+	- bugfix in n_array_bsearch()
+
+2000-03-20  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/Makefile, Attic/xmalloc.h: - works with rpmlib.h
+	- install: target
+
+2000-03-17  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/nlist.c: - fix bug in n_list_remove_ex()
+
+2000-01-18  Pawe³ Ko³odziej  <pawelk@pld.org.pl>
+
+	* Attic/narray.c: Bug in qsort? Uses isort
+
+1999-11-06  Artur Frysiak  <wiget@pld.org.pl>
+
+	* .cvsignore, Makefile.am: New file.
+
+1999-10-17  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* Attic/Makefile, Attic/README.PL, Attic/ndbhash.c, Attic/xmalloc.h:
+	Detekcja wersji glibc na podstawie __GLIBC_MINOR__
+
+1999-09-17  Jarek Wo³oszyn  <yossa@pld.org.pl>
+
+	* Attic/Makefile: gentocf - moje ostatnie zmiany
+	main - przenioslem win.* i scrmsgs.* do newt-addon
+	trurlib - glibc 2.1
+
+1999-07-22  Artur Frysiak  <wiget@pld.org.pl>
+
+	* Attic/CHANGES.PL, Attic/Makefile, Attic/README.PL, Attic/VERSION, Attic/hash-string.h, Attic/narray.c, Attic/ndbhash.c, Attic/ndbhash.h, Attic/nhash.c, Attic/nlist.c, Attic/test_dbhash.c, Attic/trurl_die.c, Attic/xmalloc.h, include/trurl/narray.h, include/trurl/nassert.h, include/trurl/nhash.h, include/trurl/nlist.h, include/trurl/nstr.h, include/trurl/tfn_types.h, include/trurl/trurl.h, nassert.c, nstr_concat.c, nstr_len.c, nstr_tok.c, nstr_tokl.c, nstring.c, test_array.c, test_common.c, test_hash.c, test_list.c, test_nstr.c, xmalloc.c:
+	New file.
+
+	* TODO.PL, nstring.h: pozbierane z diony
+
