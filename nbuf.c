@@ -390,7 +390,7 @@ int n_buf_restore_skip(tn_stream *st, int sizebits)
         switch (sizebits) {
             case TN_BUF_STORE_8B: 
             {
-                uint8_t v;
+                uint8_t v = 0;
                 n_stream_read_uint8(st, &v);
                 size = v;
                 break;
@@ -398,7 +398,7 @@ int n_buf_restore_skip(tn_stream *st, int sizebits)
             
             case TN_BUF_STORE_16B:
             {
-                uint16_t v;
+                uint16_t v = 0;
                 n_stream_read_uint16(st, &v);
                 size = v;
                 break;
@@ -438,7 +438,7 @@ int n_buf_restore_ex(tn_stream *st, tn_buf **bptr, int sizebits,
     else {
         switch (sizebits) {
             case TN_BUF_STORE_8B: {
-                uint8_t v;
+                uint8_t v = 0;
                 n_stream_read_uint8(st, &v);
                 size = v;
                 break;
@@ -446,7 +446,7 @@ int n_buf_restore_ex(tn_stream *st, tn_buf **bptr, int sizebits,
                 
             case TN_BUF_STORE_16B: 
             {
-                uint16_t v;
+                uint16_t v = 0;
                 n_stream_read_uint16(st, &v);
                 size = v;
                 break;
