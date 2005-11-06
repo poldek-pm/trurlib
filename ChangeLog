@@ -1,3 +1,10 @@
+2005-11-06  Pawe³ Gajda  <mis@pld.org.pl>
+
+	* nbuf.c: - be paranoid
+
+	* include/trurl/narray.h:
+	- new n_array_ctl_get_freefn(), to be consitent
+
 2005-10-17  Pawe³ Gajda  <mis@pld.org.pl>
 
 	* include/trurl/nstream.h, nstream.c:
