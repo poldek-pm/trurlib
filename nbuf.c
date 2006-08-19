@@ -294,7 +294,8 @@ int n_buf_vprintf(tn_buf *nbuf, const char *fmt, va_list args)
     int      n;
     
     n = n_vsnprintf(buf, sizeof(buf), fmt, args);
-    n_buf_add(nbuf, buf, n);
+    n_buf_write_ex(nbuf, buf, n, 1);
+    //n_buf_add(nbuf, buf, n);
     return n;
 }
 
