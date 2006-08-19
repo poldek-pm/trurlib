@@ -43,7 +43,6 @@ struct hash_bucket {
 };
 
 
-#define TN_HASH_INTERNAL_SELFNA (1 << 9)
 struct trurl_hash_table {
     uint16_t    _refcnt;
     uint16_t    flags;

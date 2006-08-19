@@ -59,22 +59,13 @@ tn_hash *n_hash_new_ex(size_t size, void (*freefn) (void *),
 
 tn_hash *n_hash_new_na(tn_alloc *na, size_t size, void (*freefn) (void *))
 {
-    tn_hash *ht = NULL;
-    int ownna = 0;
-    
-    if (na == NULL) {
+    if (na == NULL) 
         na = n_alloc_new(16, TN_ALLOC_OBSTACK);
-        ownna = 1;
-    }
+    else
+        na = n_ref(na);
     
-    ht = n_hash_new2(na, size, freefn);
-    if (ownna)
-        ht->flags |= TN_HASH_INTERNAL_SELFNA;
-    return ht;
-    
+    return n_hash_new2(na, size, freefn);
 }
-
-
 
 # define CDB_HASHSTART 5381
 int n_hash_dohash(const tn_hash *ht, const char *s, int *slen)

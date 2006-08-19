@@ -46,7 +46,6 @@ void n_hash_free(tn_hash *ht)
 
     if (ht->na == NULL)
         free(ht);
-        
-    else if (ht->flags & TN_HASH_INTERNAL_SELFNA)
+    else 
         n_alloc_free(ht->na);
 }
