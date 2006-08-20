@@ -61,9 +61,8 @@ static void nomem(void)
 void *n_malloc(size_t size)
 {
     register void *v;
-
     if ((v = malloc(size)) == NULL)
-	nomem();
+        nomem();
     return v;
 }
 
@@ -208,6 +207,13 @@ void *aobstack_realloc(tn_alloc *na, void *ptr, size_t size, size_t newsize)
     return new;
 }
 
+void n_alloc_debug_dump(tn_alloc *na)
+{
+    fprintf(stderr, "%p chunk_size %ld\n", na,
+            ((struct obstack*)na->_privdata)->chunk_size);
+}
+
+
 tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags)
 {
     tn_alloc *na;
@@ -228,6 +234,12 @@ tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags)
         obstack_init(ob);
         if (chunkkb < 2) 
             chunkkb = 2;
+        
+        if (chunkkb > 4096)
+            fprintf(stderr, "n_alloc_new: do you really request obstack's "
+                    "chunk size greater than 4M?\n");
+        
+            
         obstack_chunk_size(ob) = 1024 * chunkkb;
 #if HAVE_CPU_UNALIGNED_ACCESS
         obstack_alignment_mask(ob) = 0; /* TODO: configurable */

@@ -1,3 +1,4 @@
+n_alloc_debug_dump
 n_alloc_free
 n_alloc_new
 n_array_bsearch_ex
