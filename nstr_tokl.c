@@ -203,7 +203,8 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
           
         } else if ((p = strchr(st->quote, c))) {
             switch(st->state) {
-                case ST_WHITE: 
+                case ST_WHITE:
+                case ST_TOKEN:
                     st->state = ST_QUOTE;
                     st->curr_quote = *p;
                     break;
@@ -216,10 +217,12 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
                         st->curr_quote = 0;
                     }
                     break;
-
-                case ST_TOKEN:
+#if 0 /* XXX: disabled treating quotes as whitespaces */
+                    case ST_TOKEN:
                     st->state = ST_WHITE;
                     goto l_end;
+#endif                    
+                    
             }
           
         } else if ((p = strchr(st->white, c))) { 
