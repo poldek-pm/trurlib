@@ -7,11 +7,13 @@ tn_array *n_array_remove_ex(tn_array *arr, const void *data, t_fn_cmp cmpf)
     register int i, items, n;
     register void *ptr;
 
+    trurl_die__if_frozen(arr);
+    
     if (arr->items == 0)
         return arr;
     
     if (cmpf == NULL)
-	cmpf = arr->cmp_fn;
+        cmpf = arr->cmp_fn;
 
     n_assert(cmpf != NULL);
     

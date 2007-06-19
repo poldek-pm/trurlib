@@ -2,7 +2,7 @@
 
 #include "n_array_int.h"
 
-void n_array_map(tn_array *arr, void (*map_fn) (void *))
+void n_array_map(const tn_array *arr, void (*map_fn) (void *))
 {
     register size_t i, n;
 
@@ -10,6 +10,6 @@ void n_array_map(tn_array *arr, void (*map_fn) (void *))
     n = arr->items;
 
     for (i = arr->start_index; i < n; i++)
-	map_fn(arr->data[i]);
-
+        map_fn(arr->data[i]);
+    
 }

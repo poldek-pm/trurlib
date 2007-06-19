@@ -5,6 +5,8 @@
 tn_array *n_array_clean(tn_array *arr)
 {
     register unsigned int i;
+    
+    trurl_die__if_frozen(arr);
 
     for (i = 0; i < arr->allocated; i++) {
         if (arr->data[i] != NULL) {

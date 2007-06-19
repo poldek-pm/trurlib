@@ -5,7 +5,8 @@
 
 tn_array *n_array_push(tn_array *arr, void *data)
 {
-    //printf("n_array_push\n");
+    trurl_die__if_frozen(arr);
+    
     if (arr->items == arr->allocated) {
         if (n_array_grow_priv_(arr, arr->allocated + 1) == NULL)
             return NULL;
@@ -21,6 +22,8 @@ tn_array *n_array_push(tn_array *arr, void *data)
 tn_array *n_array_concat_ex(tn_array *arr, tn_array *src, tn_fn_dup dup_fn)
 {
     register int i;
+
+    trurl_die__if_frozen(arr);
     
     for (i=0; i < n_array_size(src); i++) {
         void *item = n_array_nth(src, i);

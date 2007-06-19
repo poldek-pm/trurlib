@@ -6,9 +6,11 @@ void *n_array_shift(tn_array *arr)
 {
     void *ptr;
 
+    trurl_die__if_frozen(arr);
+    
     if (arr->items <= 0) {
-	trurl_die("tn_array_shift: shift from empty array\n");
-	return NULL;
+        trurl_die("tn_array_shift: shift from empty array\n");
+        return NULL;
     }
     arr->items--;
 

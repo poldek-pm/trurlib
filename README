@@ -13,11 +13,10 @@ and some other n stuff.
 There is no docs, but interface is really simple so
 reading headers should be enough.  
 
-Project CVS: <http://cvs.pld.org.pl/installer/trurlib/>.  
-Download: <http://team.pld.org.pl/~mis/poldek/download/>.  
-Please send comments, bug reports, etc to me <mis@pld.org.pl>
+Library is internally used by poldek project.
+Project CVS repository: <http://cvs.pld-linux.org/cgi-bin/cvsweb/poldek/trurlib/>.  
 
-Copyright (C) 1999 - 2002 Pawel A. Gajda
+Copyright (C) 1999 - 2007 Pawel A. Gajda (mis@pld-linux.org)
 TRURLib is free software; you can redistribute it and/or modify
 it under the terms of the GNU Library General Public License, version 2 as
 published by the Free Software Foundation (see file COPYING for details).

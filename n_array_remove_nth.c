@@ -7,21 +7,23 @@ tn_array *n_array_remove_nth(tn_array *arr, int i)
     register unsigned int pos = arr->start_index + i;
     register void *ptr;
 
+    trurl_die__if_frozen(arr);
+    
     n_assert(i >= 0);
     n_assert(arr->allocated > 0);
     n_assert(arr->items > 0);
 
     if ((size_t) i >= arr->items || i < 0) {
-	trurl_die("n_array_remove_nth: index(%d) out of bounds(0 - %d)\n", i,
-		  arr->items);
-	return NULL;
+        trurl_die("n_array_remove_nth: index(%d) out of bounds(0 - %d)\n", i,
+                  arr->items);
+        return NULL;
     }
     
     ptr = arr->data[pos];
 
     /* if slot is not empty, free node data */
     if (arr->data[pos] != NULL && arr->free_fn != NULL)
-	arr->free_fn(arr->data[pos]);
+        arr->free_fn(arr->data[pos]);
 
     if (pos == arr->items) 
         arr->data[pos] = NULL;

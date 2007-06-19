@@ -18,6 +18,8 @@
 #define TN_ARRAY_AUTOSORTED        (1 << 1) /* an array sorts itself in bsearch_*
                                                functions;  don't work with
                                                external cmp functions */
+#define TN_ARRAY_FROZEN             (1 << 2)
+
 #define TN_ARRAY_INTERNAL_ISSORTED  (1 << 8)
 #define TN_ARRAY_INTERNAL_NA        (1 << 9)
 /* WARN: _never_ ever access array members directly */
@@ -56,6 +58,11 @@ static inline tn_array *n_array_ctl(tn_array *arr, unsigned flags) {
     return arr;
 }
 #endif
+
+#define n_array_freeze(arr) (arr)->flags |= TN_ARRAY_FROZEN
+#define n_array_unfreeze(arr) (arr)->flags &= ~(TN_ARRAY_FROZEN)
+
+
 #define n_array_ctl_growth(arr, inctype)  ((void) 0) /* backward API compat */
 #define n_array_has_free_fn(arr) (arr)->free_fn /* -"- */
 
@@ -144,8 +151,8 @@ tn_array *n_array_push(tn_array *arr, void *data);
 tn_array *n_array_concat_ex(tn_array *arr, tn_array *src, tn_fn_dup dup_fn);
 #define n_array_concat(arr, src) n_array_concat_ex(arr, src, NULL) 
 
-/* internal macros don't use */
 
+/* internal macros, do not use them */
 #define TN_ARRAY_set_sorted(arr) ((arr)->flags |= TN_ARRAY_INTERNAL_ISSORTED)
 #define TN_ARRAY_clr_sorted(arr) ((arr)->flags &= ~TN_ARRAY_INTERNAL_ISSORTED)
 #define TN_ARRAY_is_sorted(arr)  ((arr)->flags &  TN_ARRAY_INTERNAL_ISSORTED)
@@ -155,6 +162,8 @@ tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size);
 #define n_array_push(a, d) n_array_push_inl(a, d)
 static inline tn_array *n_array_push_inl(tn_array *arr, void *data) {
 
+    trurl_die__if_frozen(arr);
+    
     if (arr->items == arr->allocated) {
         if (n_array_grow_priv_(arr, arr->allocated + 1) == 0)
             return 0;
@@ -237,9 +246,6 @@ void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
 int n_array_bsearch_idx_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
 #define n_array_bsearch_idx(arr, data) n_array_bsearch_idx_ex(arr, data, NULL)
 
-
-
-
 tn_array *n_array_remove_ex(tn_array *arr, const void *data, t_fn_cmp cmpf);
 #define n_array_remove(arr, data) n_array_remove_ex(arr, data, NULL)
 
@@ -247,14 +253,14 @@ tn_array *n_array_remove_ex(tn_array *arr, const void *data, t_fn_cmp cmpf);
    for(i=0; i<n_array_size(arr); i++) 
        map_fn(arr[i])
 */
-void n_array_map(tn_array *arr, void (*map_fn)(void *));
+void n_array_map(const tn_array *arr, void (*map_fn)(void *));
 
 
 /* 
    for(i=0; i<n_array_size(arr); i++) 
        map_fn(arr[i], arg)
 */
-void n_array_map_arg(tn_array *arr, void (*map_fn)(void *, void *), void *arg);
+void n_array_map_arg(const tn_array *arr, void (*map_fn)(void *, void *), void *arg);
 
 
 /* for debugging */

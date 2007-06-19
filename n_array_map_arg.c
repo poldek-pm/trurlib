@@ -2,7 +2,7 @@
 
 #include "n_array_int.h"
 
-void n_array_map_arg(tn_array *arr, void (*map_fn) (void *, void *), void *arg)
+void n_array_map_arg(const tn_array *arr, void (*map_fn) (void *, void *), void *arg)
 {
     register size_t i, n;
 
