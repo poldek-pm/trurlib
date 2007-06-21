@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2002 Pawel A. Gajda <mis@k2.net.pl>
+  Copyright (C) 2002 - 2007 Pawel A. Gajda <mis@pld-linux.org>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU Library General Public License, version 2 as
@@ -18,10 +18,6 @@
 # include "config.h"
 #endif
 
-#ifdef OFF_HAVE_FOPENCOOKIE  /* disabled cookies, too much troubles with them */
-# define _GNU_SOURCE 1
-#endif
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,77 +31,6 @@
 #include "ndie.h"
 
 #define ZLIB_TRACE 0
-
-#ifdef OFF_HAVE_FOPENCOOKIE
-#ifndef __GLIBC_MINOR__
-# error "glibc2 or later is required"
-#endif
-
-#ifndef __GLIBC_PREREQ
-# if defined __GLIBC__ && defined __GLIBC_MINOR__
-#  define __GLIBC_PREREQ(maj, min) \
-       ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= ((maj) << 16) + (min))
-# else
-#  define __GLIBC_PREREQ(maj, min) 0
-# endif
-#endif /* __GLIBC_PREREQ */
-
-#if __GLIBC_PREREQ(2,2)
-static
-int gzfseek(void *stream, _IO_off64_t *offset, int whence)
-{
-    z_off_t rc, off = *offset;
-    
-    rc = gzseek(stream, off, whence);
-    if (rc >= 0) {
-	*offset = rc;
-        rc = 0;
-    }
-#if ZLIB_TRACE
-    printf("zfseek (%p, %ld, %lld, %d) = %d\n", stream, off, *offset, whence, rc);
-#endif    
-    return rc;
-}
-
-#else  /* glibc < 2.2 */
-static
-int gzfseek(void *stream, _IO_off_t offset, int whence) 
-{
-    z_off_t rc;
-    
-    rc = gzseek(stream, offset, whence);
-#if ! __GLIBC_PREREQ(2,1)       /* AFAIK glibc2.1.x cookie streams required
-                                   offset to be returned */
-    if (rc >= 0) 
-        rc = 0;
-#endif
-    return rc;
-}
-#endif /* __GLIBC_PREREQ(2,2) */
-
-#if ZLIB_TRACE
-static
-int gzread_wrap(void *stream, char *buf, size_t size)
-{
-    int rc;
-    rc = gzread(stream, buf, size);
-    printf("zread (%p, %d) = %d (%m)\n", stream, size, rc);
-    return rc;
-}
-#endif
-
-static cookie_io_functions_t gzio_cookie = {
-#if ZLIB_TRACE    
-    (cookie_read_function_t*)gzread_wrap,
-#else
-    (cookie_read_function_t*)gzread,
-#endif    
-    (cookie_write_function_t*)gzwrite,
-    gzfseek,
-    (cookie_close_function_t*)gzclose
-};
-
-#endif /* OFF_HAVE_FOPENCOOKIE */
 
 static int do_gz_flush(void *stream)
 {
@@ -234,28 +159,13 @@ static int determine_type(const char *path, int *type)
 
     real_type = *type;
     
-#ifdef OFF_HAVE_FOPENCOOKIE
-    if (*type == TN_STREAM_GZIO) {
-        *type = TN_STREAM_STDIO;
-        real_type = TN_STREAM_GZIO;
-    }
-    
-#endif
-    
     if ((p = strrchr(path, '.')) && strcmp(p, ".gz") == 0) {
-#ifdef OFF_HAVE_FOPENCOOKIE
-        *type = TN_STREAM_STDIO;
-        real_type = TN_STREAM_GZIO;
-#else
         *type = TN_STREAM_GZIO;
         real_type = TN_STREAM_GZIO;
-#endif        
     }
 
     return real_type;
 }
-
-
 
 static gzFile do_gz_open(const char *path, const char *mode)
 {
@@ -299,32 +209,6 @@ static int do_open(tn_stream *st, const char *path, const char *mode,
             n_assert(0);
     }
 
-#ifdef OFF_HAVE_FOPENCOOKIE 
-    if (real_type != type) {
-        void *stream = NULL;
-        switch (type) {
-            case TN_STREAM_STDIO:
-                stream = fopencookie(st->stream, mode, gzio_cookie);
-                if (stream == 0) {
-                    gzclose(st->stream);
-                    rc = 0;
-                    errno = EIO;
-                    
-                } else {
-                    st->stream = stream;
-                    fseek(st->stream, 0, SEEK_SET); /* XXX glibc BUG (?) */
-                    st->type = type;
-                };
-                break;
-
-            default:
-				printf("type = %d, %d\n", type, real_type);
-                n_assert(0);
-                break;
-        }
-    }
-#endif
-    
     return rc;
 }
 
