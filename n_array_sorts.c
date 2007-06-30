@@ -121,7 +121,7 @@ static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int 
 
     cmpf = autosort(arr, cmpf, &set_sorted);
 
-    if ((arr->flags & TN_ARRAY_AUTOSORTED) && TN_ARRAY_is_sorted(arr))
+    if ((arr->flags & TN_ARRAY_AUTOSORTED) && n_array_is_sorted(arr))
         return arr;
     
     switch (alg) {

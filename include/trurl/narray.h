@@ -155,7 +155,9 @@ tn_array *n_array_concat_ex(tn_array *arr, tn_array *src, tn_fn_dup dup_fn);
 /* internal macros, do not use them */
 #define TN_ARRAY_set_sorted(arr) ((arr)->flags |= TN_ARRAY_INTERNAL_ISSORTED)
 #define TN_ARRAY_clr_sorted(arr) ((arr)->flags &= ~TN_ARRAY_INTERNAL_ISSORTED)
-#define TN_ARRAY_is_sorted(arr)  ((arr)->flags &  TN_ARRAY_INTERNAL_ISSORTED)
+
+
+#define n_array_is_sorted(arr)   ((arr)->flags & TN_ARRAY_INTERNAL_ISSORTED)
 
 tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size);
 #ifndef SWIG
