@@ -24,6 +24,7 @@
 #define TN_ARRAY_INTERNAL_NA        (1 << 9)
 /* WARN: _never_ ever access array members directly */
 typedef struct trurl_array_private {
+#ifndef SWIG    
     uint16_t    _refcnt;
     uint16_t    flags;
     
@@ -35,7 +36,7 @@ typedef struct trurl_array_private {
     
     t_fn_free   free_fn;
     t_fn_cmp    cmp_fn;
-
+#endif
 } tn_array;
 
 
