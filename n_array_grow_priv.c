@@ -5,26 +5,20 @@
 static tn_array *n_array_realloc(tn_array *arr, size_t new_size)
 {
     register int diff;
-
+    register size_t i;
+    void **tmp;
+    
     diff = new_size - arr->allocated;
-
     n_assert(diff > 0);
 
-    if (diff > 0) {
-	void **tmp;
+        
+    tmp = n_realloc(arr->data, new_size * sizeof(*tmp));
+        
+    for (i = arr->allocated; i < new_size; i++)
+        tmp[i] = NULL;
 
-	if ((tmp = n_realloc(arr->data, new_size * sizeof(*tmp))) == NULL) {
-	    return NULL;
-
-	} else {
-	    register size_t i;
-	    for (i = arr->allocated; i < new_size; i++)
-		tmp[i] = NULL;
-
-	    arr->data = tmp;
-	    arr->allocated = new_size;
-	}
-    }
+    arr->data = tmp;
+    arr->allocated = new_size;
     return arr;
 }
 
