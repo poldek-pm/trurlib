@@ -73,10 +73,12 @@ n_hash_dohash
 n_hash_dump
 n_hash_dup
 n_hash_exists
+n_hash_exists_ex
 n_hash_free
 n_hash_get
-n_hash_get_bucket
+n_hash_get_ex
 n_hash_insert
+n_hash_insert_ex
 n_hash_keys
 n_hash_keys_ext
 n_hash_map

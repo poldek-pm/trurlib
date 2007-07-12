@@ -31,8 +31,15 @@ int n_hash_stats(const tn_hash *ht)
         
         
         deep = 1;
-        for (tmp = ht->table[i]->next; tmp != NULL; tmp = tmp->next) 
+        //if (ht->table[i]->next)
+        //    printf("coll %s, ", ht->table[i]->key);
+        
+        for (tmp = ht->table[i]->next; tmp != NULL; tmp = tmp->next) {
+            //printf("%s, ", tmp->key);
             deep++;
+        }
+        //if (ht->table[i]->next)
+        //    printf("\n");
         
         if (deep > 1) {
             ncolls++;

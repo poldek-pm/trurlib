@@ -35,37 +35,47 @@ int n_hash_size(const tn_hash *ht);
                                         if filled more than 80%  */
 #define TN_HASH_NOREPLACE  (1 << 3)  /* don't check for duplicate keys
                                         while inserting; use with care! */
+
 int n_hash_ctl(tn_hash *ht, unsigned int flags);
-
-//int n_hash_ctl_bktallocfn(tn_hash *ht, );
-
 
 /* Removes all entries */
 void n_hash_clean(tn_hash *ht);
 
 
 /*
-** Inserts a pointer to 'data' in the table, with a copy of 'key' 
-** (if TN_HASH_NOCPKEY not set) as its key.  Note that this makes 
-** a copy of the key, but NOT of the associated data.
+  Inserts a pointer to 'data' in the table, with a copy of 'key' 
+  (if TN_HASH_NOCPKEY not set) as its key.  Note that this makes 
+  a copy of the key, but NOT of the associated data.
 */
 
 tn_hash *n_hash_insert(tn_hash *ht, const char *key, const void *data);
+
 tn_hash *n_hash_replace(tn_hash *ht, const char *key, const void *data);
 
-/*
-** Returns a pointer to the data associated with a key.
-*/
 
+/*
+  Returns a pointer to the data associated with a key.
+*/
 void *n_hash_get(const tn_hash *ht, const char *key);
 
 
-/*
-** If the key has not been inserted in the table, returns 0,
-** otherwise returns 1.
-*/
-
 int n_hash_exists(const tn_hash *ht, const char *key);
+
+
+/*
+  lower level insert / exists pair to avoid double computation of key hash
+ */
+void *n_hash_get_ex(const tn_hash *ht,
+                    const char *key, int *klen, unsigned *khash);
+
+int n_hash_exists_ex(const tn_hash *ht,
+                     const char *key, int *klen, unsigned *khash);
+
+tn_hash *n_hash_insert_ex(tn_hash *ht,
+                          const char *key, int klen, unsigned khash,
+                          const void *data);
+
+
 
 /*
 ** Deletes an entry from the table.  Returns a pointer to the data that

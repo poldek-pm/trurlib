@@ -67,30 +67,52 @@ tn_hash *n_hash_new_na(tn_alloc *na, size_t size, void (*freefn) (void *))
     return n_hash_new2(na, size, freefn);
 }
 
+/* djb hash */
 # define CDB_HASHSTART 5381
 int n_hash_dohash(const tn_hash *ht, const char *s, int *slen)
 {
-    register unsigned int v, n;
-
+    register unsigned int v;
+    const char *ss = s;
+    
     if (ht->hash_fn)
         return ht->hash_fn(s) % ht->size;
-        
-    
+
     v = CDB_HASHSTART;
-    n = 0;
     while (*s) {
         v += (v << 5);
-        v ^= *s;
+        v ^= (unsigned)*s;
         s++;
-        n++;
     }
+
     if (slen)
-        *slen = n;
-    //v += n;
+        *slen = s - ss;
+
     return v & (ht->size - 1);
 }
 
+#if 0                           /* disabled */
+/*
+  FNV hash (see http://www.isthe.com/chongo/tech/comp/fnv)
+  A bit slower and gives a bit lower collision rate than djb's
+*/
+int n_hash_dohash(const tn_hash *ht, const char *s, int *slen)
+{
+    register unsigned v = 0;
+    const char *ss = s;
+    
+    while (*s) {
+        /* xor the bottom with the current octet */
+        v ^= (unsigned)*s++;
+        // v += (v<<1) + (v<<4) + (v<<7) + (v<<8) + (v<<24);
+        v *= 0x01000193;
+    }
+    
+    if (slen)
+        *slen = s - ss;
 
+    return v & (ht->size - 1);
+}
+#endif
 
 int n_hash_size(const tn_hash *ht) 
 {

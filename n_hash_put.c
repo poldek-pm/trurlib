@@ -153,19 +153,19 @@ tn_hash *n_hash_put_ll(tn_hash *ht, const char *key, const void *data,
 #endif
 
 static
-tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data, int replace)
+tn_hash *n_hash_put(tn_hash *ht, const char *key, int klen, unsigned khash,
+                    const void *data, int replace)
 {
     struct hash_bucket *ptr;
-    unsigned val;
-    int klen;
     
     if ((ht->flags & TN_HASH_REHASH) && ht->size - ht->items <= ht->size / 3)
         n_hash_rehash(ht);
 
-    val = n_hash_dohash(ht, key, &klen);
+    if (!khash)
+        khash = n_hash_dohash(ht, key, &klen);
 
     if ((ht->flags & TN_HASH_NOREPLACE) == 0) {
-        ptr = n_hash_get_bucket(ht, key, klen, val);
+        ptr = n_hash_get_bucket(ht, key, klen, khash);
         if (ptr) {
             if (!replace) {
                 trurl_die("n_hash_insert: key '%s' %s already in table\n",
@@ -180,13 +180,13 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data, int replace)
         }
     }
 
-    ptr = ht->table[val];
+    ptr = ht->table[khash];
     if (ptr != NULL && ptr->next) {
-        unsigned nextval = val + n_hash_nextslotv(key, klen);
+        unsigned nextval = khash + n_hash_nextslotv(key, klen);
         if (nextval < ht->size) {
             if ((ptr = ht->table[nextval]) == NULL) {
-                DBGF("%d. nextmove(%d) %s[%d]\n", moves++, val, key, klen);
-                val = nextval;
+                DBGF("%d. nextmove(%d) %s[%d]\n", moves++, khash, key, klen);
+                khash = nextval;
             }
         }
     }
@@ -196,13 +196,13 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data, int replace)
         ptr = new_bucket(ht, key, klen);
         ptr->next = NULL;
         ptr->data = (void *) data;
-        ht->table[val] = ptr;
+        ht->table[khash] = ptr;
         ht->items++;
         return ht;
     }
 
     DBGF("INUSE %s, ", key);
-    for (ptr = ht->table[val]; NULL != ptr; ptr = ptr->next) {
+    for (ptr = ht->table[khash]; NULL != ptr; ptr = ptr->next) {
         DBGF("%s, ", ptr->key);
         if (strcmp(key, ptr->key) == 0) {
             trurl_die("n_hash_insert: key '%s' %s already in table\n",
@@ -213,8 +213,8 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data, int replace)
 
     ptr = new_bucket(ht, key, klen);
     ptr->data = (void *) data;
-    ptr->next = ht->table[val];
-    ht->table[val] = ptr;
+    ptr->next = ht->table[khash];
+    ht->table[khash] = ptr;
     ht->items++;
     
     return ht;
@@ -222,8 +222,9 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, const void *data, int replace)
 
 tn_hash *n_hash_insert(tn_hash *ht, const char *key, const void *data)
 {
-    return n_hash_put(ht, key, data, 0);
+    return n_hash_put(ht, key, 0, 0, data, 0);
 }
+
 
 tn_hash *n_hash_replace(tn_hash *ht, const char *key, const void *data)
 {
@@ -232,5 +233,12 @@ tn_hash *n_hash_replace(tn_hash *ht, const char *key, const void *data)
                   " \"non-replace\" hash table");
         return NULL;
     }
-    return n_hash_put(ht, key, data, 1);
+    return n_hash_put(ht, key, 0, 0, data, 1);
+}
+
+
+tn_hash *n_hash_insert_ex(tn_hash *ht, const char *key, int klen, unsigned khash,
+                          const void *data)
+{
+    return n_hash_put(ht, key, klen, khash, data, 0);
 }

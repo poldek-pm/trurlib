@@ -62,3 +62,6 @@ int n_hash_dohash(const tn_hash *ht, const char *s, int *slen);
 
 struct hash_bucket *n_hash_get_bucket(const tn_hash *ht,
                                       const char *key, int klen, unsigned val);
+
+int n_hash_exists_ex(const tn_hash *ht, const char *key, int *klen,
+                     unsigned *khash);
