@@ -71,7 +71,7 @@ static inline tn_array *n_array_ctl(tn_array *arr, unsigned flags) {
 tn_fn_free n_array_ctl_set_freefn(tn_array *arr, tn_fn_free free_fn);
 
 tn_fn_cmp n_array_ctl_set_cmpfn(tn_array *arr, tn_fn_cmp cmp_fn);
-tn_fn_cmp n_array_ctl_get_cmpfn(tn_array *arr);
+tn_fn_cmp n_array_ctl_get_cmpfn(const tn_array *arr);
 
 void n_array_free(tn_array *arr);
 void n_array_cfree(tn_array **arrptr);
@@ -167,11 +167,9 @@ static inline tn_array *n_array_push_inl(tn_array *arr, void *data) {
 
     trurl_die__if_frozen(arr);
     
-    if (arr->items == arr->allocated) {
-        if (n_array_grow_priv_(arr, arr->allocated + 1) == 0)
-            return 0;
-    }
-    
+    if (arr->items == arr->allocated)
+        n_array_grow_priv_(arr, arr->allocated + 1);
+
     arr->data[arr->start_index + arr->items] = data;
     arr->items++;
     TN_ARRAY_clr_sorted(arr);
@@ -268,5 +266,32 @@ void n_array_map_arg(const tn_array *arr, void (*map_fn)(void *, void *), void *
 
 /* for debugging */
 void n_array_dump_stats(const tn_array *arr, const char *name);
+
+#if 0                           /* NFY */
+/* iterator */
+struct trurl_array_iterator {
+    tn_array *arr;
+    uint32_t i;
+};
+typedef struct trurl_array_iterator tn_array_it;
+
+static inline void n_array_it_init(tn_array_it *it, tn_array *arr) 
+{
+    it->arr = arr;
+    it->i = arr->start_index;
+}
+
+static inline void *n_array_it_get(tn_array_it *it)
+{
+    void *ptr;
+    
+    if (it->i >= it->arr->items)
+        return NULL;
+    
+    ptr = n_array_nth(it->arr, it->i);
+    it->i++;
+    return ptr;
+}
+#endif  /* NFY  */
 
 #endif /* TRURL_ARRAY_H */
