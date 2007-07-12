@@ -124,7 +124,7 @@ tn_fn_cmp n_array_ctl_set_cmpfn(tn_array *arr, tn_fn_cmp cmp_fn)
     return old_cmp_fn;
 }
 
-tn_fn_cmp n_array_ctl_get_cmpfn(tn_array *arr)
+tn_fn_cmp n_array_ctl_get_cmpfn(const tn_array *arr)
 {
     return arr->cmp_fn;
 }
