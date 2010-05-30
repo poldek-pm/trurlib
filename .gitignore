@@ -6,7 +6,10 @@ configure
 config.log
 config.cache
 config.status
+config.guess
+config.sub
 stamp-h.in
+depcomp
 config.h
 config.h.in
 stamp-h
@@ -24,5 +27,7 @@ libtool
 *.lo
 .libs
 *.la
+*.o
 stamp-h1
 autom4te.cache
+libtrurl.a
