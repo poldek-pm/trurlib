@@ -12,7 +12,7 @@ SUBDIRS   = lib
 DIST_SUBDIRS = $(SUBDIRS)
 
 lib_LTLIBRARIES  = libtrurl.la
-libtrurl_la_LDFLAGS = -version-info $(TRURL_VERINFO) -export-symbols libtrurl.sym
+libtrurl_la_LDFLAGS = -version-info $(TRURL_VERINFO) -export-symbols $(top_srcdir)/libtrurl.sym
 
 NARRAY_SRCS  = \
 	n_array_bsearch_ex.c    \
