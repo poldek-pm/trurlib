@@ -57,7 +57,7 @@ static char *do_s_gets(void *stream, char *buf, size_t size)
 
 static int do_gz_getc(void *stream) 
 {
-    register int c = gzgetc(stream);
+    register int c = gzgetc((gzFile)stream);
     if (c == -1)
         return EOF;
     
