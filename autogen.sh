@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id$
 
 FILE=n_array_new.c
 PKG=trurlib
@@ -13,18 +12,21 @@ if [ ! -f $FILE ]; then
 fi
 
 runcmd () {
-    echo "$@"
+    echo "Executing: $@"
     $@
-    test $? -eq 0 || exit 1
+    if [ $? -ne 0 ]; then
+	echo "failed"
+	exit 1
+    fi
 }
 
 runcmd libtoolize --force --automake
 runcmd aclocal
 runcmd autoheader
-runcmd automake --add-missing --no-force
 runcmd autoconf
+runcmd automake --add-missing --no-force
 
 if [ -z "$1" -o "$1" != "--no-configure" ]; then
-	CONFOPTS="--enable-maintainer-mode --enable-compile-warnings $@"
+	CONFOPTS="--enable-maintainer-mode $@"
 	runcmd ./configure $CONFOPTS
 fi

@@ -1,18 +1,24 @@
-# $Id$
+NULL =
 
 AUTOMAKE_OPTIONS = foreign
 
+SUBDIRS   = data lib
+DIST_SUBDIRS = $(SUBDIRS)
+
 # use libtool versioning 
-TRURL_VERINFO   = 7:0:7
 CPPFLAGS  = -I$(top_srcdir)/include/trurl -I$(top_srcdir)/include
 INCLUDES  = 
 AM_CFLAGS = @AM_CFLAGS@
 
-SUBDIRS   = lib
-DIST_SUBDIRS = $(SUBDIRS)
 
-lib_LTLIBRARIES  = libtrurl.la
-libtrurl_la_LDFLAGS = -version-info $(TRURL_VERINFO) -export-symbols $(top_srcdir)/libtrurl.sym
+lib_LTLIBRARIES =						\
+	libtrurl.la						\
+	$(NULL)
+
+libtrurl_la_LDFLAGS = 						\
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
+	-export-symbols $(top_srcdir)/libtrurl.sym		\
+	$(NULL)
 
 NARRAY_SRCS  = \
 	n_array_bsearch_ex.c    \
@@ -90,7 +96,7 @@ libtrurl_la_SOURCES = \
 	nstream.c        \
 	nstore.c         \
 	$(NARRAY_SRCS)   \
-        $(NLIST_SRCS)    \
+	$(NLIST_SRCS)    \
 	$(NHASH_SRCS)    \
 	$(NSTR_SRCS)     \
 	ntuple.c
@@ -154,12 +160,5 @@ tests:  $(EXTRA_PROGRAMS)
 
 all-local: 
 	@ln -sf .libs/libtrurl.a libtrurl.a
-
-#dist-hook:
-#	rm -rf $(distdir)/.deps
-
-#clean-local:
-#	-rm -f core *.o *.bak *~ *% *\# TAGS gmon.out trurl \#*
-#	-rm -f $(EXTRA_PROGRAMS)
 
 include Makefile.extra
