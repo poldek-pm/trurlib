@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: trurlib
+Description: Library that contains some useful data structures and routines
+Version: @VERSION@
+Libs: -L${libdir} -ltrurl
+Libs.private: -L${libdir} -lz
