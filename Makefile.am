@@ -7,7 +7,7 @@ DIST_SUBDIRS = $(SUBDIRS)
 
 # use libtool versioning 
 CPPFLAGS  = -I$(top_srcdir)/include/trurl -I$(top_srcdir)/include
-INCLUDES  = 
+AM_CPPFLAGS  = 
 AM_CFLAGS = @AM_CFLAGS@
 
 
