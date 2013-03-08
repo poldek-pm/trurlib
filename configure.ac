@@ -95,6 +95,7 @@ AC_CHECK_LIB(z, gzungetc,,[AC_MSG_WARN(["upgrade zlib (>= 1.2.0.3 is recommended
 
 AC_CONFIG_FILES([
 Makefile
+trurlib.spec
 data/Makefile
 data/trurlib.pc
 lib/Makefile
