@@ -1,4 +1,6 @@
-/* $Id$ */
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include "n_hash_int.h"
 #include "narray.h"

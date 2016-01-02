@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include "nmalloc.h"
 /* be compatibile with < 0.43.7 */
 

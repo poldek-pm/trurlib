@@ -1,7 +1,5 @@
 /* 
   TRURLib
-
-  $Id$
 */
 #ifndef __TN_STRING_H
 #define __TN_STRING_H

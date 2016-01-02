@@ -1,6 +1,3 @@
-/*
-   $Id$
-*/
 #ifndef TRURL_NARRAY_INT_H
 #define TRURL_NARRAY_INT_H
 
