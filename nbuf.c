@@ -262,7 +262,7 @@ char *n_buf_it_gets_ext(tn_buf_it *bufi, size_t *len, int endl)
 
     *len = bufi->offs - *len;
     bufi->offs++;               /* skip endl */
-    return ptr;
+    return (char *)ptr;
 }
 
 

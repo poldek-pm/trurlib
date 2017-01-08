@@ -13,7 +13,6 @@ static tn_hash *do_n_hash_new_ex(tn_alloc *na,
         ht = n_calloc(1, sizeof(*ht));
     else
         ht = na->na_calloc(na, sizeof(*ht));
-        ht->na = na;
 
     if (ht == NULL)
         return NULL;

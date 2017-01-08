@@ -118,9 +118,9 @@ static tn_stream *n_stream_new(int type)
             break;
             
         case TN_STREAM_GZIO:
-            st->st_open  = gzopen;
-            st->st_dopen = gzdopen;
-            st->st_read  = gzread;
+            st->st_open  = (void *(*)(const char *, const char *))gzopen;
+            st->st_dopen = (void *(*)(int, const char *))gzdopen;
+            st->st_read  = (int (*)(void*, void*, size_t))gzread;
             st->st_write = (int (*)(void*, const void*, size_t))gzwrite;
             st->st_gets  = (char *(*)(void*, char*, size_t))gzgets;
             st->st_getc  = do_gz_getc;
@@ -132,7 +132,7 @@ static tn_stream *n_stream_new(int type)
             st->st_seek  = (int (*)(void*, long, int))zlib_fseek_wrap;
             st->st_tell  = (long (*)(void*))gztell;
             st->st_flush = do_gz_flush;
-            st->st_close = gzclose;
+            st->st_close = (int (*)(void*))gzclose;
             break;
             
         default:
