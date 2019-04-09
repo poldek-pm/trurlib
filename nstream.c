@@ -33,6 +33,11 @@ static int do_gz_flush(void *stream)
     return gzflush(stream, Z_FULL_FLUSH);
 }
 
+static long do_gz_tell(void *stream)
+{
+    return gztell(stream);
+}
+
 
 static int do_s_read(void *stream, void *buf, size_t size)
 {
@@ -51,18 +56,18 @@ static char *do_s_gets(void *stream, char *buf, size_t size)
 
 
 
-static int do_gz_getc(void *stream) 
+static int do_gz_getc(void *stream)
 {
     register int c = gzgetc((gzFile)stream);
     if (c == -1)
         return EOF;
-    
-    return c; 
+
+    return c;
 }
 
 
 #if HAVE_GZUNGETC               /* zlib >= 1.2.0.2 */
-static int do_gz_ungetc(int c, void *stream) 
+static int do_gz_ungetc(int c, void *stream)
 {
     register int cc = gzungetc(c, stream);
     if (cc == -1)
@@ -72,7 +77,7 @@ static int do_gz_ungetc(int c, void *stream)
 }
 #endif
 
-static int zlib_fseek_wrap(void *stream, long offset, int whence) 
+static int zlib_fseek_wrap(void *stream, long offset, int whence)
 {
     z_off_t rc, off = offset;
 
@@ -85,7 +90,7 @@ static int zlib_fseek_wrap(void *stream, long offset, int whence)
         int ec;
         printf("zlib_fseek: %s\n", gzerror(stream, &ec));
     }
-#endif 
+#endif
     return rc;
 }
 
@@ -94,14 +99,14 @@ static int zlib_fseek_wrap(void *stream, long offset, int whence)
 static tn_stream *n_stream_new(int type)
 {
     tn_stream *st;
-    
+
     st = n_malloc(sizeof(*st));
     st->stream = NULL;
     st->fd = -1;
     st->type = type;
     st->_write_hook = NULL;
     st->_write_hook_arg = NULL;
-    
+
     switch (type) {
         case TN_STREAM_STDIO:
             st->st_open  = (void *(*)(const char *, const char *))fopen;
@@ -116,7 +121,7 @@ static tn_stream *n_stream_new(int type)
             st->st_flush = (int (*)(void*))fflush;
             st->st_close = (int (*)(void*))fclose;
             break;
-            
+
         case TN_STREAM_GZIO:
             st->st_open  = (void *(*)(const char *, const char *))gzopen;
             st->st_dopen = (void *(*)(int, const char *))gzdopen;
@@ -128,13 +133,13 @@ static tn_stream *n_stream_new(int type)
             st->st_ungetc = do_gz_ungetc;
 #else
             st->st_ungetc = NULL;
-#endif            
+#endif
             st->st_seek  = (int (*)(void*, long, int))zlib_fseek_wrap;
-            st->st_tell  = (long (*)(void*))gztell;
+            st->st_tell  = do_gz_tell;
             st->st_flush = do_gz_flush;
             st->st_close = (int (*)(void*))gzclose;
             break;
-            
+
         default:
             n_die("%d: unknown stream type\n", type);
             n_assert(0);
@@ -144,7 +149,7 @@ static tn_stream *n_stream_new(int type)
     return st;
 }
 
-static int determine_type(const char *path, int *type) 
+static int determine_type(const char *path, int *type)
 {
     const char *p;
     int real_type;
@@ -154,7 +159,7 @@ static int determine_type(const char *path, int *type)
         *type = TN_STREAM_STDIO;
 
     real_type = *type;
-    
+
     if ((p = strrchr(path, '.')) && strcmp(p, ".gz") == 0) {
         *type = TN_STREAM_GZIO;
         real_type = TN_STREAM_GZIO;
@@ -167,7 +172,7 @@ static gzFile do_gz_open(const char *path, const char *mode)
 {
     gzFile gzstream;
     errno = 0;
-    
+
     if ((gzstream = gzopen(path, mode)) == NULL) {
         if (errno == 0) {
             if (Z_MEM_ERROR)
@@ -183,15 +188,15 @@ static gzFile do_gz_open(const char *path, const char *mode)
 
 /* RET: bool */
 static int do_open(tn_stream *st, const char *path, const char *mode,
-                   int type, int real_type) 
-{ 
+                   int type, int real_type)
+{
     int rc = 1;
 
-    
+
     real_type = determine_type(path, &type);
-    
+
     switch (real_type) {
-        case TN_STREAM_STDIO: 
+        case TN_STREAM_STDIO:
             if ((st->stream = fopen(path, mode)) == NULL)
                 rc = 0;
             break;
@@ -214,7 +219,7 @@ tn_stream *n_stream_open(const char *path, const char *mode, int type)
     tn_stream *st;
     int real_type;
 
-    
+
     real_type = determine_type(path, &type);
 
     if ((st = n_stream_new(type)) == NULL)
@@ -224,32 +229,32 @@ tn_stream *n_stream_open(const char *path, const char *mode, int type)
         n_stream_close(st);
         st = NULL;
     }
-    
-    return st;     
+
+    return st;
 }
 
 tn_stream *n_stream_dopen(int fd, const char *mode, int type)
 {
     tn_stream *st;
     void *stream;
-    
+
     if ((st = n_stream_new(type)) == NULL)
         return NULL;
-    
+
     if ((stream = st->st_dopen(fd, mode))) {
         st->stream = stream;
         st->fd = fd;
-        
+
     } else {
         n_stream_close(st);
         st = NULL;
-    } 
-    
-    return st;     
+    }
+
+    return st;
 }
 
 
-int n_stream_vprintf(tn_stream *st, const char *fmt, va_list ap) 
+int n_stream_vprintf(tn_stream *st, const char *fmt, va_list ap)
 {
     char buf[1024 * 32];
     int  n;
@@ -259,12 +264,12 @@ int n_stream_vprintf(tn_stream *st, const char *fmt, va_list ap)
 }
 
 
-int n_stream_printf(tn_stream *st, const char *fmt, ...) 
+int n_stream_printf(tn_stream *st, const char *fmt, ...)
 {
     va_list ap;
     int n;
 
-    
+
     va_start(ap, fmt);
     n = n_stream_vprintf(st, fmt, ap);
     va_end(ap);
@@ -277,7 +282,7 @@ int n_stream_gets(tn_stream *st, char *buf, size_t size)
 {
     if (st->st_gets(st->stream, buf, size))
 		return strlen(buf);
-	
+
 	return 0;
 }
 
@@ -289,14 +294,14 @@ int n_stream_getline(tn_stream *st, char **bufptr, size_t size)
 {
     char *buf = *bufptr;
     size_t n;
-    
+
     if (buf == NULL) {
         buf = n_malloc(MAX_CANON);
         size = MAX_CANON;
     }
-    
+
     *buf = '\0';
-    
+
     n = n_stream_gets(st, buf, size);
     if (n < size - 1) {
         *bufptr = buf;
@@ -310,16 +315,15 @@ int n_stream_getline(tn_stream *st, char **bufptr, size_t size)
             buf = n_realloc(buf, size);
         }
         c = st->st_getc(st->stream);
-        if (c == EOF) 
+        if (c == EOF)
             break;
-        
+
         buf[n++] = c;
         if (c == '\n')
             break;
     }
-    
+
     buf[n] = '\0';
     *bufptr = buf;
     return n;
 }
-

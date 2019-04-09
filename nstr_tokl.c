@@ -1,4 +1,4 @@
-/* 
+/*
    TRURLib
    Copyright (C) 1999 Pawel A. Gajda (mis@k2.net.pl)
 
@@ -53,7 +53,7 @@ const char **n_str_tokl_n(const char *s, const char *delim, int *ntokens)
         free(tokens);
         return NULL;
     }
-    	
+
     scpy = tokens[0];
     n = 1;
     p = (char *) s;
@@ -74,7 +74,7 @@ const char **n_str_tokl_n(const char *s, const char *delim, int *ntokens)
 
             } else {
                 int i;
-                
+
                 tokens = tmp;
                 tokens_size += ALLOC_STEP;
                 for (i=n; i < tokens_size; i++)
@@ -96,7 +96,7 @@ const char **n_str_tokl_n(const char *s, const char *delim, int *ntokens)
 }
 
 #undef n_str_tokl
-const char **n_str_tokl(const char *s, const char *delim) 
+const char **n_str_tokl(const char *s, const char *delim)
 {
     return n_str_tokl_n(s, delim, NULL);
 }
@@ -124,9 +124,9 @@ struct lp_state {
     const char *brk;
     const char *quote;
     char       escape;
-    
-    int       state;      
-    char      curr_quote; 
+
+    int       state;
+    char      curr_quote;
     char      is_break;
 };
 
@@ -150,10 +150,10 @@ void storechr(char *s, int slen, int *sindex, char c)
     }
 }
 
-static 
-void lp_init(struct lp_state *st, 
+static
+void lp_init(struct lp_state *st,
              const char *line, const char *white, const char *brk,
-             const char *quote, char escape) 
+             const char *quote, char escape)
 {
     memset(st, 0, sizeof(*st));
     st->line = line;
@@ -161,7 +161,7 @@ void lp_init(struct lp_state *st,
     st->brk = brk;
     st->quote = quote;
     st->escape = escape;
-    
+
 }
 
 
@@ -174,11 +174,11 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
 
     tokindex = 0;
     *token = '\0';
-    
+
     st->state = ST_WHITE;       /* initialize state */
     st->curr_quote = 0;           /* initialize previous quote char */
     st->is_break = 0;
-  
+
     if((c = st->line[st->lindex]) == '\0')
         return 0;
 
@@ -195,12 +195,12 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
                     st->lindex++;
                     st->is_break = *p;
                     goto l_end;
-        
+
                 case ST_QUOTE:
                     storechr(token, toksize, &tokindex, c);
                     break;
             }
-          
+
         } else if ((p = strchr(st->quote, c))) {
             switch(st->state) {
                 case ST_WHITE:
@@ -208,7 +208,7 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
                     st->state = ST_QUOTE;
                     st->curr_quote = *p;
                     break;
-  
+
                 case ST_QUOTE:
                     if (*p != st->curr_quote)
                         storechr(token, toksize, &tokindex, c);
@@ -221,28 +221,28 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
                     case ST_TOKEN:
                     st->state = ST_WHITE;
                     goto l_end;
-#endif                    
-                    
+#endif
+
             }
-          
-        } else if ((p = strchr(st->white, c))) { 
+
+        } else if ((p = strchr(st->white, c))) {
             switch(st->state) {
                 case ST_WHITE:
                     break;		/* keep going */
-                    
+
                 case ST_TOKEN:
                     st->state = ST_WHITE;
                     goto l_end;
                     break;
-          
+
                 case ST_QUOTE:
                     storechr(token, toksize, &tokindex, c);
                     break;
             }
-          
+
         } else if (st->escape != '\0' && c == st->escape) {
             char nc;
-            
+
             nc = st->line[st->lindex + 1];
             if (nc == 0 || nc == st->escape) {			/* EOF */
                 st->is_break = 0;
@@ -251,32 +251,32 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
                 if (nc == 0)
                     goto l_end;
             }
-          
+
             switch(st->state) {
                 case ST_WHITE:
                     st->lindex--;
                     st->state = ST_TOKEN;
                     break;
-                  
+
                 case ST_TOKEN:
                 case ST_QUOTE:
-                    
+
                     if (strchr(st->white, nc) || strchr(st->brk, nc) || /* not an escape */
                         strchr(st->quote, nc)) {
                         storechr(token, toksize, &tokindex, st->line[++st->lindex]);
-                        
+
                     } else {
                         storechr(token, toksize, &tokindex, st->line[st->lindex]);
                     }
-                    
+
                     break;
             }
-          
+
         } else  {
             switch(st->state) {
                 case ST_WHITE:
                     st->state = ST_TOKEN;
-                  
+                    /* fallthru */
                 case ST_TOKEN:
                 case ST_QUOTE:
                     storechr(token, toksize, &tokindex, c);
@@ -286,7 +286,7 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
 
         c = st->line[++st->lindex];
     }
-  
+
 
  l_end:
 //    printf("%d, %d\n", tokindex, toksize);
@@ -300,25 +300,25 @@ int lp_parse(struct lp_state *st, char *token, int toksize, int *toklen)
 
 tn_array *n_str_etokl_ext(const char *line, const char *white,
                           const char *brk, const char *quote,
-                          char escape) 
+                          char escape)
 {
-    const char       *default_white = " \t", 
-        *default_brk   = ";|", 
+    const char       *default_white = " \t",
+        *default_brk   = ";|",
         *default_quote = "\"'";
     char             *token;
     tn_array         *tl;
     struct lp_state  st;
     int              toklen, toksize;
-    
+
     if (white == NULL)
         white = default_white;
-    
+
     if (brk == NULL)
         brk = default_brk;
-    
+
     if (quote == NULL)
         quote = default_quote;
-    
+
     lp_init(&st, line, white, brk, quote, escape);
     toksize = strlen(line) + 1;
     token = alloca(toksize + 1);
@@ -326,10 +326,10 @@ tn_array *n_str_etokl_ext(const char *line, const char *white,
     tl = n_array_new(4, free, (tn_fn_cmp)strcmp);
 
     while (lp_parse(&st, token, toksize, &toklen) > 0) {
-       
+
         if (toklen > 0)
             n_array_push(tl, n_strdupl(token, toklen));
-       
+
         if (st.is_break) {
             char break_str[2];
 
@@ -338,6 +338,6 @@ tn_array *n_str_etokl_ext(const char *line, const char *white,
             n_array_push(tl, n_strdup(break_str));
         }
     }
-   
+
     return tl;
 }

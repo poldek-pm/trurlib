@@ -16,10 +16,10 @@ int n_hash_stats(const tn_hash *ht)
     int empty_len_sum = 0;
     int empty_len_n = 0;
     int empty_len = 0;
-    
+
     for (i = 0; i < ht->size; i++) {
         int deep;
-        
+
         if (ht->table[i] == NULL) {
             nempts++;
             empty_len++;
@@ -30,29 +30,29 @@ int n_hash_stats(const tn_hash *ht)
             empty_len_sum += empty_len;
             empty_len = 0;
         }
-        
-        
+
+
         deep = 1;
         //if (ht->table[i]->next)
         //    printf("coll %s, ", ht->table[i]->key);
-        
+
         for (tmp = ht->table[i]->next; tmp != NULL; tmp = tmp->next) {
             //printf("%s, ", tmp->key);
             deep++;
         }
         //if (ht->table[i]->next)
         //    printf("\n");
-        
+
         if (deep > 1) {
             ncolls++;
             deepsum += deep;
         }
-        
+
         if (deep > maxdeep)
             maxdeep = deep;
     }
 
-    printf("ht(%p): %lu slots (%d empty, avg empty len %d), %lu items, "
+    printf("ht(%p): %zu slots (%d empty, avg empty len %d), %zu items, "
            "%d collisions (avgdeep %.2lf, maxdep %d)\n",
            ht, ht->size, nempts, empty_len_sum ? empty_len_sum / empty_len_n : 0,
            ht->items, ncolls,
