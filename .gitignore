@@ -31,3 +31,8 @@ libtool
 stamp-h1
 autom4te.cache
 libtrurl.a
+*~
+compile
+*.pc
+test-driver
+*.log

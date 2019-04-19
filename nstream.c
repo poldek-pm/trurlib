@@ -25,6 +25,7 @@
 #include "nmalloc.h"
 #include "nstream.h"
 #include "ndie.h"
+#include "niobuf.h"
 
 #define ZLIB_TRACE 0
 
@@ -37,7 +38,6 @@ static long do_gz_tell(void *stream)
 {
     return gztell(stream);
 }
-
 
 static int do_s_read(void *stream, void *buf, size_t size)
 {
@@ -54,8 +54,6 @@ static char *do_s_gets(void *stream, char *buf, size_t size)
     return fgets(buf, size, stream);
 }
 
-
-
 static int do_gz_getc(void *stream)
 {
     register int c = gzgetc((gzFile)stream);
@@ -64,7 +62,6 @@ static int do_gz_getc(void *stream)
 
     return c;
 }
-
 
 #if HAVE_GZUNGETC               /* zlib >= 1.2.0.2 */
 static int do_gz_ungetc(int c, void *stream)
@@ -140,6 +137,20 @@ static tn_stream *n_stream_new(int type)
             st->st_close = (int (*)(void*))gzclose;
             break;
 
+         case TN_STREAM_ZSTDIO:
+            st->st_open  = (void *(*)(const char *, const char *))n_iobuf_open;
+            st->st_dopen = (void *(*)(int, const char *))n_iobuf_dopen;
+            st->st_read  = (int (*)(void*, void*, size_t))n_iobuf_read;
+            st->st_write = (int (*)(void*, const void*, size_t))n_iobuf_write;
+            st->st_gets  = (char *(*)(void*, char*, size_t))n_iobuf_gets;
+            st->st_getc  = (int (*)(void*))getc;
+            st->st_ungetc = NULL;
+            st->st_seek  = (int (*)(void*, long, int))n_iobuf_seek;
+            st->st_tell  = (long (*)(void*))n_iobuf_tell;
+            st->st_flush = (int (*)(void*))n_iobuf_flush;
+            st->st_close = (int (*)(void*))n_iobuf_close;
+            break;
+
         default:
             n_die("%d: unknown stream type\n", type);
             n_assert(0);
@@ -160,9 +171,13 @@ static int determine_type(const char *path, int *type)
 
     real_type = *type;
 
-    if ((p = strrchr(path, '.')) && strcmp(p, ".gz") == 0) {
-        *type = TN_STREAM_GZIO;
-        real_type = TN_STREAM_GZIO;
+    if ((p = strrchr(path, '.'))) {
+        if (strcmp(p, ".gz") == 0) {
+            *type = TN_STREAM_GZIO;
+        } else if (strcmp(p, ".zst") == 0) {
+            *type = TN_STREAM_ZSTDIO;
+        }
+        real_type = *type;
     }
 
     return real_type;
@@ -203,6 +218,12 @@ static int do_open(tn_stream *st, const char *path, const char *mode,
 
         case TN_STREAM_GZIO:
             if ((st->stream = do_gz_open(path, mode)) == NULL)
+                rc = 0;
+            break;
+
+        case TN_STREAM_ZSTDIO:
+            printf("ZSTDIOD\n");
+            if ((st->stream = n_iobuf_open(path, mode)) == NULL)
                 rc = 0;
             break;
 

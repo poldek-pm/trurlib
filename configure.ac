@@ -58,10 +58,10 @@ AC_CHECK_FUNCS([memmove memset strchr strrchr strspn])
 dnl unaligned accesses (XXX: todo cross compliation), stolen from libpcap
 case "$host_cpu" in
     alpha*|arm*|hp*|mips*|sh*|sparc*|ia64|nv1)
-        AC_DEFINE(HAVE_CPU_UNALIGNED_ACCESS, 0, 
+        AC_DEFINE(HAVE_CPU_UNALIGNED_ACCESS, 0,
         	  [Define to 0 if CPU does not like unaligned access.])
         ;;
-    *) 
+    *)
         AC_DEFINE(HAVE_CPU_UNALIGNED_ACCESS, 1)
         ;;
 esac
@@ -95,11 +95,16 @@ AC_FUNC_OBSTACK
 AC_CHECK_LIB(z, gzopen,,[AC_MSG_ERROR(["missing zlib"])])
 AC_CHECK_LIB(z, gzungetc,,[AC_MSG_WARN(["upgrade zlib (>= 1.2.0.3 is recommended)"])])
 
+AC_CHECK_LIB(zstd, ZSTD_compressStream,,[AC_MSG_ERROR(["missing zstd"])])
+
+PKG_CHECK_MODULES(CHECK, check >= 0.9.4, have_check=yes, have_check=no)
+
 AC_CONFIG_FILES([
 Makefile
 trurlib.spec
 data/Makefile
 data/trurlib.pc
 lib/Makefile
+tests/Makefile
 ])
 AC_OUTPUT

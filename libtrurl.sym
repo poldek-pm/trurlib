@@ -142,3 +142,13 @@ n_tuple_size
 n_tuple_sort_ex
 trurl_default_cmpf
 trurl_die
+n_iobuf_open
+n_iobuf_dopen
+n_iobuf_close
+n_iobuf_write
+n_iobuf_flush
+n_iobuf_read
+n_iobuf_seek
+n_iobuf_tell
+n_iobuf_gets
+n_iobuf_getc

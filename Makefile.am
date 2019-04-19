@@ -2,12 +2,12 @@ NULL =
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS   = data lib
+SUBDIRS   = data lib tests
 DIST_SUBDIRS = $(SUBDIRS)
 
-# use libtool versioning 
+# use libtool versioning
 CPPFLAGS  = -I$(top_srcdir)/include/trurl -I$(top_srcdir)/include
-AM_CPPFLAGS  = 
+AM_CPPFLAGS  =
 AM_CFLAGS = @AM_CFLAGS@
 
 
@@ -99,7 +99,11 @@ libtrurl_la_SOURCES = \
 	$(NLIST_SRCS)    \
 	$(NHASH_SRCS)    \
 	$(NSTR_SRCS)     \
-	ntuple.c
+	ntuple.c         \
+	niobuf.c	 \
+	niobuf_zstd.c	 \
+	niobuf_int.h
+
 
 libtrurl_la_LIBADD = lib/libsys.la
 
@@ -129,6 +133,7 @@ EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in libtrurl.sym \
 			 test_hash.c \
 			 test_nstr.c \
 			 test_stream.c \
+			 test_iobuf.c \
 			 README NEWS
 
 EXTRA_PROGRAMS = \
@@ -137,7 +142,8 @@ EXTRA_PROGRAMS = \
 	        test_list   \
 		test_hash   \
 		test_nstr   \
-		test_stream 
+		test_stream \
+		test_iobuf
 
 test_common_LDADD = libtrurl.la
 test_array_LDADD = libtrurl.la
@@ -145,20 +151,21 @@ test_list_LDADD = libtrurl.la
 test_hash_LDADD = libtrurl.la
 test_nstr_LDADD = libtrurl.la
 test_stream_LDADD =  libtrurl.la -lz
+test_iobuf_LDADD =  libtrurl.la -lz -lzstd
 MAINTAINERCLEANFILES =	mkinstalldirs install-sh missing *.tar.gz *.spec \
 			config.h.in configure Makefile.in config.h \
 			config.sub config.guess aclocal.m4 \
 			libtool ltconfig ltmain.sh stamp-h* depcomp
 
 DISTCLEANFILES = TAGS gmon.out trurl $(distdir)/.deps libtrurl.a
-CLEANFILES = $(EXTRA_PROGRAMS) core *.o *.bak *~ *% *\# \#* 
+CLEANFILES = $(EXTRA_PROGRAMS) core *.o *.bak *~ *% *\# \#*
 
-symlink: 
+symlink:
 	@if [ ! -d trurl ]; then ln . trurl -s; fi;
 
 tests:  $(EXTRA_PROGRAMS)
 
-all-local: 
+all-local:
 	@ln -sf .libs/libtrurl.a libtrurl.a
 
 include Makefile.extra

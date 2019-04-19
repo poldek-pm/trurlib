@@ -1,4 +1,4 @@
-/* 
+/*
   TRURLib
 
   $Id$
@@ -14,7 +14,7 @@ extern int trurl_default_cmpf(const void *a, const void *b);
 #if ENABLE_TRACE
 # define DBGF(fmt, args...)  fprintf(stdout, "%-18s: " fmt, __FUNCTION__ , ## args)
 # define DBG(fmt, args...)   fprintf(stdout, fmt, ## args)
-#else 
+#else
 # define DBGF(fmt, args...)  ((void) 0)
 # define DBG(fmt, args...)    ((void) 0)
 #endif
