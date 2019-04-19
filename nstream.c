@@ -222,7 +222,6 @@ static int do_open(tn_stream *st, const char *path, const char *mode,
             break;
 
         case TN_STREAM_ZSTDIO:
-            printf("ZSTDIOD\n");
             if ((st->stream = n_iobuf_open(path, mode)) == NULL)
                 rc = 0;
             break;
