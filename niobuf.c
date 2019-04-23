@@ -56,6 +56,7 @@ tn_iobuf *n_iobuf_open(const char *path, const char *mode)
 {
     tn_iobuf *iobuf = n_iobuf_new(TN_STREAM_ZSTDIO, mode);
     iobuf->stream = fopen(path, mode);
+    iobuf->fd = fileno(iobuf->stream);
     return iobuf;
 }
 
@@ -70,7 +71,8 @@ tn_iobuf *n_iobuf_dopen(int fd, const char *mode)
 int n_iobuf_close(tn_iobuf *iobuf)
 {
     iobuf->io->destroy(iobuf->iostate, iobuf->stream);
-    return iobuf->fd ? 0 : fclose(iobuf->stream);
+    iobuf->fd = -1;
+    return fclose(iobuf->stream);
 }
 
 static long n_iobuf_real_seek(tn_iobuf *iobuf)
@@ -110,9 +112,6 @@ long n_iobuf_seek(tn_iobuf *iobuf, long offset, int whence)
 {
     off_t offs = iobuf->pos;
 
-    if (iobuf->mode == TRURL_IO_MODE_WRITE)
-        n_die("n_iobuf: seek in write mode is not allowed\n");
-
     if (iobuf->seek != 0)       /* seek already requested */
         n_die("n_iobuf: seq seeks are not allowed\n");
 
@@ -138,6 +137,10 @@ long n_iobuf_seek(tn_iobuf *iobuf, long offset, int whence)
     }
 
     iobuf->seek = offs - iobuf->pos;
+    if (iobuf->mode == TRURL_IO_MODE_WRITE && iobuf->seek != 0) {
+        n_die("n_iobuf: seek in write mode is not allowed\n");
+    }
+
     return offs;
 }
 
@@ -157,7 +160,9 @@ int n_iobuf_write(tn_iobuf *iobuf, const void *buf, size_t size)
 
 int n_iobuf_flush(tn_iobuf *iobuf)
 {
-    return iobuf->io->flush(iobuf->iostate, iobuf->stream);
+    int rv = iobuf->io->flush(iobuf->iostate, iobuf->stream);
+    int rv2 = fflush(iobuf->stream);
+    return rc == 0 && rc2 == 0 ? 0 : EOF;
 }
 
 int n_iobuf_read(tn_iobuf *iobuf, void *buf, size_t size)
