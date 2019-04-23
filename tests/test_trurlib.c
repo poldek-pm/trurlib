@@ -2,10 +2,11 @@
 #include "test.h"
 
 extern struct test_suite test_suite_niobuf;
-extern struct test_suite test_suite_niobuf2;
+extern struct test_suite test_suite_nstream;
 
 struct test_suite *suites[] = {
     &test_suite_niobuf,
+    &test_suite_nstream,
     NULL,
 };
 
@@ -16,7 +17,6 @@ Suite *make_suite(struct test_suite *tsuite)
 
     while (tsuite->cases[i].name) {
         TCase *tc = tcase_create(tsuite->cases[i].name);
-        printf("case %s %p\n", tsuite->cases[i].test_fn);
         tcase_add_test(tc, tsuite->cases[i].test_fn);
         suite_add_tcase(s, tc);
         i++;
@@ -34,7 +34,6 @@ int main(int argc, char *argv[])
     while (suites[i]) {
         Suite *s = make_suite(suites[i]);
         SRunner *sr = srunner_create(s);
-        printf("%s\n", suites[i]->name);
         srunner_run_all(sr, CK_NORMAL);
         nerr += srunner_ntests_failed(sr);
         srunner_free(sr);
