@@ -162,7 +162,7 @@ int n_iobuf_flush(tn_iobuf *iobuf)
 {
     int rv = iobuf->io->flush(iobuf->iostate, iobuf->stream);
     int rv2 = fflush(iobuf->stream);
-    return rc == 0 && rc2 == 0 ? 0 : EOF;
+    return rv == 0 && rv2 == 0 ? 0 : EOF;
 }
 
 int n_iobuf_read(tn_iobuf *iobuf, void *buf, size_t size)
