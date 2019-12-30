@@ -112,8 +112,7 @@ long n_iobuf_seek(tn_iobuf *iobuf, long offset, int whence)
 {
     off_t offs = iobuf->pos;
 
-    if (iobuf->seek != 0)       /* seek already requested */
-        n_die("n_iobuf: seq seeks are not allowed\n");
+    DBGF("pos %lld, offset %ld, whence %d (%d, %d, %d)\n", iobuf->pos, offset, whence, SEEK_CUR, SEEK_SET, SEEK_END);
 
     switch (whence) {
         case SEEK_CUR:
@@ -135,8 +134,13 @@ long n_iobuf_seek(tn_iobuf *iobuf, long offset, int whence)
             n_die("iobuf: unknown whence (%d)\n", whence);
             break;
     }
+    DBGF("  seek curr = %ld, next = %ld\n", iobuf->seek, offs - iobuf->pos);
+
+    if (whence != SEEK_SET && iobuf->seek != 0)       /* seek already requested */
+        n_die("n_iobuf: seq seeks are not allowed (offset %ld, whence %d)\n", offset, whence);
 
     iobuf->seek = offs - iobuf->pos;
+
     if (iobuf->mode == TRURL_IO_MODE_WRITE && iobuf->seek != 0) {
         n_die("n_iobuf: seek in write mode is not allowed\n");
     }
