@@ -116,6 +116,7 @@ pkginclude_HEADERS = \
 		include/trurl/narray.h     \
 		include/trurl/nlist.h      \
 		include/trurl/nbuf.h	   \
+		include/trurl/niobuf.h	   \
 		include/trurl/trurl.h      \
 		include/trurl/ndie.h	   \
 		include/trurl/nmalloc.h    \
