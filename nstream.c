@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <zlib.h>
 
+#include "trurl_internal.h"
 #include "nassert.h"
 #include "nmalloc.h"
 #include "nstream.h"
@@ -78,9 +79,32 @@ static int zlib_fseek_wrap(void *stream, long offset, int whence)
 {
     z_off_t rc, off = offset;
 
+#if ZLIB_TRACE
+    int seek = 0;
+    switch (whence) {
+    case SEEK_CUR:
+        seek = gztell(stream) + offset;
+        break;
+
+    case SEEK_SET:
+        seek = offset;
+        break;
+
+    case SEEK_END:
+        n_die("SEEK_END is not supported\n");
+        break;
+
+    default:
+        n_die("iobuf: unknown whence (%d)\n", whence);
+        break;
+    }
+
+    if (seek < gztell(stream)) {
+        DBGF_F("backward from %lld => %ld (whence %d)\n", gztell(stream), offset, whence);
+    }
+#endif
+
     rc = gzseek(stream, off, whence);
-    if (rc > 0)
-        rc = 0;
 
 #if ZLIB_TRACE
     if (rc < 0) {
@@ -88,6 +112,10 @@ static int zlib_fseek_wrap(void *stream, long offset, int whence)
         printf("zlib_fseek: %s\n", gzerror(stream, &ec));
     }
 #endif
+
+    if (rc > 0)
+        rc = 0;
+
     return rc;
 }
 
