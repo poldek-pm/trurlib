@@ -110,20 +110,20 @@ static long n_iobuf_real_seek(tn_iobuf *iobuf)
 
 long n_iobuf_seek(tn_iobuf *iobuf, long offset, int whence)
 {
-    off_t offs = iobuf->pos;
+    off_t pos = iobuf->pos;
 
-    DBGF("pos %lld, offset %ld, whence %d (%d, %d, %d)\n", iobuf->pos, offset, whence, SEEK_CUR, SEEK_SET, SEEK_END);
+    DBGF("pos %lld, offset %ld, whence %d (cur %d, set %d, end %d)\n", iobuf->pos, offset, whence, SEEK_CUR, SEEK_SET, SEEK_END);
 
     switch (whence) {
         case SEEK_CUR:
-            offs = iobuf->pos + offset;
+            pos = iobuf->pos + offset;
             DBGF("CUR %ld %d\n", offset, iobuf->seek);
             break;
 
         case SEEK_SET:
             n_assert(offset >= 0);
             DBGF("SET %ld %d\n", offset, iobuf->seek);
-            offs = offset;
+            pos = offset;
             break;
 
         case SEEK_END:
@@ -134,18 +134,21 @@ long n_iobuf_seek(tn_iobuf *iobuf, long offset, int whence)
             n_die("iobuf: unknown whence (%d)\n", whence);
             break;
     }
-    DBGF("  seek curr = %ld, next = %ld\n", iobuf->seek, offs - iobuf->pos);
 
-    if (whence != SEEK_SET && iobuf->seek != 0)       /* seek already requested */
-        n_die("n_iobuf: seq seeks are not allowed (offset %ld, whence %d)\n", offset, whence);
+    DBGF("  seek curr = %ld, next = %lld\n", iobuf->seek, pos - iobuf->pos);
 
-    iobuf->seek = offs - iobuf->pos;
+    if (whence == SEEK_CUR && iobuf->seek != 0) { /* seek already requested */
+        pos += iobuf->seek;
+        DBGF("  xeek curr = %ld, next = %lld\n", iobuf->seek, pos - iobuf->pos);
+    }
+
+    iobuf->seek = pos - iobuf->pos;
 
     if (iobuf->mode == TRURL_IO_MODE_WRITE && iobuf->seek != 0) {
         n_die("n_iobuf: seek in write mode is not allowed\n");
     }
 
-    return offs;
+    return pos;
 }
 
 long n_iobuf_tell(tn_iobuf *iobuf) {
@@ -192,6 +195,7 @@ char *n_iobuf_getx(tn_iobuf *iobuf, char *dest, size_t size, int endl)
         if (b == endl)
             break;
     }
+    dest[n] = 0;
     return dest;
 }
 
