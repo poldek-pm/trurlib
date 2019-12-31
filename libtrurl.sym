@@ -113,6 +113,7 @@ n_restore_uint32
 n_store_uint32
 n_str_concat
 n_str_etokl_ext
+n_str_in
 n_str_len
 n_str_strip_ws
 n_str_tok

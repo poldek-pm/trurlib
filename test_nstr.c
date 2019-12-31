@@ -57,6 +57,14 @@ void test_strlen(void)
     free(s);
 }
 
+void test_in(void)
+{
+    printf("\nTEST n_str_in\n");
+
+    n_assert(!n_str_in("ala", "ola", "ela", "cela", NULL));
+    n_assert(n_str_in("ala", "ola", "ela", "cela", "ala"));
+}
+
 
 #include <trurl/narray.h>
 void test_(char *line)
@@ -70,17 +78,18 @@ void test_(char *line)
         char *s = n_array_nth(tl, i);
         printf("%d. %s\n", i, *s ? s : "BREAK");
     }
-    
+
 }
 
 
 int main(int argc, char *argv[])
 {
+    test_in();
     if (argc > 1) {
         char *s = n_strdup(argv[1]);
         printf("'%s' => '%s'\n", argv[1], n_str_strip_ws(s));
     }
-    
+
 //    test_(argv[1]);
 #undef TEST_STRTOKL
 #define TEST_STRTOKL 0
@@ -91,6 +100,6 @@ int main(int argc, char *argv[])
 #if TEST_STRLEN
     test_strlen();
 #endif
-    
+
     return 0;
 }

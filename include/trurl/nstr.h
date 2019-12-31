@@ -1,4 +1,4 @@
-/* 
+/*
   TRURLib
 
   $Id$
@@ -37,8 +37,11 @@ tn_array *n_str_etokl_ext(const char *line, const char *white,
 #define n_str_eq(s, p) (strcmp(s, p) == 0)
 #define n_str_ne(s, p) (strcmp(s, p) != 0)
 
+/* test if s equals any of args */
+int n_str_in(const char *s, ...);
+
 /*
-  Calculate length of strings 
+  Calculate length of strings
   RET: length
 */
 int n_str_vlen(const char *s, va_list ap);
@@ -47,7 +50,7 @@ int n_str_len(const char *s, ...);
 
 /*
   Concatenate strings
-       
+
   RET: New string. The string is allocated dynamically
        by this function, and you *must* release it by free()
        Returns NULL if there was insufficient memory.
