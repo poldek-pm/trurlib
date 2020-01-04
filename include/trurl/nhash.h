@@ -1,6 +1,6 @@
 /*
   TRURLib
-  
+
   $Id$
  */
 
@@ -43,8 +43,8 @@ void n_hash_clean(tn_hash *ht);
 
 
 /*
-  Inserts a pointer to 'data' in the table, with a copy of 'key' 
-  (if TN_HASH_NOCPKEY not set) as its key.  Note that this makes 
+  Inserts a pointer to 'data' in the table, with a copy of 'key'
+  (if TN_HASH_NOCPKEY not set) as its key.  Note that this makes
   a copy of the key, but NOT of the associated data.
 */
 
@@ -65,25 +65,53 @@ int n_hash_exists(const tn_hash *ht, const char *key);
 /*
   lower level insert / exists pair to avoid double computation of key hash
  */
-void *n_hash_get_ex(const tn_hash *ht,
-                    const char *key, int *klen, unsigned *khash);
 
 int n_hash_exists_ex(const tn_hash *ht,
                      const char *key, int *klen, unsigned *khash);
+
+void *n_hash_get_ex(const tn_hash *ht,
+                    const char *key, int *klen, unsigned *khash);
 
 tn_hash *n_hash_insert_ex(tn_hash *ht,
                           const char *key, int klen, unsigned khash,
                           const void *data);
 
 
+/* low level api */
+uint32_t n_hash_compute_hash(const tn_hash *ht,
+                             const char *key, int klen);
+
+int n_hash_hexists(const tn_hash *ht,
+                   const char *key, int klen, uint32_t khash);
+
+void *n_hash_hget(const tn_hash *ht,
+                  const char *key, int klen, uint32_t khash);
+
+tn_hash *n_hash_hinsert(tn_hash *ht,
+                        const char *key, int klen, unsigned khash,
+                        const void *data);
+
+uint32_t n_hash_compute_raw_hash(const char *key, int klen);
+uint32_t n_hash_compute_index_hash(const tn_hash *ht, uint32_t raw_hash);
+
+
+
+/* iterator */
+struct trurl_hash_iterator {
+    tn_hash *ht;
+    int pos;
+};
+
+typedef struct trurl_hash_iterator tn_hash_it;
+void n_hash_it_init(tn_hash_it *hi, tn_hash *ht);
+void *n_hash_it_get(tn_hash_it *hi, const char **key);
 
 /*
 ** Deletes an entry from the table.  Returns a pointer to the data that
 ** was associated with the key so the calling code can dispose of it
 ** properly.
 */
-
-void *n_hash_remove(tn_hash *table, const char *key);
+void *n_hash_remove(tn_hash *ht, const char *key);
 
 
 /*

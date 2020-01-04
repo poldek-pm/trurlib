@@ -69,7 +69,9 @@ n_errmsg_tuple_nth_oob
 n_free
 n_hash_clean
 n_hash_ctl
-n_hash_dohash
+n_hash_compute_hash
+n_hash_compute_raw_hash
+n_hash_compute_index_hash
 n_hash_dump
 n_hash_dup
 n_hash_exists
@@ -77,8 +79,13 @@ n_hash_exists_ex
 n_hash_free
 n_hash_get
 n_hash_get_ex
+n_hash_hexists
+n_hash_hget
+n_hash_hinsert
 n_hash_insert
 n_hash_insert_ex
+n_hash_it_init
+n_hash_it_get
 n_hash_keys
 n_hash_keys_ext
 n_hash_map
