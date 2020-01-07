@@ -108,7 +108,7 @@ static long n_iobuf_real_seek(tn_iobuf *iobuf)
     return iobuf->pos;
 }
 
-long n_iobuf_seek(tn_iobuf *iobuf, long offset, int whence)
+int n_iobuf_seek(tn_iobuf *iobuf, long offset, int whence)
 {
     off_t pos = iobuf->pos;
 
@@ -148,7 +148,7 @@ long n_iobuf_seek(tn_iobuf *iobuf, long offset, int whence)
         n_die("n_iobuf: seek in write mode is not allowed\n");
     }
 
-    return pos;
+    return 1;
 }
 
 long n_iobuf_tell(tn_iobuf *iobuf) {

@@ -52,7 +52,7 @@ int n_hash_stats(const tn_hash *ht)
             maxdeep = deep;
     }
 
-    printf("ht(%p): %zu slots (%d empty, avg empty len %d), %zu items, "
+    printf("ht(%p): %u slots (%d empty, avg empty len %d), %u items, "
            "%d collisions (%.2lf%%, avgdeep %.2lf, maxdeep %d)\n",
            ht, ht->size, nempts, empty_len_sum ? empty_len_sum / empty_len_n : 0,
            ht->items, ncolls, 100 * (ncolls/ (ht->items * 1.0)),

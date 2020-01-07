@@ -30,6 +30,22 @@
 
 #define ZLIB_TRACE 0
 
+static int do_gz_read(void *stream, void *buf, size_t size)
+{
+    return gzread(stream, buf, size);
+}
+
+static int do_gz_write(void *stream, const void *buf, size_t size)
+{
+    return gzwrite(stream, buf, size);
+}
+
+static char *do_gz_gets(void *stream, char *buf, size_t size)
+{
+    return gzgets(stream, buf, size);
+}
+
+
 static int do_gz_flush(void *stream)
 {
     return gzflush(stream, Z_FULL_FLUSH);
@@ -120,7 +136,6 @@ static int zlib_fseek_wrap(void *stream, long offset, int whence)
 }
 
 
-
 static tn_stream *n_stream_new(int type)
 {
     tn_stream *st;
@@ -150,9 +165,9 @@ static tn_stream *n_stream_new(int type)
         case TN_STREAM_GZIO:
             st->st_open  = (void *(*)(const char *, const char *))gzopen;
             st->st_dopen = (void *(*)(int, const char *))gzdopen;
-            st->st_read  = (int (*)(void*, void*, size_t))gzread;
-            st->st_write = (int (*)(void*, const void*, size_t))gzwrite;
-            st->st_gets  = (char *(*)(void*, char*, size_t))gzgets;
+            st->st_read  = do_gz_read;
+            st->st_write = do_gz_write;
+            st->st_gets  = do_gz_gets;
             st->st_getc  = do_gz_getc;
 #if HAVE_GZUNGETC
             st->st_ungetc = do_gz_ungetc;
