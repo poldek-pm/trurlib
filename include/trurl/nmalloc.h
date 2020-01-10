@@ -1,4 +1,4 @@
-/* 
+/*
   TRURLib
 
   $Id$
@@ -63,5 +63,19 @@ tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags);
 void n_alloc_free(tn_alloc *na);
 
 
-#endif /* NMALLOC_H */
+/* short (< UINT8_MAX) string deduplication allocator */
+struct trurl_str8alloc_private;
+typedef struct trurl_str8alloc_private tn_str8alloc;
 
+tn_str8alloc *n_str8alloc_new(size_t initial_slots, int flags);
+void n_str8alloc_free(tn_str8alloc *sa);
+
+struct trurl_lstr8_private {
+    uint8_t len;
+    char str[];
+};
+typedef struct trurl_lstr8_private tn_lstr8;
+
+const tn_lstr8 *n_str8alloc_add(tn_str8alloc *sa, const char *str, size_t len);
+
+#endif /* NMALLOC_H */

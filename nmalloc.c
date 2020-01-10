@@ -1,4 +1,4 @@
-/* 
+/*
    TRURLib
    Copyright (C) 1999 Pawel A. Gajda (mis@k2.net.pl)
 
@@ -23,12 +23,16 @@
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "nassert.h"
 #include "nmalloc.h"
+
+#include "nhash.h"
+#include "nstr.h"
 
 typedef void (*memh) (void);
 
@@ -40,7 +44,7 @@ void (*setxmallocs_handler(void (*handler) (void))) (void) {
     return tmp;
 }
 
-void (*n_malloc_set_failhook(void (*fn) (void))) 
+void (*n_malloc_set_failhook(void (*fn) (void)))
 {
     memh tmp = mem_fail_fn;
     mem_fail_fn = fn;
@@ -131,10 +135,10 @@ void n_free(void *ptr)
     free(ptr);
 }
 
-void n_cfree(void *ptr) 
+void n_cfree(void *ptr)
 {
     void **pptr = (void**)ptr;
-    
+
     if (*pptr) {
         free(*pptr);
         *pptr = NULL;
@@ -229,33 +233,33 @@ tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags)
         na->na_calloc = malloc_calloc;
         na->na_free   = malloc_free;
         na->na_realloc = malloc_realloc;
-        
+
     } else if (flags & TN_ALLOC_OBSTACK) {
         struct obstack *ob = n_malloc(sizeof(*ob));
         obstack_init(ob);
-        if (chunkkb < 2) 
+        if (chunkkb < 2)
             chunkkb = 2;
-        
+
         if (chunkkb > 4096)
             fprintf(stderr, "n_alloc_new: do you really request obstack's "
                     "chunk size greater than 4M?\n");
-        
-            
+
+
         obstack_chunk_size(ob) = 1024 * chunkkb;
 #if HAVE_CPU_UNALIGNED_ACCESS
         obstack_alignment_mask(ob) = 0; /* TODO: configurable */
-#endif        
+#endif
         na->_privdata = ob;
         na->na_malloc  = aobstack_malloc;
         na->na_calloc  = aobstack_calloc;
         na->na_free    = aobstack_free;
         na->na_realloc = aobstack_realloc;
-        
+
     } else {
         n_assert(0);
     }
-    
-    
+
+
     return na;
 }
 
@@ -265,12 +269,68 @@ void n_alloc_free(tn_alloc *na)
         na->_refcnt--;
         return;
     }
-    
+
     if (na->_flags & TN_ALLOC_OBSTACK) {
         obstack_free(na->_privdata, NULL);
         n_free(na->_privdata);
     }
-    
+
     n_free(na);
 }
 
+struct trurl_str8alloc_private {
+    tn_hash  *ht;
+    tn_alloc *na;
+    int      hits;
+    const tn_lstr8 *last_ent;
+};
+
+tn_str8alloc *n_str8alloc_new(size_t initial_slots, int flags)
+{
+    flags = flags;                      /* unused */
+    size_t kbsize = (initial_slots * 32 /* avg str len */) / 1024;
+
+    tn_alloc *na = n_alloc_new(kbsize, TN_ALLOC_OBSTACK);
+    tn_str8alloc *sa = na->na_malloc(na, sizeof(*sa));
+
+    sa->ht = n_hash_new_na(na, initial_slots, NULL);
+    sa->na = na;
+    sa->hits = 0;
+    sa->last_ent = NULL;
+
+    n_hash_ctl(sa->ht, TN_HASH_NOCPKEY | TN_HASH_REHASH);
+    return sa;
+}
+
+void n_str8alloc_free(tn_str8alloc *sa)
+{
+    n_alloc_free(sa->na);
+}
+
+const tn_lstr8 *n_str8alloc_add(tn_str8alloc *sa, const char *str, size_t len)
+{
+    tn_lstr8 *ent;
+
+    n_assert(len > 0);
+    n_assert(len <= UINT8_MAX);
+
+    if (sa->last_ent && strcmp(sa->last_ent->str, str) == 0)
+        return sa->last_ent;
+
+    uint32_t khash = n_hash_compute_hash(sa->ht, str, len);
+
+    if ((ent = n_hash_hget(sa->ht, str, len, khash))) {
+        sa->hits++;
+        sa->last_ent = ent;
+        return ent;
+    }
+
+    ent = sa->na->na_malloc(sa->na, sizeof(*ent) + len + 1);
+    ent->len = len;
+    n_strncpy(ent->str, str, len + 1);
+
+    n_hash_hinsert(sa->ht, ent->str, ent->len, khash, ent);
+    sa->last_ent = ent;
+
+    return ent;
+}
