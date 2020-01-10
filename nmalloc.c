@@ -304,7 +304,10 @@ tn_str8alloc *n_str8alloc_new(size_t initial_slots, int flags)
 
 void n_str8alloc_free(tn_str8alloc *sa)
 {
-    n_alloc_free(sa->na);
+    tn_alloc *na = sa->na;
+    n_hash_free(sa->ht);
+    memset(sa, '0', sizeof(*sa));
+    n_alloc_free(na);
 }
 
 const tn_lstr8 *n_str8alloc_add(tn_str8alloc *sa, const char *str, size_t len)
