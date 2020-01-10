@@ -186,8 +186,10 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, int klen, unsigned khash,
     n_assert(klen > 0);
     n_assert(klen < UINT16_MAX);
 
-    if ((ht->flags & TN_HASH_REHASH) && ht->size - ht->items <= ht->size / 3)
+    if ((ht->flags & TN_HASH_REHASH) && ht->size - ht->items <= ht->size / 3) {
         n_hash_rehash(ht);
+        khash = 0;              /* invalidate due to table size change */
+    }
 
     if (!khash)
         khash = n_hash_compute_hash(ht, key, klen);
@@ -196,13 +198,13 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, int klen, unsigned khash,
         ptr = n_hash_get_bucket(ht, key, klen, khash);
         if (ptr) {
             if (!replace) {
-                trurl_die("n_hash_insert: key '%s' %s already in table\n",
-                          key, ptr->key);
+                trurl_die("n_hash_insert: key '%s' %s already in table\n", key);
                 return NULL;
             }
 
             if (ptr->data && ht->free_fn)
                 ht->free_fn(ptr->data);
+
             ptr->data = (void *) data;
             return ht;
         }
@@ -238,6 +240,7 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, int klen, unsigned khash,
     ptr->next = ht->table[khash];
     ht->table[khash] = ptr;
     ht->items++;
+
 
     return ht;
 }
