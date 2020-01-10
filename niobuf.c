@@ -72,7 +72,10 @@ int n_iobuf_close(tn_iobuf *iobuf)
 {
     iobuf->io->destroy(iobuf->iostate, iobuf->stream);
     iobuf->fd = -1;
-    return fclose(iobuf->stream);
+    int rc = fclose(iobuf->stream);
+    free(iobuf);
+
+    return rc;
 }
 
 static long n_iobuf_real_seek(tn_iobuf *iobuf)
