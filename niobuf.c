@@ -54,17 +54,29 @@ static tn_iobuf *n_iobuf_new(int type, const char *mode)
 
 tn_iobuf *n_iobuf_open(const char *path, const char *mode)
 {
+    FILE *stream = fopen(path, mode);
+
+    if (stream == NULL)
+        return NULL;
+
     tn_iobuf *iobuf = n_iobuf_new(TN_STREAM_ZSTDIO, mode);
-    iobuf->stream = fopen(path, mode);
-    iobuf->fd = fileno(iobuf->stream);
+    iobuf->stream = stream;
+    iobuf->fd = fileno(stream);
+
     return iobuf;
 }
 
 tn_iobuf *n_iobuf_dopen(int fd, const char *mode)
 {
+    FILE *stream = fdopen(fd, mode);
+
+    if (stream == NULL)
+        return NULL;
+
     tn_iobuf *iobuf = n_iobuf_new(TN_STREAM_ZSTDIO, mode);
-    iobuf->stream = fdopen(fd, mode);
+    iobuf->stream = stream;
     iobuf->fd = fd;
+
     return iobuf;
 }
 
