@@ -11,25 +11,25 @@ tn_array *n_array_init_ex(tn_array *arr, int size, t_fn_free freef,
 {
     n_assert(size >= 0);
     n_assert(arr);
-    
+
     if (data) {
         arr->data   = data;
         arr->items  = size;
-        
+
     } else {
 #ifdef TRURL_VERY_PORTABLE
         register int i;
-#endif    
+#endif
         if (size < 1)
             size = 2;
-        
+
         arr->data = n_malloc(size * sizeof(*arr->data));
-#ifdef TRURL_VERY_PORTABLE    
+#ifdef TRURL_VERY_PORTABLE
         for (i = 0; i < size; i++)
             arr->data[i] = NULL;
 #else
         memset(arr->data, 0, size * sizeof(*arr->data));
-#endif        
+#endif
         arr->items     = 0;
     }
 
@@ -37,24 +37,24 @@ tn_array *n_array_init_ex(tn_array *arr, int size, t_fn_free freef,
     arr->flags     = 0;
     arr->allocated = size;
     arr->start_index  = 0;
-    
+
     arr->free_fn = freef;
     arr->cmp_fn = trurl_default_cmpf;
 
     if (cmpf)
         arr->cmp_fn = cmpf;
-    
+
     return arr;
 }
 
 tn_array *n_array_new_ex(int size, t_fn_free freef, t_fn_cmp cmpf, void **data)
 {
     tn_array *arr;
-#if 0    
+#if 0
     static int n = 0;
     n++;
     printf("n_array %d %d\n", n, n * sizeof(*arr));
-#endif    
+#endif
     arr = n_malloc(sizeof(*arr));
     return n_array_init_ex(arr, size, freef, cmpf, data);
 }
@@ -83,13 +83,15 @@ void n_array_free(tn_array *arr)
         return;
     }
     n_assert((arr->flags & TN_ARRAY_INTERNAL_NA) == 0);
+
+    n_array_unfreeze(arr);
     n_array_clean(arr);
     free(arr->data);
     arr->data = NULL;
     free(arr);
 }
 
-void n_array_cfree(tn_array **arrptr) 
+void n_array_cfree(tn_array **arrptr)
 {
     if (*arrptr) {
         n_array_free(*arrptr);
@@ -104,7 +106,7 @@ void n_array_free_na(tn_alloc *na, tn_array *arr)
         return;
     }
     n_assert((arr->flags & TN_ARRAY_INTERNAL_NA) == 1);
-    
+
     n_array_clean(arr);
     free(arr->data);
     arr->data = NULL;
@@ -130,4 +132,3 @@ tn_fn_cmp n_array_ctl_get_cmpfn(const tn_array *arr)
 {
     return arr->cmp_fn;
 }
-
