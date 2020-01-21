@@ -7,7 +7,7 @@ START_TEST (test_read_write)
     int i, nitems = 10;
     char *fmt = "line%.12d";
     int nw = 0, nr = 0;
-    char *tmppath = TMPPATH("niobuf-rw.zst");
+    char *tmppath = NTEST_TMPPATH("niobuf-rw.zst");
     tn_iobuf *io = n_iobuf_open(tmppath, "w");
 
     for (i = 0; i < nitems; i++) {
@@ -101,7 +101,7 @@ void do_seek(const char *path)
 
 START_TEST (test_seek)
 {
-    do_seek(TMPPATH("niobuf-seek.zst"));
+    do_seek(NTEST_TMPPATH("niobuf-seek.zst"));
 }
 END_TEST
 

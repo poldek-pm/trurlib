@@ -39,7 +39,7 @@ static inline char *__ncheck_make_test_tmp_path(const char *filename)
     return path;
 }
 
-#define TMPPATH(name) __ncheck_make_test_tmp_path(name)
+#define NTEST_TMPPATH(name) __ncheck_make_test_tmp_path(name)
 
 // Overloading Macro on Number of Arguments
 // taken from https://stackoverflow.com/a/11994395

@@ -38,9 +38,9 @@ void do_test_read_write(const char *tmppath)
 
 START_TEST(test_read_write)
 {
-    do_test_read_write(TMPPATH("nstream-rw.txt"));
-    do_test_read_write(TMPPATH("nstream-rw.gz"));
-    do_test_read_write(TMPPATH("nstream-rw.zst"));
+    do_test_read_write(NTEST_TMPPATH("nstream-rw.txt"));
+    do_test_read_write(NTEST_TMPPATH("nstream-rw.gz"));
+    do_test_read_write(NTEST_TMPPATH("nstream-rw.zst"));
 }
 END_TEST
 
@@ -96,9 +96,9 @@ void do_test_seek(const char *tmppath)
 }
 
 START_TEST(test_seek) {
-    do_test_seek(TMPPATH("nstream-seek.txt"));
-    do_test_seek(TMPPATH("nstream-seek.gz"));
-    do_test_seek(TMPPATH("nstream-seek.zst"));
+    do_test_seek(NTEST_TMPPATH("nstream-seek.txt"));
+    do_test_seek(NTEST_TMPPATH("nstream-seek.gz"));
+    do_test_seek(NTEST_TMPPATH("nstream-seek.zst"));
 }
 END_TEST
 
