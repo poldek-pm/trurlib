@@ -95,7 +95,7 @@ static int zlib_fseek_wrap(void *stream, long offset, int whence)
 {
     z_off_t rc, off = offset;
 
-#if ZLIB_TRACE
+#if ZLIB_TRACE_SEEK
     int seek = 0;
     switch (whence) {
     case SEEK_CUR:
@@ -116,7 +116,7 @@ static int zlib_fseek_wrap(void *stream, long offset, int whence)
     }
 
     if (seek < gztell(stream)) {
-        DBGF_F("backward from %lld => %ld (whence %d)\n", gztell(stream), offset, whence);
+        DBGF_F("%p backward from %lld => %ld (whence %d)\n", stream, gztell(stream), offset, whence);
     }
 #endif
 
