@@ -36,4 +36,6 @@ compile
 *.pc
 test-driver
 *.log
-tests/test_trurlib
+*.trs
+tests/test_*
+!tests/test_*.c

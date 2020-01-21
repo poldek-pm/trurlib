@@ -34,7 +34,7 @@ AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
 
-AM_CFLAGS="-Wall -Wextra -Wformat-security"
+AM_CFLAGS="-Wall -Wextra -Wformat-security -std=gnu99"
 AC_SUBST(AM_CFLAGS)
 
 # Checks for header files.
@@ -65,9 +65,6 @@ case "$host_cpu" in
         AC_DEFINE(HAVE_CPU_UNALIGNED_ACCESS, 1)
         ;;
 esac
-
-dnl Disabled cookies usage; they make too much troubles.
-dnl AC_CHECK_FUNCS(fopencookie,,,$CONF_IN_LDFLAGS)
 
 dnl stolen from autoconf
 AN_FUNCTION([obstack_init], [AC_FUNC_OBSTACK])

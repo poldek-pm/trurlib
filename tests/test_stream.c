@@ -1,4 +1,5 @@
-#include "test.h"
+#include "n_check.h"
+#include "nmalloc.h"
 #include "nstream.h"
 #include "nstore.h"
 
@@ -21,17 +22,17 @@ void do_test_read_write(const char *tmppath)
         int n = snprintf(buf, sizeof(buf), fmt, i);
         char rbuf[75];
 
-        memset(rbuf, sizeof(rbuf), 0);
+        memset(rbuf, 0, sizeof(rbuf));
 
         int x = n_stream_read(io, rbuf, n);
-        ck_assert(x == n);
-        ck_assert(memcmp(buf, rbuf, n) == 0);
+        expect_int(x, n);
+        expect_int(memcmp(buf, rbuf, n), 0);
         nr += x;
         //printf("read %s %d = %d  => %s\n", buf, n, strlen(buf), rbuf);
 
     }
     n_stream_close(io);
-    ck_assert(nw == nr);
+    expect_int(nw, nr);
     //printf("OK\n");
 }
 
@@ -51,48 +52,47 @@ static void seek_and_read(tn_stream *io, int nth)
 
 
     n_stream_seek(io, nth * 16, SEEK_SET);
-    ck_assert(n_stream_tell(io) == nth * 16);
+    expect_int(n_stream_tell(io), nth * 16);
 
     n = snprintf(buf, sizeof(buf), fmt, nth);
     x = n_stream_read(io, rbuf, n);
 
-    ck_assert(x == n);
-    ck_assert(memcmp(buf, rbuf, n) == 0);
+    expect_int(x, n);
+    expect_int(memcmp(buf, rbuf, n), 0);
 }
 
 void do_test_seek(const char *tmppath)
 {
     char buf[75];
-    int nitems = 10;
     char *fmt = "line%.12d";
-    int nw = 0, nr = 0;
+    int nw = 0;
     tn_stream *io;
-    char rbuf[75];
-    int i, x, n, nth;
+    //char rbuf[75];
+    int i;
 
     io = n_stream_open(tmppath, "w", TN_STREAM_UNKNOWN);
     for (i = 0; i < 100; i++) {
         int n = snprintf(buf, sizeof(buf), fmt, i);
         int nn = n_stream_write(io, buf, n);
-        ck_assert(nn == n);
+        expect_int(nn, n);
         nw += n;
     }
     n_stream_close(io);
 
     io = n_stream_open(tmppath, "r", TN_STREAM_UNKNOWN);
-    ck_assert(n_stream_tell(io) == 0);
+    expect_int(n_stream_tell(io), 0);
 
     seek_and_read(io, 1);
-    ck_assert(n_stream_tell(io) == 32);
+    expect_int(n_stream_tell(io), 32);
 
     seek_and_read(io, 0);
-    ck_assert(n_stream_tell(io) == 16);
+    expect_int(n_stream_tell(io), 16);
 
     seek_and_read(io, 1);
-    ck_assert(n_stream_tell(io) == 32);
+    expect_int(n_stream_tell(io), 32);
 
     seek_and_read(io, 2);
-    ck_assert(n_stream_tell(io) == 48);
+    expect_int(n_stream_tell(io), 48);
 }
 
 START_TEST(test_seek) {
@@ -112,16 +112,10 @@ void test_getline(const char *name)
     st = n_stream_open(name, "r", TN_STREAM_UNKNOWN);
     n = n_stream_getline(st, &buf, 16);
     printf("getline = %d (%s)\n", n, buf);
-    n_assert(strlen(buf) == n);
+    n_assert((int)strlen(buf) == n);
     n_stream_close(st);
 }
 
-
-struct test_suite test_suite_nstream = {
-    "n_stream",
-    {
-        { "read/write", test_read_write  },
-        { "seek", test_seek  },
-        { NULL, NULL }
-    }
-};
+NTEST_RUNNER("nstream",
+            test_read_write,
+            test_seek);

@@ -125,34 +125,12 @@ pkginclude_HEADERS = \
 		include/trurl/nstore.h     \
 		include/trurl/n2h.h        \
 		include/trurl/n_obj_ref.h  \
-		include/trurl/ntuple.h
+		include/trurl/ntuple.h     \
+	        include/trurl/n_check.h
 
 EXTRA_DIST = Makefile.extra trurlib.spec trurlib.spec.in libtrurl.sym \
-			 test_common.c \
-			 test_array.c \
-			 test_list.c \
-			 test_hash.c \
-			 test_nstr.c \
-			 test_stream.c \
-			 test_iobuf.c \
 			 README NEWS
 
-EXTRA_PROGRAMS = \
-		test_common \
-		test_array  \
-	        test_list   \
-		test_hash   \
-		test_nstr   \
-		test_stream \
-		test_iobuf
-
-test_common_LDADD = libtrurl.la
-test_array_LDADD = libtrurl.la
-test_list_LDADD = libtrurl.la
-test_hash_LDADD = libtrurl.la
-test_nstr_LDADD = libtrurl.la
-test_stream_LDADD =  libtrurl.la -lz
-test_iobuf_LDADD =  libtrurl.la -lz -lzstd
 MAINTAINERCLEANFILES =	mkinstalldirs install-sh missing *.tar.gz *.spec \
 			config.h.in configure Makefile.in config.h \
 			config.sub config.guess aclocal.m4 \
