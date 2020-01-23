@@ -278,31 +278,30 @@ void n_alloc_free(tn_alloc *na)
     n_free(na);
 }
 
-struct trurl_str8alloc_private {
+/* deduplicate string  allocator */
+struct trurl_strdalloc_private {
     tn_hash  *ht;
     tn_alloc *na;
     int      hits;
-    const tn_lstr8 *last_ent;
 };
 
-tn_str8alloc *n_str8alloc_new(size_t initial_slots, int flags)
+tn_strdalloc *n_strdalloc_new(size_t initial_slots, int flags)
 {
     flags = flags;                      /* unused */
     size_t kbsize = (initial_slots * 32 /* avg str len */) / 1024;
 
     tn_alloc *na = n_alloc_new(kbsize, TN_ALLOC_OBSTACK);
-    tn_str8alloc *sa = na->na_malloc(na, sizeof(*sa));
+    tn_strdalloc *sa = na->na_malloc(na, sizeof(*sa));
 
     sa->ht = n_hash_new_na(na, initial_slots, NULL);
     sa->na = na;
     sa->hits = 0;
-    sa->last_ent = NULL;
 
     n_hash_ctl(sa->ht, TN_HASH_NOCPKEY | TN_HASH_REHASH);
     return sa;
 }
 
-void n_str8alloc_free(tn_str8alloc *sa)
+void n_strdalloc_free(tn_strdalloc *sa)
 {
     tn_alloc *na = sa->na;
     n_hash_free(sa->ht);
@@ -310,30 +309,57 @@ void n_str8alloc_free(tn_str8alloc *sa)
     n_alloc_free(na);
 }
 
-const tn_lstr8 *n_str8alloc_add(tn_str8alloc *sa, const char *str, size_t len)
+static
+const void *do_strdalloc_add(tn_strdalloc *sa, uint32_t max, const char *str, size_t len)
 {
-    tn_lstr8 *ent;
+    void *ent;
 
     n_assert(len > 0);
-    n_assert(len <= UINT8_MAX);
-
-    if (sa->last_ent && strcmp(sa->last_ent->str, str) == 0)
-        return sa->last_ent;
+    n_assert(len <= max);
 
     uint32_t khash = n_hash_compute_hash(sa->ht, str, len);
 
     if ((ent = n_hash_hget(sa->ht, str, len, khash))) {
         sa->hits++;
-        sa->last_ent = ent;
         return ent;
     }
 
-    ent = sa->na->na_malloc(sa->na, sizeof(*ent) + len + 1);
-    ent->len = len;
-    n_strncpy(ent->str, str, len + 1);
+    char *entstr = NULL;
+    tn_lstr8 *ent8 = NULL;
+    tn_lstr16 *ent16 = NULL;
+    switch (max) {
+        case UINT8_MAX:
+            ent8 = sa->na->na_malloc(sa->na, sizeof(*ent8) + len + 1);
+            ent8->len = len;
+            entstr = ent8->str;
+            ent = ent8;
+            break;
 
-    n_hash_hinsert(sa->ht, ent->str, ent->len, khash, ent);
-    sa->last_ent = ent;
+        case UINT16_MAX:
+            ent16 = sa->na->na_malloc(sa->na, sizeof(*ent16) + len + 1);
+            ent16->len = len;
+            entstr = ent16->str;
+            ent = ent16;
+            break;
+
+        default:
+            n_die("%u: invalid max arg\n", max);
+            break;
+    }
+
+    n_assert(entstr);
+    n_strncpy(entstr, str, len + 1);
+    n_hash_hinsert(sa->ht, entstr, len, khash, ent);
 
     return ent;
+}
+
+const tn_lstr8 *n_strdalloc_add8(tn_strdalloc *sa, const char *str, size_t len)
+{
+    return do_strdalloc_add(sa, UINT8_MAX, str, len);
+}
+
+const tn_lstr16 *n_strdalloc_add16(tn_strdalloc *sa, const char *str, size_t len)
+{
+    return do_strdalloc_add(sa, UINT16_MAX, str, len);
 }

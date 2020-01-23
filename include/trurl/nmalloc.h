@@ -28,8 +28,8 @@ void *n_memdup(const void *ptr, size_t size);
       const char *ss = (s);                   \
       char  **dptr = (dp);                    \
       int len = strlen(ss) + 1;               \
-      *dptr = alloca(len);	                  \
-      memcpy(*dptr, ss, len);				  \
+      *dptr = alloca(len);                    \
+      memcpy(*dptr, ss, len);        	      \
    } while (0);
 
 #define n_strdupapl(s, length,  dp)           \
@@ -40,9 +40,7 @@ void *n_memdup(const void *ptr, size_t size);
       memcpy(*dptr, ss, length + 1);          \
    } while (0);
 
-
-
-
+/* obstack allocator */
 struct trurl_alloc_private {
     uint16_t    _refcnt;
     uint16_t    _flags;
@@ -63,12 +61,12 @@ tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags);
 void n_alloc_free(tn_alloc *na);
 
 
-/* short (< UINT8_MAX) string deduplication allocator */
-struct trurl_str8alloc_private;
-typedef struct trurl_str8alloc_private tn_str8alloc;
+/* string deduplication allocator */
+struct trurl_strdalloc_private;
+typedef struct trurl_strdalloc_private tn_strdalloc;
 
-tn_str8alloc *n_str8alloc_new(size_t initial_slots, int flags);
-void n_str8alloc_free(tn_str8alloc *sa);
+tn_strdalloc *n_strdalloc_new(size_t initial_slots, int flags);
+void n_strdalloc_free(tn_strdalloc *sa);
 
 struct trurl_lstr8_private {
     uint8_t len;
@@ -76,6 +74,16 @@ struct trurl_lstr8_private {
 };
 typedef struct trurl_lstr8_private tn_lstr8;
 
-const tn_lstr8 *n_str8alloc_add(tn_str8alloc *sa, const char *str, size_t len);
+const tn_lstr8 *n_strdalloc_add8(tn_strdalloc *sa, const char *str, size_t len);
+
+
+struct trurl_lstr16_private {
+    uint16_t len;
+    char str[];
+};
+typedef struct trurl_lstr16_private tn_lstr16;
+
+const tn_lstr16 *n_strdalloc_add16(tn_strdalloc *sa, const char *str, size_t len);
+
 
 #endif /* NMALLOC_H */

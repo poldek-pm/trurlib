@@ -129,9 +129,10 @@ n_str_tokl_free
 n_str_tokl_n
 n_str_vconcat
 n_str_vlen
-n_str8alloc_new
-n_str8alloc_free
-n_str8alloc_add
+n_strdalloc_new
+n_strdalloc_free
+n_strdalloc_add8
+n_strdalloc_add16
 n_strdup
 n_strdupl
 n_stream_dopen
