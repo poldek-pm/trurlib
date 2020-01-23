@@ -74,9 +74,9 @@ static inline void __ncheck_process_args(int argc, char *argv[], char *tests[]) 
         const char *arg = argv[i];
 
         if (strcmp(arg, "-l") == 0) {
-            int i = 0;
-            while (tests[i])
-                printf("%s\n", tests[i++]);
+            int n = 0;
+            while (tests[n])
+                printf("%s\n", tests[n++]);
 
             exit(EXIT_SUCCESS);
         }
