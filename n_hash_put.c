@@ -198,7 +198,7 @@ tn_hash *n_hash_put(tn_hash *ht, const char *key, int klen, unsigned khash,
         ptr = n_hash_get_bucket(ht, key, klen, khash);
         if (ptr) {
             if (!replace) {
-                trurl_die("n_hash_insert: key '%s' %s already in table\n", key);
+                trurl_die("n_hash_insert: key '%s' already in table\n", key);
                 return NULL;
             }
 
