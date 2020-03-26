@@ -50,6 +50,19 @@ START_TEST(test_array_sort)
 }
 END_TEST
 
+START_TEST(test_array_bsearch)
+{
+    tn_array *a = n_array_new(8, NULL, (t_fn_cmp) strcmp);
+    n_array_push(a, "1");
+    n_array_push(a, "2");
+
+    expect_str(n_array_bsearch_ex(a, "1", (t_fn_cmp) strcmp), "1");
+    expect_str(n_array_bsearch_ex(a, "2", (t_fn_cmp) strcmp), "2");
+
+    n_array_free(a);
+}
+END_TEST
+
 
 START_TEST(test_array_basic)
 {
@@ -172,5 +185,6 @@ END_TEST
 NTEST_RUNNER("array",
              test_array_basic,
              test_array_sort,
+             test_array_bsearch,
              test_array_growth,
              test_array_remove);
