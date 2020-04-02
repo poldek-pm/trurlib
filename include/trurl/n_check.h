@@ -1,11 +1,12 @@
 /*
   TRURLib
 
-  libcheck helper macros
+  libcheck helpers
 */
 #ifndef TRURLIB_N_CHECK_H
 #define TRURLIB_N_CHECK_H
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,6 +57,20 @@ static inline char *__ncheck_make_test_tmp_path(const char *filename)
 #define GET_MACRO(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, NAME, ...) NAME
 
 static int __ncheck_verbosity = CK_ENV;
+static int __ncheck_log_verbose = 0;
+
+static inline void __ncheck_log(const char *fmt, ...)
+{
+    if (__ncheck_log_verbose < 2) /* enabled with -vv */
+        return;
+
+    va_list args;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+}
+#define NTEST_LOG(fmt, args...)  __ncheck_log("[%s] " fmt, __FUNCTION__ , ## args)
+
 static inline int __ncheck_runner(Suite *suite) {
     int nerr = 0;
     SRunner *sr = srunner_create(suite);
@@ -67,6 +82,7 @@ static inline int __ncheck_runner(Suite *suite) {
 }
 
 static inline void __ncheck_process_args(int argc, char *argv[], char *tests[]) {
+
     if (argc < 2)
         return;
 
@@ -81,8 +97,13 @@ static inline void __ncheck_process_args(int argc, char *argv[], char *tests[]) 
             exit(EXIT_SUCCESS);
         }
 
-        if (strcmp(arg, "-v") == 0)
+        if (strncmp(arg, "-v", 2) == 0) {
             __ncheck_verbosity = CK_VERBOSE;
+            __ncheck_log_verbose++;
+            arg += 2;
+            while (*arg++ == 'v')
+                __ncheck_log_verbose++;
+        }
     }
 }
 
