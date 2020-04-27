@@ -91,6 +91,10 @@ tn_hash *n_hash_hinsert(tn_hash *ht,
                         const char *key, int klen, unsigned khash,
                         const void *data);
 
+tn_hash *n_hash_hreplace(tn_hash *ht,
+                         const char *key, int klen, unsigned khash,
+                         const void *data);
+
 uint32_t n_hash_compute_raw_hash(const char *key, int klen);
 uint32_t n_hash_compute_index_hash(const tn_hash *ht, uint32_t raw_hash);
 

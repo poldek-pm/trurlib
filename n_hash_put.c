@@ -256,8 +256,8 @@ tn_hash *n_hash_hinsert(tn_hash *ht, const char *key, int klen, unsigned khash,
     return n_hash_put(ht, key, klen, khash, data, 0);
 }
 
-
-tn_hash *n_hash_replace(tn_hash *ht, const char *key, const void *data)
+tn_hash *n_hash_hreplace(tn_hash *ht, const char *key, int klen, unsigned khash,
+                         const void *data)
 {
     if (ht->flags & TN_HASH_NOREPLACE) {
         trurl_die("n_hash_replace: replace requested for"
@@ -265,7 +265,12 @@ tn_hash *n_hash_replace(tn_hash *ht, const char *key, const void *data)
         return NULL;
     }
 
-    return n_hash_put(ht, key, strlen(key), 0, data, 1);
+    return n_hash_put(ht, key, klen, khash, data, 1);
+}
+
+tn_hash *n_hash_replace(tn_hash *ht, const char *key, const void *data)
+{
+    return n_hash_hreplace(ht, key, strlen(key), 0, data);
 }
 
 /* backward compat */

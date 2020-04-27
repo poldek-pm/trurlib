@@ -82,6 +82,7 @@ n_hash_get_ex
 n_hash_hexists
 n_hash_hget
 n_hash_hinsert
+n_hash_hreplace
 n_hash_insert
 n_hash_insert_ex
 n_hash_it_init
