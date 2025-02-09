@@ -146,6 +146,5 @@ tests:  $(EXTRA_PROGRAMS)
 
 all-local:
 	@ln -sf .libs/libtrurl.a libtrurl.a
-	@ln -sf .libs/libtrurl.so libtrurl.so
 
 include Makefile.extra
