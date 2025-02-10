@@ -38,7 +38,6 @@ AM_CFLAGS="-Wall -Wextra -Wformat-security -std=gnu99"
 AC_SUBST(AM_CFLAGS)
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_CHECK_HEADERS([limits.h netinet/in.h stddef.h stdint.h stdlib.h string.h strings.h])
 
 # Checks for typedefs, structures, and compiler characteristics.

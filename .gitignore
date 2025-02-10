@@ -31,6 +31,7 @@ libtool
 stamp-h1
 autom4te.cache
 libtrurl.a
+libtrurl.so
 *~
 compile
 *.pc
