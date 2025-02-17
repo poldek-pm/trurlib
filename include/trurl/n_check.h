@@ -132,7 +132,7 @@ static inline const char *__ncheck_test_name(const char *name) {
 #define NTEST_RUNNER(name, ...)                               \
     int main(int argc, char *argv[]) {                        \
         Suite *__suite = suite_create(name);                  \
-        char  **__tests = calloc(1024 * sizeof(*__tests), 0); \
+        char  **__tests = calloc(1024, sizeof(*__tests));     \
         GET_MACRO(_0, __VA_ARGS__, FE_9, FE_8, FE_7, FE_6, FE_5, FE_4, FE_3, FE_2, FE_1, FE_0)(__REGISTER_TEST, __VA_ARGS__); \
         __ncheck_process_args(argc, argv, __tests);           \
         return __ncheck_runner(__suite);                      \
