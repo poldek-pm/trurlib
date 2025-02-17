@@ -13,9 +13,9 @@
 
 
 
-/* Function is based on: 
+/* Function is based on:
 
-   **   
+   **
    ** quicksort.c -- quicksort integer array
    ** public domain by Raymond Gardner     12/91
  */
@@ -65,12 +65,12 @@ void trurl_qsort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 void trurl_isort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 {
     register size_t i, j;
-    
-#if ENABLE_TRACE   
+
+#if ENABLE_TRACE
     int n = 0;
     if (arr_size > 1000)
         DBGF("%d\n", arr_size);
-#endif    
+#endif
 
     for (i = 1; i < arr_size; i++) {
         register void *tmp = arr[i];
@@ -79,24 +79,24 @@ void trurl_isort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 #if ENABLE_TRACE
         if (arr_size > 1000 && i % 100 == 0)
             DBGF("(%d) iter = %d, n = %d\n", arr_size, i, n);
-#endif        
+#endif
 
         while (j > 0 && cmpf(tmp, arr[j - 1]) < 0) {
             arr[j] = arr[j - 1];
             j--;
 #if ENABLE_TRACE
             n++;
-#endif            
+#endif
         }
 
         arr[j] = tmp;
     }
 }
 
-static inline t_fn_cmp autosort(tn_array *arr, t_fn_cmp cmpf, int *set_sorted) 
+static inline t_fn_cmp autosort(tn_array *arr, t_fn_cmp cmpf, int *set_sorted)
 {
     *set_sorted = 1;
-    
+
     if (cmpf == NULL) {
         if (arr->cmp_fn == NULL) {
             trurl_die("n_array_sort: compare function is NULL\n");
@@ -104,7 +104,7 @@ static inline t_fn_cmp autosort(tn_array *arr, t_fn_cmp cmpf, int *set_sorted)
         }
 
         cmpf = arr->cmp_fn;
-        
+
     } else if (cmpf != arr->cmp_fn) {
         TN_ARRAY_clr_sorted(arr);
         *set_sorted = 0;
@@ -125,43 +125,45 @@ static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int 
 
     if ((arr->flags & TN_ARRAY_AUTOSORTED) && n_array_is_sorted(arr))
         return arr;
-    
+
+    trurl_die__if_frozen(arr);
+
     switch (alg) {
         case SORT_SORT:
-            if (arr->items > 10) 
+            if (arr->items > 10)
                 trurl_qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
-            else 
+            else
                 trurl_isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
             break;
 
         case SORT_QSORT:
             trurl_qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
             break;
-            
+
         case SORT_ISORT:
             trurl_isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
             break;
     }
-    
-    
+
+
     if (set_sorted)
         TN_ARRAY_set_sorted(arr);
-    
+
     return arr;
 }
 
 
-tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf) 
+tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf)
 {
     return n_array_sort_internal(arr, cmpf, SORT_SORT);
 }
 
-tn_array *n_array_qsort_ex(tn_array *arr, t_fn_cmp cmpf) 
+tn_array *n_array_qsort_ex(tn_array *arr, t_fn_cmp cmpf)
 {
     return n_array_sort_internal(arr, cmpf, SORT_QSORT);
 }
 
-tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf) 
+tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf)
 {
     return n_array_sort_internal(arr, cmpf, SORT_ISORT);
 }
@@ -169,16 +171,16 @@ tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf)
 
 tn_array *n_array_reverse(tn_array *arr)
 {
-    int i, j;
+    trurl_die__if_frozen(arr);
 
-    i = arr->start_index;
-    j = arr->items - 1;
+    int i = arr->start_index;
+    int j = arr->items - 1;
 
     while (i < j) {
         SWAP_void(arr->data[i], arr->data[j]);
         i++;
         j--;
     }
-    
+
     return arr;
 }
