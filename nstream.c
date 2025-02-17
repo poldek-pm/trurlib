@@ -30,6 +30,9 @@
 
 #if defined (HAVE_LIBZ) && defined(HAVE_LIBZ_NG)
 #define USE_DEFAULT_ZLIB 1
+static const char *default_libz = "zlib";
+#else
+static const char *default_libz = "zlib-ng";
 #endif
 
 #ifdef HAVE_LIBZ_NG
@@ -41,6 +44,11 @@ void n_stream_zlib_ng_init(tn_stream *st);
 void n_stream_zlib_init(tn_stream *st);
 //gzFile n_stream_zlib_open(const char *path, const char *mode);
 #endif
+
+const char *trurl_default_libz()
+{
+    return default_libz;
+}
 
 static int do_s_read(void *stream, void *buf, size_t size)
 {
@@ -150,101 +158,10 @@ int n_stream_guess_type(const char *path)
     return type;
 }
 
-#if OLD
-static int determine_type(const char *path, int *type)
-{
-    const char *p;
-    int real_type;
-
-
-    if (*type == TN_STREAM_UNKNOWN)
-        *type = TN_STREAM_STDIO;
-
-    real_type = *type;
-
-    if ((p = strrchr(path, '.'))) {
-        if (strcmp(p, ".gz") == 0) {
-            *type = TN_STREAM_GZIO;
-        } else if (strcmp(p, ".zst") == 0) {
-            *type = TN_STREAM_ZSTDIO;
-        } else if (strcmp(p, ".ngz") == 0) {
-#if HAVE_LIBZ_NG
-            *type = TN_STREAM_GZIO_NG;
-#else
-            *type = TN_STREAM_GZIO; /* fallback to zlib */
-#endif
-        }
-        real_type = *type;
-    }
-
-    return real_type;
-}
-
-static gzFile do_gz_open(const char *path, const char *mode)
-{
-    gzFile gzstream;
-    errno = 0;
-
-    if ((gzstream = gzopen(path, mode)) == NULL) {
-        if (errno == 0) {
-            if (Z_MEM_ERROR)
-                errno = ENOMEM;
-            else
-                errno = EIO;
-        }
-    }
-
-    return gzstream;
-}
-
-
-/* RET: bool */
-static int do_open(tn_stream *st, const char *path, const char *mode,
-                   int type, int real_type)
-{
-    int rc = 1;
-
-    real_type = determine_type(path, &type);
-
-    switch (real_type) {
-        case TN_STREAM_STDIO:
-            if ((st->stream = fopen(path, mode)) == NULL)
-                rc = 0;
-            break;
-
-#if HAVE_LIBZ_NG
-        case TN_STREAM_GZIO_NG:
-            if ((st->stream = n_stream_zlib_ng_open(path, mode)) == NULL)
-                rc = 0;
-            break;
-#endif
-        case TN_STREAM_GZIO:
-            if ((st->stream = do_gz_open(path, mode)) == NULL)
-                rc = 0;
-            break;
-        case TN_STREAM_ZSTDIO:
-            if ((st->stream = n_iobuf_open(path, mode)) == NULL)
-                rc = 0;
-            break;
-
-        default:
-            fprintf(stderr, "n_stream: %d: unsupported stream type\n", real_type);
-            rc = 0;
-    }
-
-    return rc;
-}
-#endif
-
 tn_stream *n_stream_open(const char *path, const char *mode, int type)
 {
     tn_stream *st;
     void *stream;
-
-#if OLD
-    int real_type;
-    real_type = determine_type(path, &type);
-#endif
 
     type = n_stream_guess_type(path);
 
@@ -253,14 +170,10 @@ tn_stream *n_stream_open(const char *path, const char *mode, int type)
 
     if ((stream = st->st_open(path, mode))) {
         st->stream = stream;
-    }
-
-#if OLD
-    if (!do_open(st, path, mode, type, real_type)) {
+    } else {
         n_stream_close(st);
         st = NULL;
     }
-#endif
 
     return st;
 }

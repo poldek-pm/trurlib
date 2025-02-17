@@ -116,6 +116,14 @@ void test_getline(const char *name)
     n_stream_close(st);
 }
 
+START_TEST(test_open) {
+    tn_stream *st = n_stream_open("/tmp/non_existing_file_trurlib_nstream.txt.zst", "r", TN_STREAM_UNKNOWN);
+    n_assert(st == NULL);
+}
+END_TEST
+
+
 NTEST_RUNNER("nstream",
+            test_open,
             test_read_write,
             test_seek);

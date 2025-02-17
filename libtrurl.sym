@@ -155,6 +155,7 @@ n_tuple_qsort_ex
 n_tuple_size
 n_tuple_sort_ex
 trurl_default_cmpf
+trurl_default_libz
 trurl_die
 n_iobuf_open
 n_iobuf_dopen
