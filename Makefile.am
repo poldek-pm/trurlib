@@ -94,6 +94,8 @@ libtrurl_la_SOURCES = \
 	nassert.c        \
 	nbuf.c		 \
 	nstream.c        \
+	nstream_zng.c	 \
+	nstream_z.c	 \
 	nstore.c         \
 	$(NARRAY_SRCS)   \
 	$(NLIST_SRCS)    \

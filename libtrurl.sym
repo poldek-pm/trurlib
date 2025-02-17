@@ -139,6 +139,7 @@ n_strdupl
 n_stream_dopen
 n_stream_getline
 n_stream_gets
+n_stream_guess_type
 n_stream_open
 n_stream_printf
 n_stream_vprintf

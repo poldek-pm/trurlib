@@ -16,12 +16,14 @@
 #define TN_STREAM_STDIO    1
 #define TN_STREAM_GZIO     2
 #define TN_STREAM_ZSTDIO   3
+#ifdef TN_STREAM_USE_GZIO_NG
+#define TN_STREAM_GZIO_NG  4
+#endif
 
 struct trurl_stream_private {
     int   type;
     void  *stream;
     int   fd;
-
 
     void  *(*st_open) (const char*, const char *);
     void  *(*st_dopen)(int, const char *);
@@ -157,6 +159,8 @@ void n_stream_close(tn_stream *st) {
     st->stream = NULL;
     free(st);
 }
+
+int n_stream_guess_type(const char *path);
 
 #include <stdarg.h>
 int n_stream_vprintf(tn_stream *st, const char *fmt, va_list ap);

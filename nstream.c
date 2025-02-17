@@ -19,42 +19,28 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <zlib.h>
 
 #include "trurl_internal.h"
 #include "nassert.h"
 #include "nmalloc.h"
-#include "nstream.h"
 #include "ndie.h"
 #include "niobuf.h"
+#define TN_STREAM_USE_GZIO_NG 1
+#include "nstream.h"
 
-#define ZLIB_TRACE 0
+#if defined (HAVE_LIBZ) && defined(HAVE_LIBZ_NG)
+#define USE_DEFAULT_ZLIB 1
+#endif
 
-static int do_gz_read(void *stream, void *buf, size_t size)
-{
-    return gzread(stream, buf, size);
-}
+#ifdef HAVE_LIBZ_NG
+void n_stream_zlib_ng_init(tn_stream *st);
+//gzFile n_stream_zlib_ng_open(const char *path, const char *mode);
+#endif
 
-static int do_gz_write(void *stream, const void *buf, size_t size)
-{
-    return gzwrite(stream, buf, size);
-}
-
-static char *do_gz_gets(void *stream, char *buf, size_t size)
-{
-    return gzgets(stream, buf, size);
-}
-
-
-static int do_gz_flush(void *stream)
-{
-    return gzflush(stream, Z_FULL_FLUSH);
-}
-
-static long do_gz_tell(void *stream)
-{
-    return gztell(stream);
-}
+#ifdef HAVE_LIBZ
+void n_stream_zlib_init(tn_stream *st);
+//gzFile n_stream_zlib_open(const char *path, const char *mode);
+#endif
 
 static int do_s_read(void *stream, void *buf, size_t size)
 {
@@ -70,71 +56,6 @@ static char *do_s_gets(void *stream, char *buf, size_t size)
 {
     return fgets(buf, size, stream);
 }
-
-static int do_gz_getc(void *stream)
-{
-    register int c = gzgetc((gzFile)stream);
-    if (c == -1)
-        return EOF;
-
-    return c;
-}
-
-#if HAVE_GZUNGETC               /* zlib >= 1.2.0.2 */
-static int do_gz_ungetc(int c, void *stream)
-{
-    register int cc = gzungetc(c, stream);
-    if (cc == -1)
-        return EOF;
-    n_assert(cc == c);
-    return cc;
-}
-#endif
-
-static int zlib_fseek_wrap(void *stream, long offset, int whence)
-{
-    z_off_t rc, off = offset;
-
-#if ZLIB_TRACE_SEEK
-    int seek = 0;
-    switch (whence) {
-    case SEEK_CUR:
-        seek = gztell(stream) + offset;
-        break;
-
-    case SEEK_SET:
-        seek = offset;
-        break;
-
-    case SEEK_END:
-        n_die("SEEK_END is not supported\n");
-        break;
-
-    default:
-        n_die("iobuf: unknown whence (%d)\n", whence);
-        break;
-    }
-
-    if (seek < gztell(stream)) {
-        DBGF_F("%p backward from %lld => %ld (whence %d)\n", stream, gztell(stream), offset, whence);
-    }
-#endif
-
-    rc = gzseek(stream, off, whence);
-
-#if ZLIB_TRACE
-    if (rc < 0) {
-        int ec;
-        printf("zlib_fseek: %s\n", gzerror(stream, &ec));
-    }
-#endif
-
-    if (rc > 0)
-        rc = 0;
-
-    return rc;
-}
-
 
 static tn_stream *n_stream_new(int type)
 {
@@ -163,21 +84,23 @@ static tn_stream *n_stream_new(int type)
             break;
 
         case TN_STREAM_GZIO:
-            st->st_open  = (void *(*)(const char *, const char *))gzopen;
-            st->st_dopen = (void *(*)(int, const char *))gzdopen;
-            st->st_read  = do_gz_read;
-            st->st_write = do_gz_write;
-            st->st_gets  = do_gz_gets;
-            st->st_getc  = do_gz_getc;
-#if HAVE_GZUNGETC
-            st->st_ungetc = do_gz_ungetc;
+#ifdef USE_DEFAULT_ZLIB
+            n_stream_zlib_init(st);
+#elifdef HAVE_LIBZ
+            n_stream_zlib_init(st);
+#elifdef HAVE_LIBZ_NG
+            n_stream_zlib_ng_init(st);
 #else
-            st->st_ungetc = NULL;
+            n_die("%d: unsupported stream type\n", type);
 #endif
-            st->st_seek  = (int (*)(void*, long, int))zlib_fseek_wrap;
-            st->st_tell  = do_gz_tell;
-            st->st_flush = do_gz_flush;
-            st->st_close = (int (*)(void*))gzclose;
+            break;
+
+        case TN_STREAM_GZIO_NG:
+#ifdef HAVE_LIBZ_NG
+            n_stream_zlib_ng_init(st);
+#else
+            n_die("%d: unsupported stream type\n", type);
+#endif
             break;
 
          case TN_STREAM_ZSTDIO:
@@ -203,6 +126,31 @@ static tn_stream *n_stream_new(int type)
     return st;
 }
 
+int n_stream_guess_type(const char *path)
+{
+    const char *p;
+    int type;
+
+    type = TN_STREAM_STDIO;
+
+    if ((p = strrchr(path, '.'))) {
+        if (strcmp(p, ".gz") == 0) {
+            type = TN_STREAM_GZIO;
+        } else if (strcmp(p, ".zst") == 0) {
+            type = TN_STREAM_ZSTDIO;
+        } else if (strcmp(p, ".ngz") == 0) {
+#if HAVE_LIBZ_NG
+            type = TN_STREAM_GZIO_NG;
+#else
+            type = TN_STREAM_GZIO; /* fallback to zlib */
+#endif
+        }
+    }
+
+    return type;
+}
+
+#if OLD
 static int determine_type(const char *path, int *type)
 {
     const char *p;
@@ -219,6 +167,12 @@ static int determine_type(const char *path, int *type)
             *type = TN_STREAM_GZIO;
         } else if (strcmp(p, ".zst") == 0) {
             *type = TN_STREAM_ZSTDIO;
+        } else if (strcmp(p, ".ngz") == 0) {
+#if HAVE_LIBZ_NG
+            *type = TN_STREAM_GZIO_NG;
+#else
+            *type = TN_STREAM_GZIO; /* fallback to zlib */
+#endif
         }
         real_type = *type;
     }
@@ -250,7 +204,6 @@ static int do_open(tn_stream *st, const char *path, const char *mode,
 {
     int rc = 1;
 
-
     real_type = determine_type(path, &type);
 
     switch (real_type) {
@@ -259,39 +212,55 @@ static int do_open(tn_stream *st, const char *path, const char *mode,
                 rc = 0;
             break;
 
+#if HAVE_LIBZ_NG
+        case TN_STREAM_GZIO_NG:
+            if ((st->stream = n_stream_zlib_ng_open(path, mode)) == NULL)
+                rc = 0;
+            break;
+#endif
         case TN_STREAM_GZIO:
             if ((st->stream = do_gz_open(path, mode)) == NULL)
                 rc = 0;
             break;
-
         case TN_STREAM_ZSTDIO:
             if ((st->stream = n_iobuf_open(path, mode)) == NULL)
                 rc = 0;
             break;
 
         default:
-            n_assert(0);
+            fprintf(stderr, "n_stream: %d: unsupported stream type\n", real_type);
+            rc = 0;
     }
 
     return rc;
 }
-
+#endif
 
 tn_stream *n_stream_open(const char *path, const char *mode, int type)
 {
     tn_stream *st;
+    void *stream;
+
+#if OLD
     int real_type;
-
-
     real_type = determine_type(path, &type);
+#endif
+
+    type = n_stream_guess_type(path);
 
     if ((st = n_stream_new(type)) == NULL)
         return NULL;
 
+    if ((stream = st->st_open(path, mode))) {
+        st->stream = stream;
+    }
+
+#if OLD
     if (!do_open(st, path, mode, type, real_type)) {
         n_stream_close(st);
         st = NULL;
     }
+#endif
 
     return st;
 }

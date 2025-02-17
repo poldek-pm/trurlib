@@ -88,8 +88,29 @@ AC_DEFUN([AC_FUNC_OBSTACK],
 
 AC_FUNC_OBSTACK
 
-AC_CHECK_LIB(z, gzopen,,[AC_MSG_ERROR(["missing zlib"])])
-AC_CHECK_LIB(z, gzungetc,,[AC_MSG_WARN(["upgrade zlib (>= 1.2.0.3 is recommended)"])])
+dnl zlib implementation
+AC_ARG_WITH([zlib],
+            [AS_HELP_STRING([--with-zlib[=auto|zlib|zlib-ng|both]], [ @<:@default=auto@:>@])],
+            [zlib=$withval],
+            [zlib=auto])
+
+if test "${zlib}." = "auto."; then
+   AC_CHECK_LIB(z-ng, zng_gzopen,,[
+        AC_CHECK_LIB(z, gzopen,,[AC_MSG_ERROR(["missing zlib-ng or zlib"])])
+   ])
+
+elif test "${zlib}." = "both."; then
+   AC_CHECK_LIB(z, gzopen,,[AC_MSG_ERROR(["missing zlib"])])
+   AC_CHECK_LIB(z, gzungetc,,[AC_MSG_WARN(["upgrade zlib (>= 1.2.0.3 is recommended)"])])
+   AC_CHECK_LIB(z-ng, zng_gzopen,,[AC_MSG_ERROR(["missing zlib-ng"])])
+
+elif test "${zlib}." = "zlib-ng."; then
+   AC_CHECK_LIB(z-ng, zng_gzopen,,[AC_MSG_ERROR(["missing zlib-ng"])])
+
+else
+   AC_CHECK_LIB(z, gzopen,,[AC_MSG_ERROR(["missing zlib"])])
+   AC_CHECK_LIB(z, gzungetc,,[AC_MSG_WARN(["upgrade zlib (>= 1.2.0.3 is recommended)"])])
+fi
 
 AC_CHECK_LIB(zstd, ZSTD_compressStream,,[AC_MSG_ERROR(["missing zstd"])])
 
