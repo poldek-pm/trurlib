@@ -37,12 +37,10 @@ static const char *default_libz = "zlib-ng";
 
 #ifdef HAVE_LIBZ_NG
 void n_stream_zlib_ng_init(tn_stream *st);
-//gzFile n_stream_zlib_ng_open(const char *path, const char *mode);
 #endif
 
 #ifdef HAVE_LIBZ
 void n_stream_zlib_init(tn_stream *st);
-//gzFile n_stream_zlib_open(const char *path, const char *mode);
 #endif
 
 const char *trurl_default_libz()
