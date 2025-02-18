@@ -6,9 +6,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "n_check.h"
 #include "nhash.h"
+
+// fail_unless macro woes
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
 
 void hash_map_func(const char *key, void *data)
 {
@@ -66,17 +70,21 @@ START_TEST(test_hash_base)
 }
 END_TEST
 
-void test_hash_rpmqal(void)
+START_TEST(test_hash_rpmqal)
 {
     tn_hash *h;
     char buf[1024];
     FILE *f;
 
-    if ((h = n_hash_new(600000, NULL)) == NULL)
+    if (access("/bin/rpm", R_OK) != 0) {
+        return;
+    }
+
+    if ((h = n_hash_new(100000, NULL)) == NULL)
         exit(1);
 
-    //n_hash_ctl(h, TN_HASH_REHASH);
-    f = popen("rpm -qal --requires --provides | grep -v buildid  | sort -u", "r");
+    n_hash_ctl(h, TN_HASH_REHASH);
+    f = popen("rpm -qal --requires --provides | grep -v buildidXXX  | sort -u", "r");
     while (fgets(buf, sizeof(buf), f)) {
         buf[sizeof(buf) - 1] = '\0';
         n_hash_insert(h, buf, "ma kota i psa");
@@ -92,5 +100,6 @@ void test_hash_rpmqal(void)
     n_hash_stats(h);
     n_hash_free(h);
 }
+END_TEST
 
-NTEST_RUNNER("hash", test_hash_base);
+NTEST_RUNNER("hash", test_hash_base, test_hash_rpmqal)

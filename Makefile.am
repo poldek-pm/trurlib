@@ -150,4 +150,7 @@ all-local:
 	@ln -sf .libs/libtrurl.a libtrurl.a
 	@ln -sf .libs/libtrurl.so libtrurl.so
 
+clean-local:
+	-rm -f core core.[0-9]* callgrind.out.* tests/core.[0-9]* *.o *.bak *~ *% *\# TAGS gmon.out \#*\#
+
 include Makefile.extra
