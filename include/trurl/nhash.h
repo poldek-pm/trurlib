@@ -11,6 +11,7 @@
 #include <stddef.h>           /* For size_t     */
 #include <trurl/n_obj_ref.h>
 #include <trurl/nmalloc.h>
+#include <trurl/nstream.h>
 
 typedef struct trurl_hash_table tn_hash;
 
@@ -67,7 +68,7 @@ int n_hash_exists(const tn_hash *ht, const char *key);
  */
 
 int n_hash_exists_ex(const tn_hash *ht,
-                     const char *key, int *klen, unsigned *khash);
+                     const char *key, int klen, unsigned *khash);
 
 void *n_hash_get_ex(const tn_hash *ht,
                     const char *key, int *klen, unsigned *khash);
@@ -140,6 +141,14 @@ tn_array *n_hash_values(const tn_hash *ht);
 
 #include <trurl/tfn_types.h>
 tn_hash *n_hash_dup(const tn_hash *ht, tn_fn_dup dup_fn);
+
+
+int n_hash_store(const tn_hash *ht, tn_stream *st,
+                 int (*store_fn) (void *, tn_stream *, void*), void *store_ctx);
+
+tn_hash *n_hash_restore(tn_stream *st,
+                        void *(*restore_fn) (tn_stream *, void*), void *restore_ctx,
+                        void (*freefn) (void *));
 
 int n_hash_stats(const tn_hash *ht);
 #endif /* TRURL_HASH_H */

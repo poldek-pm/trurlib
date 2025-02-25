@@ -12,11 +12,10 @@ int n_hash_map(const tn_hash *ht, void (*map_fn) (const char *, void *))
     for (i = 0; i < ht->size; i++) {
         if (ht->table[i] == NULL)
             continue;
-        
-        for (tmp = ht->table[i]; tmp != NULL; tmp = tmp->next) {
-            map_fn(tmp->key, tmp->data);
-            n++;
-        }
+
+        tmp = ht->table[i];
+        map_fn(tmp->key, tmp->data);
+        n++;
     }
 
     return n;
@@ -24,17 +23,22 @@ int n_hash_map(const tn_hash *ht, void (*map_fn) (const char *, void *))
 
 int n_hash_dump(const tn_hash *ht)
 {
-    register size_t i, n = 0;
-    register struct hash_bucket *tmp;
+    uint32_t i, n = 0;
 
+    printf("DUMP %p size=%d\n", ht, ht->items);
     for (i = 0; i < ht->size; i++) {
-        if (ht->table[i] == NULL)
-            continue;
-        
-        for (tmp = ht->table[i]; tmp != NULL; tmp = tmp->next) {
-            printf(" %s: %p\n", tmp->key, tmp->data);
+        struct hash_bucket *e = ht->table[i];
+
+        if (e) {
+            unsigned d = n_hash_bucket_psldiff(ht, e, i);
+            printf("[%u] %u. psl %d (%d)%s: %s => %p\n", i, n, e->psl, d,
+                   d != e->psl ? " DIFFER" : "", e->key, e->data);
             n++;
+        } else {
+            printf("[%u] empty\n", i);
         }
+
+
     }
 
     return n;

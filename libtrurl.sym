@@ -95,8 +95,10 @@ n_hash_new_ex
 n_hash_new_na
 n_hash_remove
 n_hash_replace
+n_hash_restore
 n_hash_size
 n_hash_stats
+n_hash_store
 n_hash_values
 n_list_contains_ex
 n_list_free

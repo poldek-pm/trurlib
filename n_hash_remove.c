@@ -4,69 +4,40 @@
 
 #include "n_hash_int.h"
 
-static inline
-int remove_bucket_ll(struct hash_bucket **tbl, const char *key,
-                     unsigned val, void **data)
-{
-    struct hash_bucket *ptr, *last = NULL;
-
-    n_assert (tbl[val] != NULL);
-
-    for (last = NULL, ptr = tbl[val]; ptr != NULL;
-         last = ptr, ptr = ptr->next) {
-
-        if (strcmp(key, ptr->key) == 0) {
-            *data = ptr->data;
-
-            if (last != NULL)
-                last->next = ptr->next;
-            else
-                tbl[val] = ptr->next;
-
-            free(ptr);
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
 void *n_hash_remove(tn_hash *ht, const char *key)
 {
-    struct hash_bucket **tbl;
-    void  *ptr = NULL;
-    uint32_t khash;
     int klen = strlen(key);
+    uint32_t khash = n_hash_compute_hash(ht, key, klen);
 
-    khash = n_hash_compute_hash(ht, key, klen);
-    tbl = ht->table;
+    uint32_t eindex = 0;
+    struct hash_bucket *e = n_hash_get_bucket(ht, key, klen, khash, &eindex);
 
-    if (tbl[khash] != NULL) {
-        if (remove_bucket_ll(tbl, key, khash, &ptr)) {
-            ht->items--;
-            return ptr;
-        }
+    if (e == NULL)
+        return NULL;
+
+    uint32_t size = ht->size;
+    uint32_t iprev = eindex;
+    uint32_t i = n_hash_index(size, eindex + 1);
+
+    struct hash_bucket **table = ht->table;
+    struct hash_bucket *b = table[i];
+
+    while (b && b->psl > 0) {
+        //n_assert(n_hash_bucket_psldiff(ht, b, i) == b->psl);
+
+        table[iprev] = b;
+        b->psl -= 1;
+
+        iprev = i;
+        i = n_hash_index(size, i + 1);
+        b = table[i];
     }
-    uint32_t shift = n_hash_nextslotv(key, klen);
+    table[iprev] = NULL;
 
-    khash += shift;
-    if (khash < ht->size && tbl[khash] != NULL) {
-        if (remove_bucket_ll(tbl, key, khash, &ptr)) {
-            ht->items--;
-            return ptr;
-        }
-    }
+    void *data = e->data;
+    if (!ht->na)
+        free(e);
 
-    khash -= shift;
-    if (khash > shift) {
-        khash -= shift;
-        if (tbl[khash] != NULL) {
-            if (remove_bucket_ll(tbl, key, khash, &ptr)) {
-                ht->items--;
-                return ptr;
-            }
-        }
-    }
-
-    return NULL;
+    ht->items -= 1;
+    return data;
 }

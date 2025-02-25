@@ -30,48 +30,44 @@ void *n_hash_it_get(tn_hash_it *hi, const char **key) {
 }
 
 
-static inline
-struct hash_bucket *get_bucket_ll(struct hash_bucket **tbl,
-                                  const char *key, unsigned klen, unsigned khash)
-{
-    struct hash_bucket *ptr;
-
-    n_assert(tbl[khash] != NULL);
-
-    for (ptr = tbl[khash]; ptr != NULL; ptr = ptr->next) {
-        if (klen == ptr->klen && strcmp(key, ptr->key) == 0)
-            return ptr;
-    }
-    return NULL;
-}
-
-
 struct hash_bucket *n_hash_get_bucket(const tn_hash *ht,
-                                      const char *key, int klen, unsigned khash)
+                                      const char *key, int klen, uint32_t khash,
+                                      uint32_t *bindex)
 {
-    struct hash_bucket **tbl, *ptr = NULL;
-    tbl = ht->table;
+    struct hash_bucket **table = ht->table;
 
-    n_assert(klen > 0);
-    n_assert(klen < UINT16_MAX);
+    //n_assert(klen > 0);
+    //n_assert(klen < UINT16_MAX);
 
-    if (tbl[khash] != NULL)
-        ptr = get_bucket_ll(tbl, key, klen, khash);
+    uint32_t size = ht->size;
+    uint32_t index = n_hash_index(size, khash);
+    uint32_t i = index;
+    uint32_t np = 0;
 
-    if (ptr == NULL) {
-        uint32_t shift = n_hash_nextslotv(key, klen);
-        uint32_t nexthash = khash + shift;
-
-        if (nexthash < ht->size && tbl[nexthash])
-            ptr = get_bucket_ll(tbl, key, klen, nexthash);
-
-        if (ptr == NULL && khash > shift) {
-            nexthash = khash - shift;
-            if (tbl[nexthash])
-                ptr = get_bucket_ll(tbl, key, klen, nexthash);
+    struct hash_bucket *e = table[i];
+    while (e != NULL) {
+        uint32_t diff = n_hash_bucket_psldiff(ht, e, i);
+        if (np > diff) {
+            break;
         }
+
+        if (i != index && e->psl == 0)
+            break;
+
+        np++;
+        if (khash == e->hash && klen == e->klen &&
+            *key == *e->key && memcmp(key, e->key, klen) == 0) {
+            if (bindex)
+                *bindex = i;
+            return e;
+        }
+
+        i = n_hash_index(size, i + 1);
+        e = table[i];
+        n_assert(i != index);
     }
-    return ptr;
+
+    return NULL;
 }
 
 void *n_hash_get_ex(const tn_hash *ht,
@@ -80,9 +76,9 @@ void *n_hash_get_ex(const tn_hash *ht,
     struct hash_bucket *ptr;
 
     *klen = strlen(key);
-    *khash = n_hash_compute_hash(ht, key, *klen);
+    *khash = n_hash_compute_raw_hash(key, *klen);
 
-    ptr = n_hash_get_bucket(ht, key, *klen, *khash);
+    ptr = n_hash_get_bucket(ht, key, *klen, *khash, NULL);
     return ptr ? ptr->data : NULL;
 }
 
@@ -95,11 +91,11 @@ void *n_hash_get(const tn_hash *ht, const char *key)
     return n_hash_get_ex(ht, key, &klen, &khash);
 }
 
-int n_hash_exists_ex(const tn_hash *ht, const char *key, int *klen,
+int n_hash_exists_ex(const tn_hash *ht, const char *key, int klen,
                      unsigned *khash)
 {
-    *khash = n_hash_compute_hash_len(ht, key, klen);
-    return n_hash_get_bucket(ht, key, *klen, *khash) != NULL;
+    *khash = n_hash_compute_hash(ht, key, klen);
+    return n_hash_get_bucket(ht, key, klen, *khash, NULL) != NULL;
 }
 
 int n_hash_exists(const tn_hash *ht, const char *key)
@@ -107,19 +103,19 @@ int n_hash_exists(const tn_hash *ht, const char *key)
     int klen = strlen(key);
     unsigned khash;
 
-    return n_hash_exists_ex(ht, key, &klen, &khash);
+    return n_hash_exists_ex(ht, key, klen, &khash);
 }
 
 /* h API */
 int n_hash_hexists(const tn_hash *ht, const char *key, int klen, unsigned khash)
 {
-    return n_hash_get_bucket(ht, key, klen, khash) != NULL;
+    return n_hash_get_bucket(ht, key, klen, khash, NULL) != NULL;
 }
 
 void *n_hash_hget(const tn_hash *ht, const char *key, int klen, unsigned khash)
 {
     struct hash_bucket *ptr;
 
-    ptr = n_hash_get_bucket(ht, key, klen, khash);
+    ptr = n_hash_get_bucket(ht, key, klen, khash, NULL);
     return ptr ? ptr->data : NULL;
 }

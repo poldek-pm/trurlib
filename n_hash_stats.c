@@ -8,56 +8,48 @@
 int n_hash_stats(const tn_hash *ht)
 {
     register size_t i, n = 0;
-    register struct hash_bucket *tmp;
-    int ncolls = 0;
     int nempts = 0;
-    int maxdeep = 0;
-    int deepsum = 0;
+    int pslsum = 0;
     int empty_len_sum = 0;
-    int empty_len_n = 0;
+    int empty_blocks = 0;
     int empty_len = 0;
+    int maxpsl = 0;
+
+    int nonempty_len = 0;
+    int nonempty_blocks = 0;
 
     for (i = 0; i < ht->size; i++) {
-        int deep;
+        if (i > 0) {
+            if (ht->table[i-1] != NULL && ht->table[i] == NULL) {
+                nonempty_blocks++;
+                nonempty_len = 0;
+            } else if (ht->table[i-1] == NULL && ht->table[i] != NULL) {
+                empty_blocks++;
+                empty_len_sum += empty_len;
+                empty_len = 0;
+            }
+        }
 
         if (ht->table[i] == NULL) {
             nempts++;
             empty_len++;
             continue;
-        }
-        if (empty_len > 6) {
-            empty_len_n++;
-            empty_len_sum += empty_len;
-            empty_len = 0;
+        } else {
+            nonempty_len++;
         }
 
-
-        deep = 1;
-        //if (ht->table[i]->next)
-        //    printf("coll %s, ", ht->table[i]->key);
-
-        for (tmp = ht->table[i]->next; tmp != NULL; tmp = tmp->next) {
-            //printf("%s, ", tmp->key);
-            deep++;
-        }
-        //if (ht->table[i]->next)
-        //    printf("\n");
-
-        if (deep > 1) {
-            ncolls++;
-            deepsum += deep;
-        }
-
-        if (deep > maxdeep)
-            maxdeep = deep;
+        pslsum += ht->table[i]->psl;
+        if (ht->table[i]->psl > maxpsl)
+            maxpsl = ht->table[i]->psl;
     }
 
-    printf("ht(%p): %u slots (%d empty, avg empty len %d), %u items, "
-           "%d collisions (%.2lf%%, avgdeep %.2lf, maxdeep %d)\n",
-           ht, ht->size, nempts, empty_len_sum ? empty_len_sum / empty_len_n : 0,
-           ht->items, ncolls, 100 * (ncolls/ (ht->items * 1.0)),
-           ncolls > 0 && deepsum > 0 ? deepsum/(ncolls * 1.0) : 0,
-           maxdeep);
-//    n_assert(0);
+    printf("ht(%p): %u slots, %u items (%.2f%% empty, avg empty len %.lf), avg psl %.1lf, max psl %d)\n",
+           ht,
+           ht->size,
+           ht->items,
+           (100.0 * nempts)/ht->size,
+           empty_len_sum ? empty_len_sum / (1.0 * empty_blocks) : 0,
+           pslsum > 0 ? pslsum/(ht->items * 1.0) : 0,
+           maxpsl);
     return n;
 }

@@ -12,10 +12,9 @@ int n_hash_map_arg(const tn_hash *ht,
     register struct hash_bucket *tmp;
 
     for (i = 0; i < ht->size; i++) {
-        for (tmp = ht->table[i]; tmp != NULL; tmp = tmp->next) {
-            map_fn(tmp->key, tmp->data, arg);
-            n++;
-        }
+        tmp = ht->table[i];
+        map_fn(tmp->key, tmp->data, arg);
+        n++;
     }
 
     return n;

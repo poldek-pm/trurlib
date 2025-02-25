@@ -4,23 +4,6 @@
 
 #include "n_hash_int.h"
 
-static
-void free_slot(struct hash_bucket *node, tn_hash *ht)
-{
-    register struct hash_bucket *next_node;
-
-    for (; node != NULL; node = next_node) {
-        next_node = node->next;
-
-        if (ht->free_fn != NULL && node->data != NULL) {
-            DBGF("free %s %p\n", node->key, node->data);
-            ht->free_fn(node->data);
-        }
-        if (ht->na == NULL)
-            free(node);
-    }
-}
-
 
 void n_hash_free(tn_hash *ht)
 {
@@ -31,23 +14,34 @@ void n_hash_free(tn_hash *ht)
         return;
     }
 
-#if ENABLE_TRACE    
+#if ENABLE_TRACE
     n_hash_stats(ht);
 #endif
-    
+
     for (i = 0; i < ht->size; i++) {
-        if (ht->table[i])
-            free_slot(ht->table[i], ht);
+        struct hash_bucket *e = ht->table[i];
+        if (e == NULL)
+            continue;
+
+        if (ht->free_fn != NULL && e->data != NULL) {
+            ht->free_fn(e->data);
+            e->data = NULL;
+
+            if (ht->na == NULL) {
+                free(e);
+                ht->table[i] = NULL;
+            }
+        }
     }
 
     free(ht->table);
-    
+
     ht->table = NULL;
     ht->size = 0;
     ht->items = 0;
 
     if (ht->na == NULL)
         free(ht);
-    else 
+    else
         n_alloc_free(ht->na);
 }

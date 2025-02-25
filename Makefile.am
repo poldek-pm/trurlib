@@ -73,6 +73,7 @@ NHASH_SRCS = \
         n_hash_remove.c \
 	n_hash_stats.c  \
 	n_hash_keys.c   \
+	n_hash_store.c  \
 	n_hash_dup.c
 
 NSTR_SRCS = \
