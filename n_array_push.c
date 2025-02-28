@@ -21,7 +21,7 @@ tn_array *n_array_push(tn_array *arr, void *data)
 }
 
 
-tn_array *n_array_concat_ex(tn_array *arr, tn_array *src, tn_fn_dup dup_fn)
+tn_array *n_array_concat_ex(tn_array *arr, const tn_array *src, tn_fn_dup dup_fn)
 {
     register int i;
 

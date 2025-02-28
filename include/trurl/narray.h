@@ -1,4 +1,4 @@
-/* 
+/*
   TRURLib
   Dynamic array of void*
   $Id$
@@ -24,16 +24,16 @@
 #define TN_ARRAY_INTERNAL_NA        (1 << 9)
 /* WARN: _never_ ever access array members directly */
 typedef struct trurl_array_private {
-#ifndef SWIG    
+#ifndef SWIG
     uint16_t    _refcnt;
     uint16_t    flags;
-    
+
     size_t      items;
     size_t      allocated;
     size_t      start_index;
 
     void        **data;
-    
+
     t_fn_free   free_fn;
     t_fn_cmp    cmp_fn;
 #endif
@@ -78,7 +78,7 @@ void n_array_cfree(tn_array **arrptr);
 void n_array_free_na(tn_alloc *na, tn_array *arr);
 
 /*
-  Free content 
+  Free content
  */
 tn_array *n_array_clean(tn_array *arr);
 
@@ -92,8 +92,8 @@ tn_array *n_array_clone(const tn_array *arr);
 /* clone the structure and the data */
 tn_array *n_array_dup(const tn_array *arr, t_fn_dup dupf);
 
-/* 
-   for(i=0; i < n_array_size(arr); i++) 
+/*
+   for(i=0; i < n_array_size(arr); i++)
         ...
 */
 
@@ -120,7 +120,7 @@ static inline void *n_array_nth_inl(const tn_array *arr, register int i)
 {
     if ((size_t) i >= arr->items || i < 0)
         n_die(n_errmsg_array_nth_oob, i, arr->items);
-    
+
     return arr->data[arr->start_index + i];
 }
 #endif
@@ -129,7 +129,7 @@ static inline void *n_array_nth_inl(const tn_array *arr, register int i)
   NOTE:
   - grows array if 'i' is out of bounds.
   - if arr[i] exists destroy it by arr->free_fn(if set). Be careful!
-  
+
   arr[i] = foo;
 
 */
@@ -138,7 +138,7 @@ tn_array *n_array_set_nth(tn_array *arr, int i, void *data);
 
 /*
   memmove(&arr[i], &arr[i..LAST_INDEX])
-  
+
 */
 tn_array *n_array_remove_nth(tn_array *arr, int i);
 
@@ -149,8 +149,8 @@ tn_array *n_array_remove_nth(tn_array *arr, int i);
 */
 tn_array *n_array_push(tn_array *arr, void *data);
 
-tn_array *n_array_concat_ex(tn_array *arr, tn_array *src, tn_fn_dup dup_fn);
-#define n_array_concat(arr, src) n_array_concat_ex(arr, src, NULL) 
+tn_array *n_array_concat_ex(tn_array *arr, const tn_array *src, tn_fn_dup dup_fn);
+#define n_array_concat(arr, src) n_array_concat_ex(arr, src, NULL)
 
 
 /* internal macros, do not use them */
@@ -166,7 +166,7 @@ tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size);
 static inline tn_array *n_array_push_inl(tn_array *arr, void *data) {
 
     trurl_die__if_frozen(arr);
-    
+
     if (arr->items == arr->allocated)
         n_array_grow_priv_(arr, arr->allocated + 1);
 
@@ -242,7 +242,7 @@ void *n_array_bsearch_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
 
 /* same as above, but returns position number, if there are more
    than one the same items, always returns first position;
-   If item not found returns -1; 
+   If item not found returns -1;
  */
 int n_array_bsearch_idx_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf);
 #define n_array_bsearch_idx(arr, data) n_array_bsearch_idx_ex(arr, data, NULL)
@@ -250,15 +250,15 @@ int n_array_bsearch_idx_ex(const tn_array *arr, const void *data, t_fn_cmp cmpf)
 tn_array *n_array_remove_ex(tn_array *arr, const void *data, t_fn_cmp cmpf);
 #define n_array_remove(arr, data) n_array_remove_ex(arr, data, NULL)
 
-/* 
-   for(i=0; i<n_array_size(arr); i++) 
+/*
+   for(i=0; i<n_array_size(arr); i++)
        map_fn(arr[i])
 */
 void n_array_map(const tn_array *arr, void (*map_fn)(void *));
 
 
-/* 
-   for(i=0; i<n_array_size(arr); i++) 
+/*
+   for(i=0; i<n_array_size(arr); i++)
        map_fn(arr[i], arg)
 */
 void n_array_map_arg(const tn_array *arr, void (*map_fn)(void *, void *), void *arg);
@@ -275,7 +275,7 @@ struct trurl_array_iterator {
 };
 typedef struct trurl_array_iterator tn_array_it;
 
-static inline void n_array_it_init(tn_array_it *it, tn_array *arr) 
+static inline void n_array_it_init(tn_array_it *it, tn_array *arr)
 {
     it->arr = arr;
     it->i = arr->start_index;
@@ -284,10 +284,10 @@ static inline void n_array_it_init(tn_array_it *it, tn_array *arr)
 static inline void *n_array_it_get(tn_array_it *it)
 {
     void *ptr;
-    
+
     if (it->i >= it->arr->items)
         return NULL;
-    
+
     ptr = n_array_nth(it->arr, it->i);
     it->i++;
     return ptr;
