@@ -12,15 +12,15 @@ tn_array *n_array_set_nth(tn_array *arr, int i, void *data)
     n_assert(arr->allocated > 0);
 
     trurl_die__if_frozen(arr);
-    
+
     if (i < 0) {
         trurl_die("n_array_set_nth: index(%d) out of bounds(%d)\n", i,
                   arr->items);
         return NULL;
     }
-    
+
     if (pos > arr->allocated) {
-        if (n_array_grow_priv_(arr, pos) == NULL)
+        if (n_array_grow(arr, pos) == NULL)
             return NULL;
 
         arr->items = pos + 1;

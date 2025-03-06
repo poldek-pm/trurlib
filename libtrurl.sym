@@ -16,7 +16,7 @@ n_array_dup
 n_array_eq_ex
 n_array_free
 n_array_free_na
-n_array_grow_priv_
+n_array_grow
 n_array_init_ex
 n_array_isort_ex
 n_array_map

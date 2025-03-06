@@ -160,7 +160,7 @@ tn_array *n_array_concat_ex(tn_array *arr, const tn_array *src, tn_fn_dup dup_fn
 
 #define n_array_is_sorted(arr)   ((arr)->flags & TN_ARRAY_INTERNAL_ISSORTED)
 
-tn_array *n_array_grow_priv_(tn_array *arr, size_t req_size);
+tn_array *n_array_grow(tn_array *arr, size_t req_size);
 #ifndef SWIG
 #define n_array_push(a, d) n_array_push_inl(a, d)
 static inline tn_array *n_array_push_inl(tn_array *arr, void *data) {
@@ -168,7 +168,7 @@ static inline tn_array *n_array_push_inl(tn_array *arr, void *data) {
     trurl_die__if_frozen(arr);
 
     if (arr->items == arr->allocated)
-        n_array_grow_priv_(arr, arr->allocated + 1);
+        n_array_grow(arr, arr->allocated + 1);
 
     arr->data[arr->start_index + arr->items] = data;
     arr->items++;
