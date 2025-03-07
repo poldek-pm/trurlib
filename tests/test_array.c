@@ -28,20 +28,46 @@ void die_hook(const char *msg) {
     ndies++;
 }
 
-tn_array *setupArray() {
-    tn_array *a = n_array_new(8, free, (t_fn_cmp) strcmp);
-    n_array_push(a, strdup("5"));
-    n_array_push(a, strdup("4"));
-    n_array_push(a, strdup("3"));
-    n_array_push(a, strdup("2"));
-    n_array_push(a, strdup("1"));
+tn_array *setupArray(int size) {
+    tn_array *a = n_array_new(size, free, (t_fn_cmp) strcmp);
+    while (size > 0) {
+        char buf[128];
+        n_snprintf(buf, sizeof(buf), size > 100 ? "%3d" : (size > 10 ? "%2d" : "%d"), size);
+        size--;
+        n_array_push(a, strdup(buf));
+    }
     return a;
 }
 
+char *setupArrayStr(int size) {
+    char buf[16 * PATH_MAX];
+    int n = 0;
+    while (size > 0) {
+        char buf[128];
+        n += n_snprintf(&buf[n], sizeof(buf)-n, size > 100 ? "%3d," : (size > 10 ? "%2d," : "%d,"), size);
+        size--;
+    }
+    buf[n] = '\0';
+    return n_strdup(buf);
+}
+/*
+char *setupArrayStrRev(int size) {
+    char buf[16 * PATH_MAX];
+    int n = 0;
+    int i = 1;
+    while (i <= size) {
+        char buf[128];
+        n += n_snprintf(&buf[n], sizeof(buf)-n, size > 100 ? "%3d," : (size > 10 "%2d," : "%d,"), i++);
+    }
+    buf[n] = '\0';
+    return n_strdup(buf);
+    }*/
+
+
 START_TEST(test_array_concat)
 {
-    tn_array *a = setupArray();
-    tn_array *b = setupArray();
+    tn_array *a = setupArray(5);
+    tn_array *b = setupArray(5);
 
     n_array_concat_ex(a, b, (tn_fn_dup)strdup);
 
@@ -60,7 +86,7 @@ END_TEST
 
 START_TEST(test_array_sort)
 {
-    tn_array *a = setupArray();
+    tn_array *a = setupArray(5);
 
     expect_str(array_str(a), "5,4,3,2,1");
     n_array_sort(a);
@@ -71,9 +97,73 @@ START_TEST(test_array_sort)
 END_TEST
 
 
+START_TEST(test_array_sort_big)
+{
+    tn_array *a = setupArray(4096);
+    n_array_sort(a);
+
+    for (int i = 0; i < n_array_size(a)-1; i++) {
+        char *e = n_array_nth(a, i);
+        char *ee = n_array_nth(a, i+1);
+        fail_unless(strcmp(e, ee) < 0, "not sorted");
+    }
+
+    n_array_free(a);
+}
+END_TEST
+
+
+void isort(char **arr, size_t arr_size)
+{
+    register size_t i, j;
+
+    for (i = 1; i < arr_size; i++) {
+        register char *tmp = arr[i];
+
+        j = i;
+        while (j > 0 && strcmp(tmp, arr[j - 1]) < 0) {
+            arr[j] = arr[j - 1];
+            j--;
+        }
+
+        arr[j] = tmp;
+    }
+}
+
+START_TEST(test_array_sort_stability)
+{
+    tn_array *a = setupArray(5);
+    tn_array *b = setupArray(5);
+    n_array_sort(b);
+
+
+    expect_str(array_str(a), "5,4,3,2,1");
+    n_array_concat_ex(a, b, (tn_fn_dup)strdup);
+    n_array_push(a, strdup("1"));
+    expect_str(array_str(a), "5,4,3,2,1,1,2,3,4,5,1");
+
+    char *elem[n_array_size(a)];
+    for (int i = 0; i < n_array_size(a); i++) {
+        elem[i] = n_array_nth(a, i);
+    }
+    isort(elem, n_array_size(a));
+
+    n_array_sort(a);
+    expect_str(array_str(a), "1,1,1,2,2,3,3,4,4,5,5");
+
+    for (int i = 0; i < n_array_size(a); i++) {
+        char *e = elem[i];
+        char *ee = n_array_nth(a, i);
+        fail_unless(e == ee, "not stable sort");
+    }
+
+    n_array_free(a);
+}
+END_TEST
+
 START_TEST(test_array_autosorting)
 {
-    tn_array *a = setupArray();
+    tn_array *a = setupArray(5);
     expect_str(array_str(a), "5,4,3,2,1");
 
     expect_null(n_array_bsearch(a, "1"));
@@ -203,7 +293,7 @@ END_TEST
 
 START_TEST(test_array_remove)
 {
-    tn_array *a = setupArray();
+    tn_array *a = setupArray(5);
 
     n_array_reverse(a);
     expect_str(array_str(a), "1,2,3,4,5");
@@ -222,6 +312,8 @@ NTEST_RUNNER("array",
              test_array_basic,
              test_array_concat,
              test_array_sort,
+             test_array_sort_stability,
+             test_array_sort_big,
              test_array_autosorting,
              test_array_bsearch,
              test_array_growth,

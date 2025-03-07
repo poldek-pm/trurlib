@@ -123,5 +123,6 @@ data/Makefile
 data/trurlib.pc
 lib/Makefile
 tests/Makefile
+perftests/Makefile
 ])
 AC_OUTPUT

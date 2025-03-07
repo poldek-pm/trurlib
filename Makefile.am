@@ -2,7 +2,7 @@ NULL =
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS   = data lib tests
+SUBDIRS   = data lib tests perftests
 DIST_SUBDIRS = $(SUBDIRS)
 
 # use libtool versioning
@@ -101,6 +101,7 @@ libtrurl_la_SOURCES = \
 	$(NLIST_SRCS)    \
 	$(NHASH_SRCS)    \
 	$(NSTR_SRCS)     \
+	noash.c		 \
 	ntuple.c         \
 	niobuf.c	 \
 	niobuf_zstd.c	 \
@@ -113,6 +114,7 @@ pkgincludedir = $(includedir)/trurl
 pkginclude_HEADERS = \
 		include/trurl/nassert.h    \
 		include/trurl/nhash.h      \
+		include/trurl/noash.h      \
 		include/trurl/nstr.h       \
 		include/trurl/tfn_types.h  \
 		include/trurl/narray.h     \
