@@ -93,6 +93,14 @@ void trurl_isort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
     }
 }
 
+#define SORT_NAME void
+#define SORT_TYPE void*
+#include "vendor/sort.h"
+
+void trurl_timsort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf) {
+    void_tim_sort(arr, arr_size, cmpf);
+}
+
 static inline t_fn_cmp autosort(tn_array *arr, t_fn_cmp cmpf, int *set_sorted)
 {
     *set_sorted = 1;
@@ -128,6 +136,11 @@ static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int 
 
     trurl_die__if_frozen(arr);
 
+    /* hybird tim sort is stable and it's almost always faster */
+    trurl_timsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+    (void)alg;
+
+#if TRURL__DEPRECATED
     switch (alg) {
         case SORT_SORT:
             if (arr->items > 10)
@@ -144,7 +157,7 @@ static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int 
             trurl_isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
             break;
     }
-
+#endif
 
     if (set_sorted)
         TN_ARRAY_set_sorted(arr);
