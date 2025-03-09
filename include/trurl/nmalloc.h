@@ -40,6 +40,18 @@ void *n_memdup(const void *ptr, size_t size);
       memcpy(*dptr, ss, length + 1);          \
    } while (0);
 
+struct trurl_str8_private {
+    uint8_t len;
+    char str[];
+};
+typedef struct trurl_str8_private tn_str8;
+
+struct trurl_str16_private {
+    uint16_t len;
+    char str[];
+};
+typedef struct trurl_str16_private tn_str16;
+
 /* obstack allocator */
 struct trurl_alloc_private {
     uint16_t    _refcnt;
@@ -48,42 +60,20 @@ struct trurl_alloc_private {
     void*       (*na_calloc)(struct trurl_alloc_private *, size_t size);
     void*       (*na_realloc)(struct trurl_alloc_private *, void *ptr,
                               size_t size, size_t newsize);
+    /* string deduplication allocs */
+    const tn_str8*    (*na_alloc_str8)(struct trurl_alloc_private *, const char *str, size_t len);
+    const tn_str16*   (*na_alloc_str16)(struct trurl_alloc_private *, const char *str, size_t len);
+
     void        (*na_free)(struct trurl_alloc_private *, void *);
     void        *_privdata;
 };
 
 typedef struct trurl_alloc_private tn_alloc;
 
-#define TN_ALLOC_MALLOC  (1 << 0)
-#define TN_ALLOC_OBSTACK (1 << 1)
+#define TN_ALLOC_MALLOC   (1 << 0)
+#define TN_ALLOC_OBSTACK  (1 << 1)
 
 tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags);
 void n_alloc_free(tn_alloc *na);
-
-
-/* string deduplication allocator */
-struct trurl_strdalloc_private;
-typedef struct trurl_strdalloc_private tn_strdalloc;
-
-tn_strdalloc *n_strdalloc_new(size_t initial_slots, int flags);
-void n_strdalloc_free(tn_strdalloc *sa);
-
-struct trurl_lstr8_private {
-    uint8_t len;
-    char str[];
-};
-typedef struct trurl_lstr8_private tn_lstr8;
-
-const tn_lstr8 *n_strdalloc_add8(tn_strdalloc *sa, const char *str, size_t len);
-
-
-struct trurl_lstr16_private {
-    uint16_t len;
-    char str[];
-};
-typedef struct trurl_lstr16_private tn_lstr16;
-
-const tn_lstr16 *n_strdalloc_add16(tn_strdalloc *sa, const char *str, size_t len);
-
 
 #endif /* NMALLOC_H */

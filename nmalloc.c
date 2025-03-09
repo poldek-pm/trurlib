@@ -32,6 +32,8 @@
 #include "nmalloc.h"
 
 #include "nhash.h"
+#include "noash.h"
+#include "noash_int.h"
 #include "nstr.h"
 
 typedef void (*memh) (void);
@@ -181,43 +183,109 @@ void malloc_free(tn_alloc *na, void *ptr)
 # include "lib/obstack.h"
 #endif
 
+struct privdata {
+    struct obstack ob;
+    tn_oash  *ht;
+};
+
 static
 void *aobstack_malloc(tn_alloc *na, size_t size)
 {
-    return obstack_alloc((struct obstack*)na->_privdata, size);
+    struct privdata *pd = na->_privdata;
+    return obstack_alloc(&pd->ob, size);
 }
 
 static
 void *aobstack_calloc(tn_alloc *na, size_t size)
 {
-    void *ptr = obstack_alloc((struct obstack*)na->_privdata, size);
+    struct privdata *pd = na->_privdata;
+    void *ptr = obstack_alloc(&pd->ob, size);
     memset(ptr, 0, size);
     return ptr;
 }
 
-
 static
 void aobstack_free(tn_alloc *na, void *ptr)
 {
-    na = na;
-    ptr = ptr;
+    (void)na;
+    (void)ptr;
 }
-
 
 void *aobstack_realloc(tn_alloc *na, void *ptr, size_t size, size_t newsize)
 {
+    struct privdata *pd = na->_privdata;
     void *new;
-    new = obstack_alloc((struct obstack*)na->_privdata, newsize);
+
+    new = obstack_alloc(&pd->ob, newsize);
     memcpy(new, ptr, size);
     return new;
 }
 
-void n_alloc_debug_dump(tn_alloc *na)
+static
+const void *aobstack_alloc_str(tn_alloc *na, uint32_t max, const char *str, size_t len)
 {
-    fprintf(stderr, "%p chunk_size %ld\n", na,
-            ((struct obstack*)na->_privdata)->chunk_size);
+    struct privdata *pd = na->_privdata;
+
+    n_assert(len > 0);
+    n_assert(len <= UINT16_MAX);
+
+    if (pd->ht == NULL) {
+        int slots = pd->ob.chunk_size; /* TODO: make initial slots configurable  */
+        pd->ht = n_oash_new_na(na, slots, NULL);
+        n_oash_ctl(pd->ht, TN_HASH_NOCPKEY | TN_HASH_REHASH);
+    }
+
+    struct dentry *de = n_oash__get_insert(pd->ht, str, len);
+    n_assert(de);
+
+    if (de->data == NULL) {
+        tn_str8 *s8 = NULL;
+        tn_str16 *s16 = NULL;
+
+        switch (max) {
+        case UINT8_MAX:
+            s8 = na->na_malloc(na, sizeof(*s8) + len + 1);
+            s8->len = len;
+            memcpy(s8->str, str, len);
+            s8->str[len] = '\0';
+            de->key = s8->str;
+            de->data = s8;
+            break;
+
+        case UINT16_MAX:
+            s16 = na->na_malloc(na, sizeof(*s16) + len + 1);
+            s16->len = len;
+            memcpy(s16->str, str, len);
+            s16->str[len] = '\0';
+
+            de->key = s16->str;
+            de->data = s16;
+            break;
+
+        default:
+            n_die("%u: invalid max arg\n", max);
+            break;
+        }
+    }
+
+    return de->data;
 }
 
+const tn_str8 *aobstack_alloc_str8(tn_alloc *na, const char *str, size_t len)
+{
+    return aobstack_alloc_str(na, UINT8_MAX, str, len);
+}
+
+const tn_str16 *aobstack_alloc_str16(tn_alloc *na, const char *str, size_t len)
+{
+    return aobstack_alloc_str(na, UINT16_MAX, str, len);
+}
+
+void n_alloc_debug_dump(tn_alloc *na)
+{
+    struct privdata *pd = na->_privdata;
+    fprintf(stderr, "%p chunk_size %ld\n", na, pd->ob.chunk_size);
+}
 
 tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags)
 {
@@ -235,8 +303,9 @@ tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags)
         na->na_realloc = malloc_realloc;
 
     } else if (flags & TN_ALLOC_OBSTACK) {
-        struct obstack *ob = n_malloc(sizeof(*ob));
-        obstack_init(ob);
+        struct privdata *pd = n_calloc(1, sizeof(*pd));
+        //struct obstack *ob = n_malloc(sizeof(*ob));
+        obstack_init(&pd->ob);
         if (chunkkb < 2)
             chunkkb = 2;
 
@@ -244,16 +313,17 @@ tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags)
             fprintf(stderr, "n_alloc_new: do you really request obstack's "
                     "chunk size greater than 4M?\n");
 
-
-        obstack_chunk_size(ob) = 1024 * chunkkb;
+        obstack_chunk_size(&pd->ob) = 1024 * chunkkb;
 #if HAVE_CPU_UNALIGNED_ACCESS
-        obstack_alignment_mask(ob) = 0; /* TODO: configurable */
+        obstack_alignment_mask(&pd->ob) = 0; /* TODO: configurable */
 #endif
-        na->_privdata = ob;
+        na->_privdata = pd;
         na->na_malloc  = aobstack_malloc;
         na->na_calloc  = aobstack_calloc;
         na->na_free    = aobstack_free;
         na->na_realloc = aobstack_realloc;
+        na->na_alloc_str8 = aobstack_alloc_str8;
+        na->na_alloc_str16 = aobstack_alloc_str16;
 
     } else {
         n_assert(0);
@@ -271,95 +341,13 @@ void n_alloc_free(tn_alloc *na)
     }
 
     if (na->_flags & TN_ALLOC_OBSTACK) {
-        obstack_free(na->_privdata, NULL);
-        n_free(na->_privdata);
+        struct privdata *pd = na->_privdata;
+        if (pd->ht)
+            n_oash_free(pd->ht);
+
+        obstack_free(&pd->ob, NULL);
+        n_free(pd);
     }
 
     n_free(na);
-}
-
-/* deduplicate string  allocator */
-struct trurl_strdalloc_private {
-    tn_hash  *ht;
-    tn_alloc *na;
-    int      hits;
-};
-
-tn_strdalloc *n_strdalloc_new(size_t initial_slots, int flags)
-{
-    flags = flags;                      /* unused */
-    size_t kbsize = (initial_slots * 32 /* avg str len */) / 1024;
-
-    tn_alloc *na = n_alloc_new(kbsize, TN_ALLOC_OBSTACK);
-    tn_strdalloc *sa = na->na_malloc(na, sizeof(*sa));
-
-    sa->ht = n_hash_new_na(na, initial_slots, NULL);
-    sa->na = na;
-    sa->hits = 0;
-
-    n_hash_ctl(sa->ht, TN_HASH_NOCPKEY | TN_HASH_REHASH);
-    return sa;
-}
-
-void n_strdalloc_free(tn_strdalloc *sa)
-{
-    tn_alloc *na = sa->na;
-    n_hash_free(sa->ht);
-    memset(sa, '0', sizeof(*sa));
-    n_alloc_free(na);
-}
-
-static
-const void *do_strdalloc_add(tn_strdalloc *sa, uint32_t max, const char *str, size_t len)
-{
-    void *ent;
-
-    n_assert(len > 0);
-    n_assert(len <= max);
-
-    uint32_t khash = n_hash_compute_hash(sa->ht, str, len);
-
-    if ((ent = n_hash_hget(sa->ht, str, len, khash))) {
-        sa->hits++;
-        return ent;
-    }
-
-    char *entstr = NULL;
-    tn_lstr8 *ent8 = NULL;
-    tn_lstr16 *ent16 = NULL;
-    switch (max) {
-        case UINT8_MAX:
-            ent8 = sa->na->na_malloc(sa->na, sizeof(*ent8) + len + 1);
-            ent8->len = len;
-            entstr = ent8->str;
-            ent = ent8;
-            break;
-
-        case UINT16_MAX:
-            ent16 = sa->na->na_malloc(sa->na, sizeof(*ent16) + len + 1);
-            ent16->len = len;
-            entstr = ent16->str;
-            ent = ent16;
-            break;
-
-        default:
-            n_die("%u: invalid max arg\n", max);
-            break;
-    }
-
-    n_assert(entstr);
-    n_strncpy(entstr, str, len + 1);
-    n_hash_hinsert(sa->ht, entstr, len, khash, ent);
-
-    return ent;
-}
-
-const tn_lstr8 *n_strdalloc_add8(tn_strdalloc *sa, const char *str, size_t len)
-{
-    return do_strdalloc_add(sa, UINT8_MAX, str, len);
-}
-
-const tn_lstr16 *n_strdalloc_add16(tn_strdalloc *sa, const char *str, size_t len)
-{
-    return do_strdalloc_add(sa, UINT16_MAX, str, len);
 }
