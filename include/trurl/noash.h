@@ -41,13 +41,15 @@ void n_oash_clean(tn_oash *ht);
 tn_oash *n_oash_insert(tn_oash *ht, const char *key, const void *data);
 tn_oash *n_oash_replace(tn_oash *ht, const char *key, const void *data);
 
+void *n_oash_insert_unless_exists(tn_oash *ht, const char *key, const void *data);
+
 /*
   Returns a pointer to the data associated with a key.
 */
 void *n_oash_get(const tn_oash *ht, const char *key);
-
 int n_oash_exists(const tn_oash *ht, const char *key);
 
+void **n_oash_get_insert(tn_oash *ht, const char *key, size_t len);
 
 /*
   lower level insert / exists pair to avoid double computation of key hash

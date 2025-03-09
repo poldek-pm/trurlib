@@ -110,6 +110,7 @@ n_oash_exists_ex
 n_oash_free
 n_oash_get
 n_oash_get_ex
+n_oash_get_insert
 n_oash_hexists
 n_oash_hget
 n_oash_hinsert

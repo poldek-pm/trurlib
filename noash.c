@@ -1,7 +1,8 @@
 /*
-  TRURLib, open addressing hash table
+  TRURLib, open-addressing hash table with Robin Hood hashing
 */
 
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -11,6 +12,7 @@
 #undef n_oash_keys
 
 #include "nmalloc.h"
+#include "noash_int.h"
 
 struct tentry {
     uint32_t hash;
@@ -19,19 +21,14 @@ struct tentry {
     uint32_t data_index;
 };
 
-struct dentry {
-    void    *data;
-    char    *key;
-    char    _buf[];
-};
 
 struct trurl_oash_table {
     uint16_t    _refcnt;
     uint16_t    flags;
 
-    uint32_t size;
+    uint32_t cap;
     struct tentry *table;
-    uint32_t items;
+    uint32_t size;
 
     uint32_t dcap;
     struct dentry **data;
@@ -42,10 +39,12 @@ struct trurl_oash_table {
 };
 
 #define node_dentry(ht, node) ht->data[node->data_index]
-#define tindex(size, hash) (hash) & (size - 1)
+#define tindex(cap, hash) (hash) & (cap - 1)
 #define entry_key(ht, e) ((ht->data[(e)->data_index])->key)
+#define tentry_eq(a, b)  ((a)->hash == (b)->hash && (a)->klen == (b)->klen)
 
-inline int tentry_eq(struct tentry *e, struct tentry *e1) {
+static
+inline int tentry_eqF(struct tentry *e, struct tentry *e1) {
     return (e->hash == e1->hash && e->klen == e1->klen);
 }
 
@@ -56,7 +55,7 @@ inline int tentry_samekey(const tn_oash *ht, struct tentry *e, struct tentry *e1
             memcmp(ht->data[e->data_index]->key, ht->data[e1->data_index]->key, e->klen) == 0);
 }
 
-inline struct dentry *get_dentry(const tn_oash *ht, const struct tentry *e) {
+inline static struct dentry *get_dentry(const tn_oash *ht, const struct tentry *e) {
     return ht->data[e->data_index];
 }
 
@@ -75,11 +74,12 @@ static tn_oash *ohash_new_ex(tn_alloc *na,
     if (ht == NULL)
         return NULL;
 
-    ht->flags = 0;
     ht->table = n_calloc(size, sizeof(*ht->table));
-    ht->data = n_calloc(size, sizeof(*ht->data));
+    ht->cap = size;
 
-    ht->size = size;
+    ht->data = n_calloc(size, sizeof(*ht->data));
+    ht->dcap = size;
+
     ht->free_fn = freefn;
     ht->_refcnt = 0;
     ht->na = na;
@@ -121,7 +121,7 @@ tn_oash *n_oash_new_na(tn_alloc *na, size_t size, void (*freefn) (void *))
 
 int n_oash_size(const tn_oash *ht)
 {
-    return ht->items;
+    return ht->size;
 }
 
 static inline uint32_t murmur_32_scramble(uint32_t k) {
@@ -194,7 +194,7 @@ uint32_t n_oash_compute_hash_len(const tn_oash *ht, const char *s, int *slen)
 
 int n_oash_ctl(tn_oash *ht, unsigned int flags)
 {
-    if (ht->items > 0) {
+    if (ht->size > 0) {
         trurl_die("n_oash_ctl: hash table not empty");
         return 0;
     }
@@ -211,24 +211,28 @@ void n_oash_free(tn_oash *ht)
         return;
     }
 
-    for (i = 0; i < ht->size; i++) {
+    for (i = 0; i < ht->cap; i++) {
         struct tentry *e = &ht->table[i];
         if (e->hash == 0)
             continue;
 
         struct dentry *de = ht->data[e->data_index];
-        if (ht->free_fn != NULL && de && de->data != NULL) {
-            ht->free_fn(de->data);
+        if (de) {
+            if (ht->free_fn != NULL && de->data != NULL) {
+                ht->free_fn(de->data);
+            }
+
             if (!ht->na)
                 n_free(de);
         }
     }
 
     free(ht->table);
+    free(ht->data);
 
     ht->table = NULL;
+    ht->cap = 0;
     ht->size = 0;
-    ht->items = 0;
 
     if (ht->na == NULL)
         free(ht);
@@ -237,66 +241,61 @@ void n_oash_free(tn_oash *ht)
 }
 
 static inline
-struct tentry *n_oash_put_entry(tn_oash *ht, struct tentry entry, struct dentry *de, int replace, int *replaced)
+struct tentry *n_oash_put_entry(tn_oash *ht, struct tentry entry, const char *key, bool *found)
 {
-    register uint32_t size = ht->size;
+    register uint32_t size = ht->cap;
     struct tentry *table = ht->table;
     struct tentry *e;
 
-    n_assert(entry.klen > 0);
-    n_assert(entry.hash != 0);
+    //n_assert(entry.klen > 0);
+    //n_assert(entry.hash != 0);
 
-    entry.psl = 0;
     uint32_t index = tindex(size, entry.hash);
-
-    e = &table[index];
-    if (e->hash == 0) {
-        ht->items++;
-        table[index] = entry;
-        return &table[index];
-    }
-
     struct tentry *re = NULL;
 
-    while (1) {
-        entry.psl++;
+    entry.psl = 0;
 
-        index = tindex(size, index + 1);
+    //char *log[] = {};
+    //int nlog = 0;
+    //int exist = n_oash_exists(ht, key);
+
+    while (1) {
         e = &table[index];
 
         if (e->hash == 0) {
-            ht->items++;
+            ht->size++;
             table[index] = entry;
             if (re == NULL)
                 re = &table[index];
             break;
         }
 
-        if (de && tentry_eq(e, &entry) && strncmp(entry_key(ht, e), de->key, e->klen) == 0) {
-            if (!replace) {
-                trurl_die("key '%s' already in table\n", de->key);
-                return NULL;
-            }
-            *replaced = 1;
+        const char *ekey = entry_key(ht, e);
 
+        if (key && tentry_eq(e, &entry) && (ekey == key || strncmp(ekey, key, e->klen) == 0)) {
+            *found = true;
             n_assert(re == NULL);
-            return &table[index];
+
+            re = &table[index];
+            break;
         }
 
         if (entry.psl > e->psl) { /* swap */
             struct tentry tmp = table[index];
             if (re == NULL)
                 re = &table[index];
-
             table[index] = entry;
             entry = tmp;
         }
+
+        entry.psl++;
+        index = tindex(size, index + 1);
     }
 
     return re;
 }
 
-static
+static inline
 struct dentry *new_dentry(const tn_oash *ht, const char *key, int klen, const void *data)
 {
     struct dentry *de;
@@ -325,67 +324,135 @@ struct dentry *new_dentry(const tn_oash *ht, const char *key, int klen, const vo
     return de;
 }
 
-static
-void ohash_rehash();
+static void ohash_rehash(tn_oash *ht);
+
+#define OASH_PUT_REPLACE 1
+#define OASH_PUT_KEEP    2
+#define OASH_PUT_DIE     3
 
 static
-tn_oash *n_oash_put(tn_oash *ht, const char *key, int klen, uint32_t khash,
-                    const void *data, int replace)
+struct tentry *ohash_get_entry(const tn_oash *ht,
+                               const char *key, int klen, uint32_t khash,
+                               uint32_t *eindex);
+
+static inline uint32_t put_dentry(tn_oash *ht, struct dentry *de)
+{
+    uint32_t size = ht->dcap - 1;
+    uint32_t index = ht->dsize & size;
+    while (ht->data[index] != NULL) {
+        index = (index + 1) & size;
+    }
+
+    ht->data[index] = de;
+    ht->dsize++;
+
+    return index;
+}
+
+static
+struct dentry *n_oash_put(tn_oash *ht, const char *key, int klen, uint32_t khash,
+                          const void *data, int mode)
 {
     struct tentry e = {};
 
     n_assert(klen > 0);
     n_assert(klen < UINT16_MAX);
 
-    if ((ht->flags & TN_HASH_REHASH) && ht->size - ht->items <= ht->size / 3) {
-        ohash_rehash(ht);
-    }
-
-    if (ht->size == ht->items) {
-        trurl_die("n_oash: table is full");
-    }
-
     if (khash == 0)
         khash = n_oash_compute_hash(ht, key, klen);
+
+    if (ht->cap == ht->size) {
+        struct tentry *ee = ohash_get_entry(ht,key, klen, khash, NULL);
+        if (ee == NULL) {
+            /* it may happen when user fills table 100%, enable rehashing and try to insert new key */
+            if (ht->flags & TN_HASH_REHASH) {
+                ohash_rehash(ht);
+            } else {
+                if (mode == OASH_PUT_DIE)
+                    trurl_die("n_oash: table is full");
+                return NULL;
+            }
+        }
+
+        if (mode == OASH_PUT_KEEP) {
+            struct dentry *de = get_dentry(ht, ee);
+            return de;
+
+        } else if (mode == OASH_PUT_REPLACE) {
+            struct dentry *de = get_dentry(ht, ee);
+            if (de->data && ht->free_fn)
+                ht->free_fn(de->data);
+
+            de->data = (void *)data;
+            return de;
+        }
+    }
 
     e.hash = khash;
     e.psl = 0;
     e.klen = klen;
 
-    struct dentry *de = new_dentry(ht, key, klen, data);
-
-    int replaced = 0;
-    struct tentry *ie = n_oash_put_entry(ht, e, de, replace, &replaced);
+    bool found = false;
+    struct tentry *ie = n_oash_put_entry(ht, e, key, &found);
     if (ie == NULL)
         return NULL;
 
-    if (!replaced) {
-        ht->data[ht->dsize] = de;
-        ie->data_index = ht->dsize;
-        ht->dsize++;
+    struct dentry *de = NULL;
+    if (!found) {
+        de = new_dentry(ht, key, klen, data);
+        ie->data_index = put_dentry(ht, de);
+
+        if ((ht->flags & TN_HASH_REHASH) && ht->cap - ht->size <= ht->cap / 3) {
+            ohash_rehash(ht);
+        }
     } else {
-        struct dentry *exising = get_dentry(ht, ie);
-        if (exising->data && ht->free_fn)
-            ht->free_fn(exising->data);
+        if (mode == OASH_PUT_DIE) {
+            trurl_die("key '%s' already in table\n", key);
+            return NULL;
 
-        exising->data = de->data;
+        } else if (mode == OASH_PUT_REPLACE) {
+            de = get_dentry(ht, ie);
+            if (de->data && ht->free_fn)
+                ht->free_fn(de->data);
 
-        if (!ht->na)
-            n_free(de);
+            de->data = (void *)data;
+
+        } else {                /* keep */
+            de = get_dentry(ht, ie);
+        }
     }
 
-    return ht;
+    n_assert(de != NULL);
+    return de;
 }
 
 tn_oash *n_oash_insert(tn_oash *ht, const char *key, const void *data)
 {
-    return n_oash_put(ht, key, strlen(key), 0, data, 0);
+    if (n_oash_put(ht, key, strlen(key), 0, data, OASH_PUT_DIE)) {
+        return ht;
+    }
+
+    return NULL;
+}
+
+struct dentry *n_oash__get_insert(tn_oash *ht, const char *key, size_t len)
+{
+    return n_oash_put(ht, key, len, 0, NULL, OASH_PUT_KEEP);
+}
+
+void **n_oash_get_insert(tn_oash *ht, const char *key, size_t len)
+{
+    struct dentry *de = n_oash_put(ht, key, len, 0, NULL, OASH_PUT_KEEP);
+    return &de->data;
 }
 
 tn_oash *n_oash_hinsert(tn_oash *ht, const char *key, int klen, unsigned khash,
                         const void *data)
 {
-    return n_oash_put(ht, key, klen, khash, data, 0);
+    if (n_oash_put(ht, key, klen, khash, data, OASH_PUT_DIE))
+        return ht;
+
+    return NULL;
 }
 
 tn_oash *n_oash_hreplace(tn_oash *ht, const char *key, int klen, unsigned khash,
@@ -397,17 +464,14 @@ tn_oash *n_oash_hreplace(tn_oash *ht, const char *key, int klen, unsigned khash,
         return NULL;
     }
 
-    return n_oash_put(ht, key, klen, khash, data, 1);
+    if (n_oash_put(ht, key, klen, khash, data, OASH_PUT_REPLACE))
+        return ht;
+
+    return NULL;
 }
 
 tn_oash *n_oash_replace(tn_oash *ht, const char *key, const void *data)
 {
-    if (ht->flags & TN_HASH_NOREPLACE) {
-        trurl_die("n_oash_replace: replace requested for"
-                  " \"non-replace\" hash table");
-        return NULL;
-    }
-
     return n_oash_hreplace(ht, key, strlen(key), 0, data);
 }
 
@@ -427,10 +491,10 @@ void *n_oash_it_get(tn_oash_it *hi, const char **key) {
     struct tentry *table = hi->ht->table;
     size_t i = hi->pos;
 
-    while (table[i].hash == 0 && i < hi->ht->size)
+    while (table[i].hash == 0 && i < hi->ht->cap)
         i++;
 
-    if (i >= hi->ht->size)
+    if (i >= hi->ht->cap)
         return NULL;
 
     struct tentry *e = &table[i];
@@ -443,43 +507,50 @@ void *n_oash_it_get(tn_oash_it *hi, const char **key) {
     return d->data;
 }
 
+static void realloc_data(tn_oash *ht)
+{
+    size_t newsize = ht->dcap << 1;
+
+    ht->data = n_realloc(ht->data, newsize * sizeof(*ht->data));
+    memset(&ht->data[ht->dcap], 0, (newsize - ht->dcap) * sizeof(*ht->data));
+    ht->dcap = newsize;
+}
+
 static void ohash_rehash(tn_oash *ht)
 {
     size_t i, newsize, oldsize;
-    struct tentry **oldtable;
+    struct tentry *oldtable;
 
-    oldsize  = ht->size;
-    oldtable = &ht->table;
+    oldsize  = ht->cap;
+    oldtable = ht->table;
 
-    DBGF("n_oash_rehash %d\n", ht->size);
-
-    newsize = ht->size << 1;
+    newsize = ht->cap << 1;
     ht->table = n_calloc(newsize, sizeof(*ht->table));
     if (ht->table == NULL) {
-        ht->table = *oldtable;
+        ht->table = oldtable;
         return;
     }
 
-    ht->data = n_realloc(ht->data, newsize);
-    memset(&ht->data[ht->size], 0, (newsize - oldsize) * sizeof(*ht->data));
-    ht->size = newsize;
-    ht->items = 0;
+    realloc_data(ht);
+
+    ht->cap = newsize;
+    ht->size = 0;
 
     for (i = 0; i < oldsize; i++) {
-        if (oldtable[i] == NULL)
+        if (oldtable[i].hash == 0)
             continue;
 
-        n_oash_put_entry(ht, *oldtable[i], NULL, 0, NULL);
+        n_oash_put_entry(ht, oldtable[i], NULL, 0);
     }
 
-    free(*oldtable);
+    n_free(oldtable);
 }
 
 static inline
 int psldiff(const tn_oash *ht, const struct tentry *e, uint32_t index)
 {
     uint32_t psl;
-    uint32_t size = ht->size;
+    uint32_t size = ht->cap;
     uint32_t index0 = tindex(size, e->hash);
 
     if (index0 <= index) {
@@ -494,14 +565,14 @@ int psldiff(const tn_oash *ht, const struct tentry *e, uint32_t index)
 static
 struct tentry *ohash_get_entry(const tn_oash *ht,
                                const char *key, int klen, uint32_t khash,
-                               uint32_t *bindex)
+                               uint32_t *eindex)
 {
     struct tentry *table = ht->table;
     //struct tentry search = { khash, 0, klen }
     //n_assert(klen > 0);
     //n_assert(klen < UINT16_MAX);
 
-    uint32_t size = ht->size;
+    uint32_t size = ht->cap;
     uint32_t index = tindex(size, khash);
     uint32_t i = index;
     uint32_t np = 0;
@@ -520,15 +591,14 @@ struct tentry *ohash_get_entry(const tn_oash *ht,
             break;
         }
 
-        np++;
         if (khash == e->hash && klen == e->klen &&
             strncmp(key, ht->data[e->data_index]->key, klen) == 0) {
-            if (bindex)
-                *bindex = i;
-
+            if (eindex)
+                *eindex = i;
             return e;
         }
 
+        np++;
         i = tindex(size, i + 1);
         e = &table[i];
         //n_assert(i != index);
@@ -594,9 +664,9 @@ tn_array *n_oash_keys_ext(const tn_oash *ht, int cp)
     if (cp)
         free_fn = n_free;
 
-    keys = n_array_new(ht->items, free_fn, (tn_fn_cmp)strcmp);
+    keys = n_array_new(ht->size, free_fn, (tn_fn_cmp)strcmp);
 
-    for (i = 0; i < ht->size; i++) {
+    for (i = 0; i < ht->cap; i++) {
         if (ht->table[i].hash == 0)
             continue;
 
@@ -617,9 +687,9 @@ tn_array *n_oash_values(const tn_oash *ht)
     register size_t i;
     tn_array *values;
 
-    values = n_array_new(ht->items, NULL, NULL);
+    values = n_array_new(ht->size, NULL, NULL);
 
-    for (i = 0; i < ht->size; i++) {
+    for (i = 0; i < ht->cap; i++) {
         if (ht->table[i].hash == 0)
             continue;
 
@@ -643,7 +713,7 @@ void *n_oash_remove(tn_oash *ht, const char *key)
     n_assert(e->hash == khash);
 
     struct tentry ee = *e;
-    uint32_t size = ht->size;
+    uint32_t size = ht->cap;
     uint32_t iprev = eindex;
     uint32_t i = tindex(size, eindex + 1);
 
@@ -663,11 +733,14 @@ void *n_oash_remove(tn_oash *ht, const char *key)
     table[iprev].hash = 0;
 
     struct dentry *de = get_dentry(ht, &ee);
+    ht->data[ee.data_index] = NULL;
+    ht->dsize--;
+
     void *data = de->data;
     if (!ht->na)
         n_free(de);
 
-    ht->items -= 1;
+    ht->size -= 1;
     return data;
 }
 
@@ -676,15 +749,15 @@ tn_oash *n_oash_dup(const tn_oash *ht, tn_fn_dup dup_fn)
     register size_t  i = 0;
     tn_oash          *h;
 
-    h = n_oash_new(ht->size, NULL);
-    h->size = ht->size;
-    h->items = 0;
+    h = n_oash_new(ht->cap, NULL);
+    h->cap = ht->cap;
+    h->size = 0;
     h->free_fn = ht->free_fn;
     h->flags = h->flags;
     h->flags &= ~(TN_HASH_NOCPKEY);
 
-    memcpy(h->table, ht->table, ht->size * sizeof(*h->table));
-    for (i = 0; i < ht->size; i++) {
+    memcpy(h->table, ht->table, ht->cap * sizeof(*h->table));
+    for (i = 0; i < ht->cap; i++) {
         if (ht->table[i].hash == 0)
             continue;
 
@@ -705,7 +778,7 @@ tn_oash *n_oash_dup(const tn_oash *ht, tn_fn_dup dup_fn)
 void n_oash_clean(tn_oash *ht)
 {
     size_t i;
-    for (i = 0; i < ht->size; i++) {
+    for (i = 0; i < ht->cap; i++) {
         struct tentry *e = &ht->table[i];
 	if (e->hash) {
             e->hash = 0;
@@ -718,8 +791,8 @@ void n_oash_clean(tn_oash *ht)
             ht->data[e->data_index] = NULL;
         }
     }
-
-    ht->items = 0;
+    ht->dsize = 0;
+    ht->size = 0;
 }
 
 
@@ -731,13 +804,13 @@ int n_oash_store(const tn_oash *ht, tn_stream *st, int (*store_fn) (void *, tn_s
     register uint32_t i, n = 0;
 
     n_stream_write(st, store_version, store_version_len);
-    n_stream_write_uint32(st, ht->size);
+    n_stream_write_uint32(st, ht->cap);
 
     uint16_t flags = ht->flags & ~(TN_HASH_NOCPKEY);
     n_stream_write_uint16(st, flags);
-    n_stream_write_uint32(st, ht->items);
+    n_stream_write_uint32(st, ht->size);
 
-    for (i = 0; i < ht->size; i++) {
+    for (i = 0; i < ht->cap; i++) {
         struct tentry *e = &ht->table[i];
         if (e->hash == 0)
             continue;
@@ -777,9 +850,9 @@ tn_oash *n_oash_restore(tn_stream *st,
     n_stream_read_uint32(st, &size);
     tn_oash *ht = n_oash_new(size, freefn);
     n_stream_read_uint16(st, &ht->flags);
-    n_stream_read_uint32(st, &ht->items);
+    n_stream_read_uint32(st, &ht->size);
 
-    for (uint32_t i = 0; i < ht->items; i++) {
+    for (uint32_t i = 0; i < ht->size; i++) {
         uint32_t index = 0;
         char key[512];
 
@@ -810,7 +883,7 @@ int n_oash_map(const tn_oash *ht, void (*map_fn) (const char *, void *))
     register size_t i, n = 0;
     register struct tentry *tmp;
 
-    for (i = 0; i < ht->size; i++) {
+    for (i = 0; i < ht->cap; i++) {
         if (ht->table[i].hash == 0)
             continue;
 
@@ -830,7 +903,7 @@ int n_oash_map_arg(const tn_oash *ht,
     register size_t i, n = 0;
     register struct tentry *tmp;
 
-    for (i = 0; i < ht->size; i++) {
+    for (i = 0; i < ht->cap; i++) {
         tmp = &ht->table[i];
 
         if (tmp->hash == 0)
@@ -848,8 +921,8 @@ int n_oash_dump(const tn_oash *ht)
 {
     uint32_t i, n = 0;
 
-    printf("DUMP %p size=%d\n", ht, ht->items);
-    for (i = 0; i < ht->size; i++) {
+    printf("DUMP %p items=%d, size=%d\n", ht, ht->size, ht->cap);
+    for (i = 0; i < ht->cap; i++) {
         struct tentry *e = &ht->table[i];
         struct dentry *d = get_dentry(ht, e);
 
@@ -879,7 +952,7 @@ int n_oash_stats(const tn_oash *ht)
     int nonempty_len = 0;
     int nonempty_blocks = 0;
 
-    for (i = 0; i < ht->size; i++) {
+    for (i = 0; i < ht->cap; i++) {
         if (i > 0) {
             if (ht->table[i-1].hash && ht->table[i].hash == 0) {
                 nonempty_blocks++;
@@ -904,13 +977,13 @@ int n_oash_stats(const tn_oash *ht)
             maxpsl = ht->table[i].psl;
     }
 
-    printf("ht(%p): %u keys, %u slots (%.2f%% empty, avg empty len %.lf), avg psl %.1lf, max psl %d)\n",
+    printf("ht(%p): %u keys, %u slots (%.2f%% load, avg empty len %.lf), avg psl %.1lf, max psl %d)\n",
            ht,
-           ht->items,
            ht->size,
-           (100.0 * nempts)/ht->size,
+           ht->cap,
+           (100.0 * ht->size)/ht->cap,
            empty_len_sum ? empty_len_sum / (1.0 * empty_blocks) : 0,
-           pslsum > 0 ? pslsum/(ht->items * 1.0) : 0,
+           pslsum > 0 ? pslsum/(ht->size * 1.0) : 0,
            maxpsl);
     return n;
 }

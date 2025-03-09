@@ -93,28 +93,52 @@ END_TEST
 
 START_TEST(test_ohash_base)
 {
-    int nn = 512;
-    char *keys[nn + 10];
+    int nn = 32;
+    char *keys[4*nn];
     tn_oash *h;
 
-    for (int i = 0; i < nn + 10; i++) {
+    for (int i = 0; i < 4*nn; i++) {
         char key[64];
         snprintf(key, sizeof(key), "key%02d", i);
         keys[i] = strdup(key);
     }
 
-    h = n_oash_new(nn, free);
+    h = n_oash_new(nn * 2, NULL);
     n_oash_ctl(h, TN_HASH_NOCPKEY);
-    //n_oash_ctl(h, TN_HASH_REHASH);
-    if (nn < 10)
+
+    if (nn < 20)
         n_oash_dump(h);
 
     for (int i = 0; i < nn; i++) {
         const char *key = keys[i];
-        n_oash_insert(h, key, strdup(key));
+        n_oash_insert(h, key, &key[1]);
         if (nn < 20)
             n_oash_dump(h);
         fail_unless(n_oash_exists(h, key), "%s: no such key", key);
+    }
+    expect_int(n_oash_size(h), nn);
+
+    for (int i = 0; i < nn; i++) {
+        const char *key = keys[i];
+        void **data = n_oash_get_insert(h, key, strlen(key));
+
+        if (nn < 20)
+            n_oash_dump(h);
+
+        fail_if(data == NULL, "get_insert should not return NULL");
+        fail_unless(*data == &key[1], "%s's value should not be updated", key);
+    }
+    expect_int(n_oash_size(h), nn);
+
+    // replace
+    for (int i = 0; i < nn; i++) {
+        const char *key = keys[i];
+        n_oash_replace(h, key, &key[2]);
+        const char *data = n_oash_get(h, key);
+        if (nn < 20)
+            n_oash_dump(h);
+        fail_unless(data == &key[2], "%s's should not be updated", key);
+
     }
     expect_int(n_oash_size(h), nn);
 
@@ -125,10 +149,17 @@ START_TEST(test_ohash_base)
         const char *key = keys[i];
         const char *v = n_oash_get(h, key);
         if (i < nn)
-            fail_unless(v && strcmp(v, key) == 0, "%s: no such key, got %s", key, v);
+            fail_unless(v && strcmp(v, &key[2]) == 0, "%s: no such key, got %s", key, v);
         else
             fail_if(n_oash_exists(h, key), "%s: should not be found", key);
     }
+
+    for (int i = 0; i < nn; i++) {
+        const char *key = keys[i];
+        const char **v = (const char **)n_oash_get_insert(h, key, strlen(key));
+        fail_unless(v && *v && strcmp(*v, &key[2]) == 0, "%s: no such key, got %s", key, v ? *v : "NULL");
+    }
+
 
     //n_hash_dump(h);
     for (int i = 0; i < nn; i++) {
@@ -136,7 +167,7 @@ START_TEST(test_ohash_base)
         const char *v = n_oash_remove(h, key);
         if (i < nn) {
             fail_if(n_oash_exists(h, key), "%s: should not be found", key);
-            fail_unless(strcmp(v, key) == 0, "%s: should eq %s", key, v);
+            fail_unless(strcmp(v, &key[2]) == 0, "%s: should eq %s", key, v);
             //n_assert(strcmp(v, key) == 0);
         }
         if (nn < 20)
@@ -153,6 +184,22 @@ START_TEST(test_ohash_base)
         }
     }
     expect_int(n_oash_size(h), 0);
+
+
+    // rehash
+    n_oash_ctl(h, TN_HASH_REHASH);
+    for (int i = 0; i < 4*nn; i++) {
+        const char *key = keys[i];
+        n_oash_insert(h, key, key);
+    }
+    expect_int(n_oash_size(h), 4*nn);
+
+    for (int i = 0; i < 4*nn; i++) {
+        const char *key = keys[i];
+        const char *v = n_oash_get(h, key);
+        fail_unless(v == key, "%s: no such key", key);
+    }
+
 }
 END_TEST
 
