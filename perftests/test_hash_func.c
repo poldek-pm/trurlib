@@ -126,15 +126,20 @@ void do_test(const char *name, hash_fn fn, tn_array *keys)
     memset(collisions, 0, size * sizeof(int));
 
     void *t = timethis_begin();
-    for (int i = 0; i < n_array_size(KEYS); i++) {
-        struct str *st = n_array_nth(KEYS, i);
-        uint32_t h = fn(st->s, st->len);
-        uint32_t index = h & (size - 1);
-        //printf("%d %s %u %u %s\n", i, st->s, h, index, collisions[index] > 0 ? "CO" : "");
-        if (collisions[index] > 0) {
-            ncolisions++;
+    for (int nloop = 0; nloop < 8; nloop++) {
+        for (int i = 0; i < n_array_size(KEYS); i++) {
+            struct str *st = n_array_nth(KEYS, i);
+            uint32_t h = fn(st->s, st->len);
+            uint32_t index = h & (size - 1);
+
+            if (nloop > 0)
+                continue;
+            //printf("%d %s %u %u %s\n", i, st->s, h, index, collisions[index] > 0 ? "CO" : "");
+            if (collisions[index] > 0) {
+                ncolisions++;
+            }
+            collisions[index]++;
         }
-        collisions[index]++;
     }
     timethis_end(t, name, ncolisions/(size * 1.0));
 }
@@ -151,6 +156,16 @@ uint32_t metrohash(unsigned char *s, int len) {
     return h;
 }
 
+uint64_t vt_hash_string( char *key, int len )
+{
+    (void)len;
+    //return murmur3_hash(key, strlen(key));
+    uint64_t hash = 0xcbf29ce484222325ull;
+    while( *key )
+        hash = ( (unsigned char)*key++ ^ hash ) * 0x100000001b3ull;
+
+    return hash;
+}
 
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 int main()
@@ -163,4 +178,5 @@ int main()
     do_test("metrohash64", (hash_fn)&metrohash, KEYS);
     do_test("xxhash", (hash_fn)&xxhash, KEYS);
     do_test("djb", (hash_fn)&djb_hash, KEYS);
+    do_test("fnv-1a", (hash_fn)&vt_hash_string, KEYS);
 }

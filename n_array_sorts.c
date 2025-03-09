@@ -61,7 +61,6 @@ void trurl_qsort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
     }
 }
 
-
 void trurl_isort_voidp_arr(void **arr, size_t arr_size, t_fn_cmp cmpf)
 {
     register size_t i, j;
@@ -124,6 +123,7 @@ static inline t_fn_cmp autosort(tn_array *arr, t_fn_cmp cmpf, int *set_sorted)
 #define SORT_SORT  0
 #define SORT_QSORT 1
 #define SORT_ISORT 2
+#define SORT_TSORT 3
 
 static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int alg)
 {
@@ -136,12 +136,14 @@ static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int 
 
     trurl_die__if_frozen(arr);
 
-    /* hybird tim sort is stable and it's almost always faster */
-    trurl_timsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
-    (void)alg;
+    /* hybird timsort is stable and it's almost always faster */
+    alg = SORT_TSORT;
 
-#if TRURL__DEPRECATED
     switch (alg) {
+        case SORT_TSORT:
+            trurl_timsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
+            break;
+
         case SORT_SORT:
             if (arr->items > 10)
                 trurl_qsort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
@@ -157,14 +159,12 @@ static inline tn_array *n_array_sort_internal(tn_array *arr, t_fn_cmp cmpf, int 
             trurl_isort_voidp_arr(&arr->data[arr->start_index], arr->items, cmpf);
             break;
     }
-#endif
 
     if (set_sorted)
         TN_ARRAY_set_sorted(arr);
 
     return arr;
 }
-
 
 tn_array *n_array_sort_ex(tn_array *arr, t_fn_cmp cmpf)
 {
@@ -180,7 +180,6 @@ tn_array *n_array_isort_ex(tn_array *arr, t_fn_cmp cmpf)
 {
     return n_array_sort_internal(arr, cmpf, SORT_ISORT);
 }
-
 
 tn_array *n_array_reverse(tn_array *arr)
 {

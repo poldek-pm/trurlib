@@ -208,7 +208,7 @@ void do_test(const char *name, sort_fn sort, tn_array *keys)
 int main()
 {
 
-    for (int i = (1<<8); i < (1<<20); i = i<<2) {
+    for (int i = (1<<8); i < (1<<20); i = i<<3) {
         tn_array *keys = load_keys(i);
 
         printf("N=%d, reversed\n", n_array_size(keys));
@@ -221,6 +221,23 @@ int main()
 
 
         printf("N=%d, sorted\n", n_array_size(keys));
+        n_array_reverse(keys);
+        do_test(" nqsort", trurl_qsort_voidp_arr, keys);
+        do_test(" htimsort", htimsort_arr, keys);
+        do_test(" hqsort", hqsort_arr, keys);
+        do_test(" hmerge", hmergesort_arr, keys);
+        if (n_array_size(keys) < 128)
+            do_test(" isort", trurl_isort_voidp_arr, keys);
+
+
+        for (int i = 0; i < n_array_size(keys); i++) {
+            int x = rand() % n_array_size(keys);
+            void *tmp = keys->data[x];
+            keys->data[x] = keys->data[i];
+            keys->data[i] = tmp;
+        }
+
+        printf("N=%d, randomized\n", n_array_size(keys));
         n_array_reverse(keys);
         do_test(" nqsort", trurl_qsort_voidp_arr, keys);
         do_test(" htimsort", htimsort_arr, keys);

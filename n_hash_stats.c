@@ -52,10 +52,10 @@ int n_hash_stats(const tn_hash *ht)
             maxdeep = deep;
     }
 
-    printf("ht(%p): %u slots (%d empty, avg empty len %d), %u items, "
+    printf("ht(%p): %u keys, %u slots (%.2lf load, avg empty len %d), "
            "%d collisions (%.2lf%%, avgdeep %.2lf, maxdeep %d)\n",
-           ht, ht->size, nempts, empty_len_sum ? empty_len_sum / empty_len_n : 0,
-           ht->items, ncolls, 100 * (ncolls/ (ht->items * 1.0)),
+           ht, ht->items, ht->size, (100.0 * ht->items) / ht->size, empty_len_sum ? empty_len_sum / empty_len_n : 0,
+           ncolls, 100 * (ncolls/ (ht->items * 1.0)),
            ncolls > 0 && deepsum > 0 ? deepsum/(ncolls * 1.0) : 0,
            maxdeep);
 //    n_assert(0);

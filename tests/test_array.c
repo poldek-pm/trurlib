@@ -9,6 +9,9 @@
 #undef n_array_push
 #include "ndie.h"
 
+// fail_unless macro woes
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+
 static const char *array_str(const tn_array *a)
 {
     static char buf[4096];
