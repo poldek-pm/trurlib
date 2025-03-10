@@ -2,7 +2,12 @@ NULL =
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS   = data lib tests perftests
+SUBDIRS = data lib . tests
+
+if WITH_PERFTESTS
+	SUBDIRS += perftests
+endif
+
 DIST_SUBDIRS = $(SUBDIRS)
 
 # use libtool versioning

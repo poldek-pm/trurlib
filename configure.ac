@@ -88,6 +88,15 @@ AC_DEFUN([AC_FUNC_OBSTACK],
 
 AC_FUNC_OBSTACK
 
+AC_ARG_WITH(perftests,
+[  --with-perftests   build with performance tests],
+PERFTESTS=$withval, PERFTESTS=no)
+if test "${PERFTESTS}." = "yes."; then
+   AM_CONDITIONAL(WITH_PERFTESTS, true)
+else
+   AM_CONDITIONAL(WITH_PERFTESTS, false)
+fi
+
 dnl zlib implementation
 AC_ARG_WITH([zlib],
             [AS_HELP_STRING([--with-zlib[=auto|zlib|zlib-ng|both]], [ @<:@default=auto@:>@])],
