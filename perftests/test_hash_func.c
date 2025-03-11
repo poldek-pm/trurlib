@@ -14,7 +14,10 @@
 
 #include "v/murmur3.c"
 #include "v/farmhash.c"
+
+#ifdef WITH_XXHASH
 #include <xxhash.h>
+#endif
 
 tn_array *KEYS = NULL;
 
@@ -143,10 +146,11 @@ void do_test(const char *name, hash_fn fn, tn_array *keys)
     }
     timethis_end(t, name, ncolisions/(size * 1.0));
 }
-
+#ifdef WITH_XXHASH
 uint32_t xxhash(unsigned char *s, int len) {
     return XXH64(s, len, 0);
 }
+#endif
 
 #include "v/metrohash.h"
 #include "v/metrohash64.c"
@@ -176,7 +180,9 @@ int main()
     do_test("farmhash32", (hash_fn)&farmhash32, KEYS);
     do_test("farmhash64", (hash_fn)&farmhash64, KEYS);
     do_test("metrohash64", (hash_fn)&metrohash, KEYS);
+#ifdef WITH_XXHASH
     do_test("xxhash", (hash_fn)&xxhash, KEYS);
+#endif
     do_test("djb", (hash_fn)&djb_hash, KEYS);
     do_test("fnv-1a", (hash_fn)&vt_hash_string, KEYS);
 }
