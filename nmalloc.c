@@ -335,16 +335,23 @@ tn_alloc *n_alloc_new(size_t chunkkb, unsigned int flags)
 
 void n_alloc_free(tn_alloc *na)
 {
+    struct privdata *pd = na->_privdata;
+
+    /* egg&chicken - "internal" ref made by pd->ht, so let it call n_alloc_free()
+       again but clear pd->ht pointer before to avoid loop */
+    if (na->_refcnt == 1 && (na->_flags & TN_ALLOC_OBSTACK) && pd->ht) {
+        tn_oash *ht = pd->ht;
+        pd->ht = NULL;
+        n_oash_free(ht);
+    }
+
     if (na->_refcnt > 0) {
         na->_refcnt--;
         return;
     }
 
     if (na->_flags & TN_ALLOC_OBSTACK) {
-        struct privdata *pd = na->_privdata;
-        if (pd->ht)
-            n_oash_free(pd->ht);
-
+        n_assert(pd->ht == NULL);
         obstack_free(&pd->ob, NULL);
         n_free(pd);
     }
