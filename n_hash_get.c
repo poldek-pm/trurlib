@@ -14,7 +14,7 @@ void *n_hash_it_get(tn_hash_it *hi, const char **key) {
     struct hash_bucket **tbl = hi->ht->table;
     size_t i = hi->pos;
 
-    while (tbl[i] == NULL && i < hi->ht->size)
+    while (i < hi->ht->size && tbl[i] == NULL)
         i++;
 
     if (i >= hi->ht->size)
