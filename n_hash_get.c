@@ -8,6 +8,7 @@ void n_hash_it_init(tn_hash_it *hi, tn_hash *ht)
 {
     hi->ht = ht;
     hi->pos = 0;
+    hi->bpos = 0;
 }
 
 void *n_hash_it_get(tn_hash_it *hi, const char **key) {
@@ -20,9 +21,26 @@ void *n_hash_it_get(tn_hash_it *hi, const char **key) {
     if (i >= hi->ht->size)
         return NULL;
 
-    struct hash_bucket *ptr = tbl[i];
+    struct hash_bucket *ptr;
+    int j = 0;
 
-    hi->pos = i + 1;
+    ptr = tbl[i];
+    while (ptr != NULL) {
+        if (j == hi->bpos)
+            break;
+        ptr = ptr->next;
+        j++;
+    }
+
+    n_assert(ptr);
+
+    if (ptr->next == NULL) {
+        hi->pos = i + 1;
+        hi->bpos = 0;
+    } else {
+        hi->bpos++;
+    }
+
     if (key)
         *key = ptr->key;
 

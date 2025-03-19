@@ -20,6 +20,7 @@
 
 // fail_unless macro woes
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
+static char *array_str(const tn_array *a);
 
 void hash_map_func(const char *key, void *data)
 {
@@ -48,6 +49,7 @@ START_TEST(test_hash_base)
     n_hash_ctl(h, TN_HASH_NOCPKEY);
     //n_hash_ctl(h, TN_HASH_REHASH);
 
+    /* insert */
     for (int i = 0; i < nn; i++) {
         const char *key = keys[i];
         n_hash_insert(h, key, strdup(key));
@@ -57,6 +59,32 @@ START_TEST(test_hash_base)
     expect_int(n_hash_size(h), nn);
     //n_hash_dump(h);
 
+    /* test iterator */
+    tn_array *given_keys = n_array_new(16, NULL, (tn_fn_cmp)strcmp);
+    for (int i = 0; i < nn; i++) {
+        char *key = keys[i];
+        n_array_push(given_keys, key);
+    }
+
+    tn_array *actual_keys = n_array_new(16, NULL, (tn_fn_cmp)strcmp);
+    tn_hash_it it;
+    n_hash_it_init(&it, h);
+    const char *k = NULL;
+
+    while (n_hash_it_get(&it, &k)) {
+        n_array_push(actual_keys, (char *)k);
+    }
+
+    n_array_sort(given_keys);
+    n_array_sort(actual_keys);
+    fail_unless(n_array_size(actual_keys) == nn, "iterator fail %d != %d", n_array_size(actual_keys), nn);
+
+    char *p, *q;
+    p = array_str(given_keys);
+    q = array_str(actual_keys);
+    fail_unless(strcmp(p, q) == 0, "iterator fail");
+
+    /* test get/ exists */
     for (int i = 0; i < nn + 10; i++) {
         const char *key = keys[i];
         const char *v = n_hash_get(h, key);
@@ -67,6 +95,7 @@ START_TEST(test_hash_base)
     }
 
     //n_hash_dump(h);
+    /* test remove */
     for (int i = 0; i < nn; i++) {
         const char *key = keys[i];
         const char *v = n_hash_remove(h, key);
@@ -129,6 +158,31 @@ START_TEST(test_ohash_base)
         fail_unless(*data == &key[1], "%s's value should not be updated", key);
     }
     expect_int(n_oash_size(h), nn);
+
+    /* test iterator */
+    tn_array *given_keys = n_array_new(16, NULL, (tn_fn_cmp)strcmp);
+    for (int i = 0; i < nn; i++) {
+        char *key = keys[i];
+        n_array_push(given_keys, key);
+    }
+
+    tn_array *actual_keys = n_array_new(16, NULL, (tn_fn_cmp)strcmp);
+    tn_oash_it it;
+    n_oash_it_init(&it, h);
+    const char *k = NULL;
+
+    while (n_oash_it_get(&it, &k)) {
+        n_array_push(actual_keys, (char *)k);
+    }
+
+    n_array_sort(given_keys);
+    n_array_sort(actual_keys);
+    fail_unless(n_array_size(actual_keys) == nn, "iterator fail n");
+
+    char *p, *q;
+    p = array_str(given_keys);
+    q = array_str(actual_keys);
+    fail_unless(strcmp(p, q) == 0, "iterator fail");
 
     // replace
     for (int i = 0; i < nn; i++) {

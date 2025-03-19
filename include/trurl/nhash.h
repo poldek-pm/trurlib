@@ -104,6 +104,7 @@ uint32_t n_hash_compute_index_hash(const tn_hash *ht, uint32_t raw_hash);
 struct trurl_hash_iterator {
     tn_hash *ht;
     int pos;
+    int bpos;
 };
 
 typedef struct trurl_hash_iterator tn_hash_it;
