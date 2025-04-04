@@ -35,3 +35,17 @@ tn_array *n_array_grow(tn_array *arr, size_t req_size)
 
     return new_size > arr->allocated ? n_array_realloc(arr, new_size) : arr;
 }
+
+void n_array__adjust(tn_array *arr) {
+    if (arr->start_index == 0)
+        return;
+
+    if (arr->items > 0) {
+        //DBGF("adjust i%d, a%d, s%d\n", arr->start_index, arr->allocated, arr->items);
+        memmove(&arr->data[0], &arr->data[arr->start_index],
+                arr->items * sizeof(*arr->data));
+        memset(&arr->data[arr->items], 0, arr->start_index * sizeof(*arr->data));
+    }
+
+    arr->start_index = 0;
+}

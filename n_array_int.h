@@ -12,5 +12,6 @@
 #define TN_ARRAY_INTERNAL 1
 #include "narray.h"
 
+void n_array__adjust(tn_array *arr);
 
 #endif /* TRURL_NARRAY_INT_H */
