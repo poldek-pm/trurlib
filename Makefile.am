@@ -3,12 +3,11 @@ NULL =
 AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = data lib . tests
+DIST_SUBDIRS = $(SUBDIRS) perftests
 
 if WITH_PERFTESTS
 	SUBDIRS += perftests
 endif
-
-DIST_SUBDIRS = $(SUBDIRS)
 
 # use libtool versioning
 CPPFLAGS  = -I$(top_srcdir)/include/trurl -I$(top_srcdir)/include

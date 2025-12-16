@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 m4_define([trurlib_major_version], [0])
-m4_define([trurlib_minor_version], [50])
+m4_define([trurlib_minor_version], [51])
 m4_define([trurlib_micro_version], [0])
 m4_define([trurlib_version],
 	  [trurlib_major_version.trurlib_minor_version.trurlib_micro_version])
@@ -27,9 +27,9 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 # libtool versioning
-LT_CURRENT=9
+LT_CURRENT=10
 LT_REVISION=0
-LT_AGE=8
+LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
