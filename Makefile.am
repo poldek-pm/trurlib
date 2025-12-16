@@ -106,10 +106,12 @@ libtrurl_la_SOURCES = \
 	$(NHASH_SRCS)    \
 	$(NSTR_SRCS)     \
 	noash.c		 \
+	noash_int.h	 \
 	ntuple.c         \
 	niobuf.c	 \
 	niobuf_zstd.c	 \
-	niobuf_int.h
+	niobuf_int.h     \
+	vendor/sort.h
 
 
 libtrurl_la_LIBADD = lib/libsys.la
