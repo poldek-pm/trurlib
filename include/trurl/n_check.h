@@ -19,7 +19,6 @@
 #include <check.h>
 #include "nassert.h"
 
-#define fail_ifnot fail_unless
 #define expect_int(a, b)  ck_assert_int_eq(a, b)
 #define expect_str(a, b)  ck_assert_str_eq(a, b)
 #define expect_null(a)       ck_assert_ptr_null(a)
@@ -137,5 +136,25 @@ static inline const char *__ncheck_test_name(const char *name) {
         __ncheck_process_args(argc, argv, __tests);           \
         return __ncheck_runner(__suite);                      \
     }
-
 #endif
+
+
+/* redefine (deprecated) fail_if/fail_unless with variable arguments */
+#undef fail_if
+#undef fail_unless
+
+#define fail_if_1(cond) ck_assert_msg(!(cond), NULL)
+#define fail_if_2p(cond, ...) ck_assert_msg(!(cond), __VA_ARGS__)
+
+#define fail_unless_1(cond) ck_assert_msg((cond), NULL)
+#define fail_unless_2p(cond, ...) ck_assert_msg((cond), __VA_ARGS__)
+
+#define fail_if(cond, ...) \
+    GET_MACRO(_0, ##__VA_ARGS__, \
+        fail_if_2p, fail_if_2p, fail_if_2p, fail_if_2p, fail_if_2p, \
+        fail_if_2p, fail_if_2p, fail_if_2p, fail_if_2p, fail_if_1)(cond, ##__VA_ARGS__)
+
+#define fail_unless(cond, ...) \
+    GET_MACRO(_0, ##__VA_ARGS__, \
+        fail_unless_2p, fail_unless_2p, fail_unless_2p, fail_unless_2p, fail_unless_2p, \
+        fail_unless_2p, fail_unless_2p, fail_unless_2p, fail_unless_2p, fail_unless_1)(cond, ##__VA_ARGS__)
