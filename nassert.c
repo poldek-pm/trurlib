@@ -1,17 +1,17 @@
-/* 
+/*
   TRURLib
   Copyright (C) 1999 Pawel A. Gajda (mis@k2.net.pl)
- 
+
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Library General Public
   License as published by the Free Software Foundation; either
   version 2 of the License, or (at your option) any later version.
- 
+
   This library is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Library General Public License for more details.
- 
+
   You should have received a copy of the GNU Library General Public
   License along with this library; if not, write to the
   Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -37,13 +37,6 @@ assert_hook_f n_assert_set_hook(assert_hook_f hook)
     assert_hook = hook;
     return tmp;
 }
-
-/* backward compat */
-assert_hook_f n_assert_sethook(assert_hook_f hook)
-{
-    return n_assert_set_hook(hook);
-}
-
 
 void n_assert_fail(const char *expr, const char *file, int line)
 {
