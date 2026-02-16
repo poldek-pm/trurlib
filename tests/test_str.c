@@ -77,4 +77,17 @@ START_TEST(test_str_etokl)
 }
 END_TEST
 
-NTEST_RUNNER("str", test_strtokl, test_str_len, test_str_in, test_str_etokl);
+#include <trurl/n_snprintf.h>
+START_TEST(test_snprintf)
+{
+    char buf[16] = "xxxxxxxxxxxxxxx";
+
+    int n = n_snprintf(buf, sizeof(buf), "%s/%s", "ala", "ma");
+    expect_int(n, strlen("ala/ma"));
+    ck_assert(strcmp(buf, "ala/ma") == 0);
+
+}
+END_TEST
+
+
+NTEST_RUNNER("str", test_strtokl, test_str_len, test_str_in, test_str_etokl, test_snprintf);
