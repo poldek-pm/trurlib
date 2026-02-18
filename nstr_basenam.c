@@ -1,4 +1,4 @@
-/* 
+/*
    TRURLib
    Copyright (C) 1999 Pawel A. Gajda (mis@k2.net.pl)
 
@@ -23,33 +23,27 @@
 #endif
 
 #include <string.h>
-
-#ifdef USE_N_ASSERT
 #include "nassert.h"
-#else
-#include <assert.h>
-#define n_assert(expr) assert(expr)
-#endif
 
 char *n_basedirnam(char *path, char **dirname, char **basename)
 {
     char *dn, *s = strrchr(path, '/');
-    
+
     if (s == NULL) {
         dn = NULL;
         if (basename)
             *basename = path;
-        
+
     } else {
         *s++ = '\0';
         dn  = path;
         if (basename)
             *basename = s;
     }
-    
+
     if (dirname)
         *dirname = dn;
-    
+
     return dn;
 }
 

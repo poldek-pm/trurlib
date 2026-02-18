@@ -1,4 +1,4 @@
-/* 
+/*
    TRURLib
    Copyright (C) 1999 Pawel A. Gajda (mis@k2.net.pl)
 
@@ -22,24 +22,17 @@
 # include "config.h"
 #endif
 
-#ifdef USE_N_ASSERT
 #include "nassert.h"
-#else
-#include <assert.h>
-#define n_assert(expr) assert(expr)
-#endif
-
 #include <stddef.h>
 
 char *n_strncpy(char *dest, const char *src, size_t n)
 {
     while ((*dest++ = *src++)) {
         n--;
-        if (n == 0) 
+        if (n == 0)
             break;
     }
     dest--;
     *dest = '\0';
     return dest;
 }
-

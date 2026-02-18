@@ -1,6 +1,6 @@
 /*
   TRURLib
-  
+
   $Id$
 */
 
@@ -23,13 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef USE_N_ASSERT
 #include "nassert.h"
-#else
-#include <assert.h>
-#define n_assert(expr) assert(expr)
-#endif
-
 
 char *n_str_tok(const char *s, char *tok, size_t toklen, const char *delim)
 {
@@ -42,7 +36,7 @@ char *n_str_tok(const char *s, char *tok, size_t toklen, const char *delim)
     lim = tok + toklen - 1;
 
     s += strspn(s, delim);
-        
+
     while (*s && tok <= lim) {
         for (p = delim; *p; p++) {
             if (*s == *p) {

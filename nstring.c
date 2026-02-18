@@ -1,5 +1,5 @@
 /*
-   Not finished 
+   Not finished
  */
 
 #ifdef HAVE_CONFIG_H
@@ -10,13 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef USE_N_ASSERT
 #include "nassert.h"
-#else
-#include <assert.h>
-#define n_assert(expr) assert(expr)
-#endif
-
 #include "nstring.h"
 
 static char *vconcat(const char *s, va_list * ap);
