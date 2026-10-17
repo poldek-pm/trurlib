@@ -18,6 +18,7 @@
 
 #include <check.h>
 #include "nassert.h"
+#include "n_snprintf.h"
 
 #define expect_int(a, b)  ck_assert_int_eq(a, b)
 #define expect_str(a, b)  ck_assert_str_eq(a, b)
@@ -58,7 +59,7 @@ static inline char *__ncheck_make_test_tmp_path(const char *filename)
 static int __ncheck_verbosity = CK_ENV;
 static int __ncheck_log_verbose = 0;
 
-static inline void __ncheck_log(const char *fmt, ...)
+static inline TN_FORMAT_PRINTF(1, 2) void __ncheck_log(const char *fmt, ...)
 {
     if (__ncheck_log_verbose < 2) /* enabled with -vv */
         return;

@@ -7,11 +7,12 @@
 #define TRURL_DIE_H
 
 #include "tfn_types.h"
+#include "n_snprintf.h"
 
 typedef void (*t_fn_die_hook) (const char *errmsg);
 
 t_fn_die_hook n_die_set_hook(t_fn_die_hook hook);
-void n_die(const char *fmt, ...);
+void n_die(const char *fmt, ...) TN_FORMAT_PRINTF(1, 2);
 
 /* internal macro, do not use  */
 #define trurl_die__if_frozen(arr) \
