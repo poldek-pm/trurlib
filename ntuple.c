@@ -13,7 +13,7 @@
 
 #include <trurl/nmalloc.h>
 
-const char *n_errmsg_tuple_nth_oob = "n_tuple_nth: index(%d) out of bounds(%d)\n";
+const char *n_errmsg_tuple_nth_oob = TN_ERRMSG_TUPLE_NTH_OOB;
 
 tn_tuple *n_tuple_new(tn_alloc *na, int size, void **data)
 {
@@ -70,7 +70,7 @@ void *n_tuple_nth(const tn_tuple *tu, register int i)
 {
     
     if ((size_t) i >= tu->size || i < 0)
-        n_die(n_errmsg_tuple_nth_oob, i, tu->size);
+        n_die(TN_ERRMSG_TUPLE_NTH_OOB, i, tu->size);
     
     return tu->data[i];
 }

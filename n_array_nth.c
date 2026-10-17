@@ -4,7 +4,7 @@
 
 #include "n_array_int.h"
 
-const char *n_errmsg_array_nth_oob = "n_array_nth: index(%d) out of bounds(%zu)\n";
+const char *n_errmsg_array_nth_oob = TN_ERRMSG_ARRAY_NTH_OOB;
 
 #undef n_array_nth
 void *n_array_nth(const tn_array *arr, int i)
@@ -14,7 +14,7 @@ void *n_array_nth(const tn_array *arr, int i)
     n_assert(arr->items > 0);
 
     if ((size_t) i >= arr->items || i < 0) {
-        trurl_die(n_errmsg_array_nth_oob, i, arr->items);
+        trurl_die(TN_ERRMSG_ARRAY_NTH_OOB, i, arr->items);
         return NULL;
     }
     
