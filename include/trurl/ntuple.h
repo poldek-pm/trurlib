@@ -36,6 +36,8 @@ static inline int n_tuple_size_inl(const tn_tuple *tu)
 void *n_tuple_set_nth(tn_tuple *tu, int i, void *data);
 #define n_tuple_set_nth(a, i, d) n_tuple_set_nth_inl(a, i, d)
 
+/* a literal, so that the compiler sees the format n_die() gets */
+#define TN_ERRMSG_TUPLE_NTH_OOB "n_tuple_nth: index(%d) out of bounds(%d)\n"
 extern const char *n_errmsg_tuple_nth_oob;
 
 #ifndef SWIG
@@ -43,7 +45,7 @@ static inline
 tn_tuple *n_tuple_set_nth_inl(tn_tuple *tu, register int i, void *data)
 {
     if ((size_t) i >= tu->size || i < 0)
-        n_die(n_errmsg_tuple_nth_oob, i, tu->size);
+        n_die(TN_ERRMSG_TUPLE_NTH_OOB, i, tu->size);
     
     tu->data[i] = data;
     return tu;
@@ -63,7 +65,7 @@ extern const char *n_errmsg_tuple_nth_oob;
 static inline void *n_tuple_nth_inl(const tn_tuple *tu, register int i)
 {
     if ((size_t) i >= tu->size || i < 0)
-        n_die(n_errmsg_tuple_nth_oob, i, tu->size);
+        n_die(TN_ERRMSG_TUPLE_NTH_OOB, i, tu->size);
     
     return tu->data[i];
 }

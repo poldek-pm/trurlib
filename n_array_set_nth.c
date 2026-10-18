@@ -14,7 +14,7 @@ tn_array *n_array_set_nth(tn_array *arr, int i, void *data)
     trurl_die__if_frozen(arr);
 
     if (i < 0) {
-        trurl_die("n_array_set_nth: index(%d) out of bounds(%d)\n", i,
+        trurl_die("n_array_set_nth: index(%d) out of bounds(%zu)\n", i,
                   arr->items);
         return NULL;
     }

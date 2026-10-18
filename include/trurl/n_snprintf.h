@@ -6,11 +6,18 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+/* lets the compiler check the arguments of a printf-like function */
+#if defined(__GNUC__)
+# define TN_FORMAT_PRINTF(fmt, args) __attribute__((format(printf, fmt, args)))
+#else
+# define TN_FORMAT_PRINTF(fmt, args)
+#endif
+
 /*
   n_*snprintf() always returns the number of characters printed
 */
 
-static inline
+static inline TN_FORMAT_PRINTF(3, 0)
 int n_vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 {
     int s;
@@ -22,7 +29,7 @@ int n_vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
     return s;
 }
 
-static inline
+static inline TN_FORMAT_PRINTF(3, 4)
 int n_snprintf(char *str, size_t size, const char *fmt, ...)
 {
     va_list ap;

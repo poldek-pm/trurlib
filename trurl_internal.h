@@ -7,7 +7,9 @@
 #ifndef TRURL__INTERNAL_H
 #define TRURL__INTERNAL_H
 
-extern void trurl_die(const char *fmt,...);
+#include <trurl/n_snprintf.h>
+
+extern void trurl_die(const char *fmt,...) TN_FORMAT_PRINTF(1, 2);
 extern int trurl_default_cmpf(const void *a, const void *b);
 
 #include <stdio.h>

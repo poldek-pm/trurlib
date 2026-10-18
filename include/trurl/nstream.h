@@ -162,8 +162,9 @@ void n_stream_close(tn_stream *st) {
 
 int n_stream_guess_type(const char *path);
 
-#include <stdarg.h>
-int n_stream_vprintf(tn_stream *st, const char *fmt, va_list ap);
-int n_stream_printf(tn_stream *st, const char *fmt, ...);
+#include <trurl/n_snprintf.h>
+int n_stream_vprintf(tn_stream *st, const char *fmt, va_list ap)
+    TN_FORMAT_PRINTF(2, 0);
+int n_stream_printf(tn_stream *st, const char *fmt, ...) TN_FORMAT_PRINTF(2, 3);
 
 #endif

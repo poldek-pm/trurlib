@@ -14,6 +14,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <trurl/n_snprintf.h>
+
 struct trurl_buf {
     uint16_t      _refcnt;
     uint16_t      flags;
@@ -44,8 +46,9 @@ int n_buf_seek(tn_buf *buf, int off, int whence);
 #define n_buf_tell(buf) n_buf_seek(buf, 0, SEEK_CUR)
 
 /* WARN: limited to 4K */
-int n_buf_vprintf(tn_buf *nbuf, const char *fmt, va_list args);
-int n_buf_printf(tn_buf *nbuf, const char *fmt, ...);
+int n_buf_vprintf(tn_buf *nbuf, const char *fmt, va_list args)
+    TN_FORMAT_PRINTF(2, 0);
+int n_buf_printf(tn_buf *nbuf, const char *fmt, ...) TN_FORMAT_PRINTF(2, 3);
 
 
 #include <trurl/n2h.h>
