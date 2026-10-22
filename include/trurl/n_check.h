@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include <check.h>
 #include "nassert.h"
@@ -25,9 +26,9 @@
 #define expect_null(a)       ck_assert_ptr_null(a)
 #define expect_notnull(a)    ck_assert_ptr_nonnull(a)
 
-static inline char *__ncheck_make_test_tmp_path(const char *filename)
+static inline char *__ncheck_make_test_tmp_path(char *path, size_t size,
+                                                const char *filename)
 {
-    static char path[PATH_MAX];
     const char *dir = getenv("TMPDIR");
     if (dir == NULL || *dir == '\0')
         dir = getenv("TMP");
@@ -35,12 +36,16 @@ static inline char *__ncheck_make_test_tmp_path(const char *filename)
     if (dir == NULL || *dir == '\0')
         dir = "/tmp";
 
-    snprintf(path, sizeof(path), "%s/test_n_check-%s", dir, filename);
-    path[sizeof(path) - 1] = '\0';
+    snprintf(path, size, "%s/test_n_check-%ld-%s", dir, (long)getpid(),
+             filename);
+    path[size - 1] = '\0';
     return path;
 }
 
-#define NTEST_TMPPATH(name) __ncheck_make_test_tmp_path(name)
+/* Each invocation gets its own buffer: NTEST_TMPPATH() may be used more than
+   once in one expression, and test binaries may run in parallel. */
+#define NTEST_TMPPATH(name) \
+    __ncheck_make_test_tmp_path((char[PATH_MAX]){0}, PATH_MAX, (name))
 
 // Overloading Macro on Number of Arguments
 // taken from https://stackoverflow.com/a/11994395
