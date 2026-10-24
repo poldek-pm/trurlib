@@ -354,8 +354,22 @@ START_TEST(test_ohash_store)
 }
 END_TEST
 
+/* hash 0 marks an empty slot; murmur3 gives this key 0 on little-endian */
+START_TEST(test_ohash_zero_hash_key)
+{
+    const char *key = "/usr/share/d2791242373";
+    tn_oash *h = n_oash_new(4, NULL);
+
+    n_oash_insert(h, key, key);
+    fail_unless(n_oash_get(h, key) == key, "%s: no such key", key);
+
+    n_oash_free(h);
+}
+END_TEST
+
 NTEST_RUNNER("hash",
              test_hash_base,
              test_ohash_base,
-             test_ohash_store
+             test_ohash_store,
+             test_ohash_zero_hash_key
            )
