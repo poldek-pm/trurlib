@@ -230,8 +230,8 @@ const void *aobstack_alloc_str(tn_alloc *na, uint32_t max, const char *str, size
     n_assert(len <= UINT16_MAX);
 
     if (pd->ht == NULL) {
-        int slots = pd->ob.chunk_size; /* TODO: make initial slots configurable  */
-        pd->ht = n_oash_new_na(na, slots, NULL);
+        /* most allocators keep a handful of strings; the table grows */
+        pd->ht = n_oash_new_na(na, 0, NULL);
         n_oash_ctl(pd->ht, TN_HASH_NOCPKEY | TN_HASH_REHASH);
     }
 
