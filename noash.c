@@ -179,7 +179,7 @@ uint32_t n_oash_compute_hash(const tn_oash *ht, const char *s, int len)
     uint32_t v = murmur3_hash((const unsigned char*)s, len);
     //uint32_t v = farmhash32((const unsigned char*)s, len);
     //uint32_t v = spookyhash32(s, len, 0);
-    return v;
+    return v ? v : 1;           /* 0 marks an empty slot */
 }
 
 uint32_t n_oash_compute_hash_len(const tn_oash *ht, const char *s, int *slen)
