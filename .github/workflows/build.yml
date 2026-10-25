@@ -1,0 +1,31 @@
+name: build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/poldek-pm/pld-devel:latest
+    env:
+      LANG: C
+    steps:
+    - uses: actions/checkout@v4
+    - name: git safe dir
+      run: git config --global --add safe.directory $(pwd)
+    - name: autogen
+      run: ./autogen.sh --enable-strict
+    - name: make
+      run: make CFLAGS="-O0"
+    - name: make check
+      run: make CFLAGS="-O0" check
+    - name: save test log
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-suite.log
+        path: tests/test-suite.log
+        retention-days: 7
