@@ -354,8 +354,49 @@ START_TEST(test_ohash_store)
 }
 END_TEST
 
+/* hash 0 marks an empty slot; murmur3 gives this key 0 on little-endian */
+START_TEST(test_ohash_zero_hash_key)
+{
+    const char *key = "/usr/share/d2791242373";
+    tn_oash *h = n_oash_new(4, NULL);
+
+    n_oash_insert(h, key, key);
+    fail_unless(n_oash_get(h, key) == key, "%s: no such key", key);
+
+    n_oash_free(h);
+}
+END_TEST
+
+/* the dedup table starts at its minimum: equal strings must still get one
+   entry after it has grown */
+START_TEST(test_alloc_str_dedup_after_growth)
+{
+    int nn = 5000;
+    const tn_str8 *ents[nn];
+    tn_alloc *na = n_alloc_new(16, TN_ALLOC_OBSTACK);
+
+    for (int i = 0; i < nn; i++) {
+        char str[64];
+        int len = snprintf(str, sizeof(str), "/usr/share/dir%d", i);
+        ents[i] = na->na_alloc_str8(na, str, len);
+        fail_unless(strcmp(ents[i]->str, str) == 0, "%s: wrong string", str);
+    }
+
+    for (int i = 0; i < nn; i++) {
+        char str[64];
+        int len = snprintf(str, sizeof(str), "/usr/share/dir%d", i);
+        fail_unless(na->na_alloc_str8(na, str, len) == ents[i],
+                    "%s: not deduplicated", str);
+    }
+
+    n_alloc_free(na);
+}
+END_TEST
+
 NTEST_RUNNER("hash",
              test_hash_base,
              test_ohash_base,
-             test_ohash_store
+             test_ohash_store,
+             test_ohash_zero_hash_key,
+             test_alloc_str_dedup_after_growth
            )
