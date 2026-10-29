@@ -10,7 +10,6 @@ int n_hash_stats(const tn_hash *ht)
     register size_t i, n = 0;
     register struct hash_bucket *tmp;
     int ncolls = 0;
-    int nempts = 0;
     int maxdeep = 0;
     int deepsum = 0;
     int empty_len_sum = 0;
@@ -21,7 +20,6 @@ int n_hash_stats(const tn_hash *ht)
         int deep;
 
         if (ht->table[i] == NULL) {
-            nempts++;
             empty_len++;
             continue;
         }

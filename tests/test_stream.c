@@ -65,7 +65,6 @@ void do_test_seek(const char *tmppath)
 {
     char buf[75];
     char *fmt = "line%.12d";
-    int nw = 0;
     tn_stream *io;
     //char rbuf[75];
     int i;
@@ -75,7 +74,6 @@ void do_test_seek(const char *tmppath)
         int n = snprintf(buf, sizeof(buf), fmt, i);
         int nn = n_stream_write(io, buf, n);
         expect_int(nn, n);
-        nw += n;
     }
     n_stream_close(io);
 

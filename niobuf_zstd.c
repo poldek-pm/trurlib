@@ -180,7 +180,6 @@ static int flush_outbuf(struct zstd_state *st, FILE *file)
 static
 int zstd_write(struct zstd_state *st, FILE *file, const void *src, size_t ssize) {
     ZSTD_inBuffer input = { src, ssize, 0 };
-    int nw = 0;
 
     while (input.pos < input.size) {
         reset_outbuf(st);
@@ -191,10 +190,8 @@ int zstd_write(struct zstd_state *st, FILE *file, const void *src, size_t ssize)
 	    return -1;
 	}
 
-        if ((n = flush_outbuf(st, file)) == -1)
+        if (flush_outbuf(st, file) == -1)
             return -1;
-
-        nw += n;
     }
 
     return input.pos;

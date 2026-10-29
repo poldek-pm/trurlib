@@ -41,7 +41,6 @@ void do_seek(const char *path)
     char buf[75];
     int nitems = 10;
     char *fmt = "line%.12d";
-    int nw = 0, nr = 0;
     tn_iobuf *io;
     char rbuf[75];
     int i, x, n;
@@ -49,7 +48,7 @@ void do_seek(const char *path)
     io = n_iobuf_open(path, "w");
     for (i = 0; i < nitems; i++) {
         int n = snprintf(buf, sizeof(buf), fmt, i);
-        nw += n_iobuf_write(io, buf, n);
+        n_iobuf_write(io, buf, n);
     }
     n_iobuf_close(io);
 
@@ -93,7 +92,6 @@ void do_seek(const char *path)
     expect_int(memcmp(buf, rbuf, n), 0);
 
     rbuf[x] = '\0';
-    nr += x;
     //printf("read %s %d = %d  => %s\n", buf, n, strlen(buf), rbuf);
     n_iobuf_close(io);
 }
