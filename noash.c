@@ -942,34 +942,22 @@ int n_oash_dump(const tn_oash *ht)
 int n_oash_stats(const tn_oash *ht)
 {
     register size_t i, n = 0;
-    int nempts = 0;
     int pslsum = 0;
     int empty_len_sum = 0;
     int empty_blocks = 0;
     int empty_len = 0;
     int maxpsl = 0;
 
-    int nonempty_len = 0;
-    int nonempty_blocks = 0;
-
     for (i = 0; i < ht->cap; i++) {
-        if (i > 0) {
-            if (ht->table[i-1].hash && ht->table[i].hash == 0) {
-                nonempty_blocks++;
-                nonempty_len = 0;
-            } else if (ht->table[i-1].hash && ht->table[i].hash != 0) {
-                empty_blocks++;
-                empty_len_sum += empty_len;
-                empty_len = 0;
-            }
+        if (i > 0 && ht->table[i-1].hash && ht->table[i].hash != 0) {
+            empty_blocks++;
+            empty_len_sum += empty_len;
+            empty_len = 0;
         }
 
         if (ht->table[i].hash == 0) {
-            nempts++;
             empty_len++;
             continue;
-        } else {
-            nonempty_len++;
         }
 
         pslsum += ht->table[i].psl;

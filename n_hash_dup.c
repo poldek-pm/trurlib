@@ -6,7 +6,7 @@
 
 tn_hash *n_hash_dup(const tn_hash *ht, tn_fn_dup dup_fn)
 {
-    register size_t  i, n = 0;
+    register size_t  i;
     register struct  hash_bucket *tmp;
     tn_hash          *h;
 
@@ -26,7 +26,6 @@ tn_hash *n_hash_dup(const tn_hash *ht, tn_fn_dup dup_fn)
                 data = dup_fn(data);
 
             n_hash_insert(h, tmp->key, data);
-            n++;
         }
     }
 
