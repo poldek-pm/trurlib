@@ -939,18 +939,13 @@ int n_oash_stats(const tn_oash *ht)
     int pslsum = 0;
     int empty_len_sum = 0;
     int empty_blocks = 0;
-    int empty_len = 0;
     int maxpsl = 0;
 
     for (i = 0; i < ht->cap; i++) {
-        if (i > 0 && ht->table[i-1].hash && ht->table[i].hash != 0) {
-            empty_blocks++;
-            empty_len_sum += empty_len;
-            empty_len = 0;
-        }
-
         if (ht->table[i].hash == 0) {
-            empty_len++;
+            if (i == 0 || ht->table[i-1].hash != 0) /* a run of empty slots starts */
+                empty_blocks++;
+            empty_len_sum++;
             continue;
         }
 

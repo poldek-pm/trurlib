@@ -26,8 +26,8 @@ int n_hash_stats(const tn_hash *ht)
         if (empty_len > 6) {
             empty_len_n++;
             empty_len_sum += empty_len;
-            empty_len = 0;
         }
+        empty_len = 0;
 
 
         deep = 1;
@@ -48,6 +48,11 @@ int n_hash_stats(const tn_hash *ht)
 
         if (deep > maxdeep)
             maxdeep = deep;
+    }
+
+    if (empty_len > 6) {        /* a run at the end of the table */
+        empty_len_n++;
+        empty_len_sum += empty_len;
     }
 
     printf("ht(%p): %u keys, %u slots (%.2lf load, avg empty len %d), "
