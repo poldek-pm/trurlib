@@ -749,14 +749,9 @@ tn_oash *n_oash_dup(const tn_oash *ht, tn_fn_dup dup_fn)
     register size_t  i = 0;
     tn_oash          *h;
 
-    h = n_oash_new(ht->cap, NULL);
-    h->cap = ht->cap;
-    h->size = 0;
-    h->free_fn = ht->free_fn;
-    h->flags = h->flags;
-    h->flags &= ~(TN_HASH_NOCPKEY);
+    h = n_oash_new(ht->cap, ht->free_fn);
+    h->flags = ht->flags & ~(TN_HASH_NOCPKEY);
 
-    memcpy(h->table, ht->table, ht->cap * sizeof(*h->table));
     for (i = 0; i < ht->cap; i++) {
         if (ht->table[i].hash == 0)
             continue;
@@ -768,8 +763,7 @@ tn_oash *n_oash_dup(const tn_oash *ht, tn_fn_dup dup_fn)
         if (data && dup_fn)
             data = dup_fn(de->data);
 
-        struct dentry *newde = new_dentry(ht, de->key, e->klen, data);
-        h->data[e->data_index] = newde;
+        n_oash_hinsert(h, de->key, e->klen, e->hash, data);
     }
 
     return h;
