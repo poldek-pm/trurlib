@@ -367,6 +367,24 @@ START_TEST(test_ohash_zero_hash_key)
 }
 END_TEST
 
+/* a copy keeps the flags of the table, but owns copies of its keys */
+START_TEST(test_hash_dup_flags)
+{
+    tn_hash *h, *d;
+
+    h = n_hash_new(16, NULL);
+    n_hash_ctl(h, TN_HASH_NOCPKEY | TN_HASH_REHASH | TN_HASH_NOREPLACE);
+    n_hash_insert(h, "key", "value");
+
+    d = n_hash_dup(h, NULL);
+    expect_int(d->flags, TN_HASH_REHASH | TN_HASH_NOREPLACE);
+    fail_unless(strcmp(n_hash_get(d, "key"), "value") == 0, "key: not copied");
+
+    n_hash_free(d);
+    n_hash_free(h);
+}
+END_TEST
+
 /* the dedup table starts at its minimum: equal strings must still get one
    entry after it has grown */
 START_TEST(test_alloc_str_dedup_after_growth)
@@ -395,6 +413,7 @@ END_TEST
 
 NTEST_RUNNER("hash",
              test_hash_base,
+             test_hash_dup_flags,
              test_ohash_base,
              test_ohash_store,
              test_ohash_zero_hash_key,
