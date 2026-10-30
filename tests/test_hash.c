@@ -367,6 +367,74 @@ START_TEST(test_ohash_zero_hash_key)
 }
 END_TEST
 
+/* a copy keeps the flags of the table, but owns copies of its keys */
+START_TEST(test_hash_dup_flags)
+{
+    tn_hash *h, *d;
+
+    h = n_hash_new(16, NULL);
+    n_hash_ctl(h, TN_HASH_NOCPKEY | TN_HASH_REHASH | TN_HASH_NOREPLACE);
+    n_hash_insert(h, "key", "value");
+
+    d = n_hash_dup(h, NULL);
+    expect_int(d->flags, TN_HASH_REHASH | TN_HASH_NOREPLACE);
+    fail_unless(strcmp(n_hash_get(d, "key"), "value") == 0, "key: not copied");
+
+    n_hash_free(d);
+    n_hash_free(h);
+}
+END_TEST
+
+/* a copy holds the same entries, keeps the flags of the table and owns
+   copies of its keys */
+START_TEST(test_ohash_dup)
+{
+    char key[8] = "key";
+    tn_oash *h, *d;
+
+    h = n_oash_new(4, NULL);
+    n_oash_ctl(h, TN_HASH_NOCPKEY | TN_HASH_REHASH);
+    n_oash_insert(h, key, "value");
+    n_oash_insert(h, "a", "1");
+
+    d = n_oash_dup(h, NULL);
+    strcpy(key, "xxx");
+    expect_int(n_oash_size(d), 2);
+    fail_unless(n_oash_get(d, "key") && strcmp(n_oash_get(d, "key"), "value") == 0,
+                "key: not copied");
+    fail_unless(n_oash_get(d, "a") && strcmp(n_oash_get(d, "a"), "1") == 0,
+                "a: not copied");
+
+    /* fills more than its capacity: grows only with TN_HASH_REHASH */
+    for (int i = 0; i < 8; i++) {
+        char k[16];
+        snprintf(k, sizeof(k), "k%d", i);
+        n_oash_insert(d, k, "v");
+    }
+    expect_int(n_oash_size(d), 10);
+    fail_unless(n_oash_get(d, "a") && strcmp(n_oash_get(d, "a"), "1") == 0,
+                "a: lost after inserts");
+
+    n_oash_free(d);
+    n_oash_free(h);
+}
+END_TEST
+
+/* a copy of a table with its own allocator is freed on its own */
+START_TEST(test_ohash_dup_allocator)
+{
+    tn_oash *h, *d;
+
+    h = n_oash_new_na(NULL, 16, NULL);
+    n_oash_insert(h, "a", "1");
+
+    d = n_oash_dup(h, NULL);
+    n_oash_free(d);
+    fail_unless(strcmp(n_oash_get(h, "a"), "1") == 0, "a: lost");
+    n_oash_free(h);
+}
+END_TEST
+
 /* the dedup table starts at its minimum: equal strings must still get one
    entry after it has grown */
 START_TEST(test_alloc_str_dedup_after_growth)
@@ -395,8 +463,11 @@ END_TEST
 
 NTEST_RUNNER("hash",
              test_hash_base,
+             test_hash_dup_flags,
              test_ohash_base,
              test_ohash_store,
              test_ohash_zero_hash_key,
+             test_ohash_dup,
+             test_ohash_dup_allocator,
              test_alloc_str_dedup_after_growth
            )
