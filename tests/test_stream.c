@@ -105,7 +105,7 @@ END_TEST
    the line does not fit; a line that ends exactly at the buffer boundary
    must not pull in the next one. Run over a plain, a gzip and a zstd
    stream, since st_gets and st_getc are separate wrappers there. */
-static void do_test_getline(const char *path)
+static void do_test_getline(const char *path, size_t startsize)
 {
     static const char *lines[] = {
         "short\n",
@@ -117,6 +117,7 @@ static void do_test_getline(const char *path)
     };
     tn_stream *st;
     char *buf;
+    size_t size;
     int i;
 
     st = n_stream_open(path, "w", TN_STREAM_UNKNOWN);
@@ -128,14 +129,21 @@ static void do_test_getline(const char *path)
     st = n_stream_open(path, "r", TN_STREAM_UNKNOWN);
     fail_if(st == NULL, "cannot open %s", path);
 
-    buf = n_malloc(16);
+    size = startsize;
+    buf = startsize ? n_malloc(startsize) : NULL;
     for (i = 0; lines[i] != NULL; i++) {
-        int n = n_stream_getline(st, &buf, 16);
+        int n = n_stream_getline(st, &buf, &size);
 
         expect_int(n, strlen(lines[i]));
         expect_str(buf, lines[i]);
     }
-    expect_int(n_stream_getline(st, &buf, 16), 0);     /* EOF */
+    expect_int(n_stream_getline(st, &buf, &size), 0);     /* EOF */
+
+    /* startsize 0 means *bufptr = NULL: the buffer is allocated as
+       MAX_CANON right away, so only an explicit buffer can grow here */
+    if (startsize > 0)
+        fail_unless(size > startsize,
+                    "the grown buffer size was not reported: %zu", size);
 
     n_free(buf);
     n_stream_close(st);
@@ -143,9 +151,10 @@ static void do_test_getline(const char *path)
 
 START_TEST(test_stream_getline)
 {
-    do_test_getline(NTEST_TMPPATH("nstream-getline.txt"));
-    do_test_getline(NTEST_TMPPATH("nstream-getline.gz"));
-    do_test_getline(NTEST_TMPPATH("nstream-getline.zst"));
+    do_test_getline(NTEST_TMPPATH("nstream-getline.txt"), 16);
+    do_test_getline(NTEST_TMPPATH("nstream-getline.gz"), 16);
+    do_test_getline(NTEST_TMPPATH("nstream-getline.zst"), 16);
+    do_test_getline(NTEST_TMPPATH("nstream-getline-alloc.txt"), 0);
 }
 END_TEST
 

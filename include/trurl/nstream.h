@@ -63,7 +63,11 @@ int n_stream_set_write_hook(tn_stream *st,
 
 /* returns the number of bytes read */
 int n_stream_gets(tn_stream *st, char *buf, size_t size);
-int n_stream_getline(tn_stream *st, char **bufptr, size_t size);
+
+/* reads one line, growing *bufptr when the line does not fit: start with
+   *bufptr = NULL and *size = 0, or with a buffer of the given size. On
+   return *size is the buffer's size, so the caller can reuse it. */
+int n_stream_getline(tn_stream *st, char **bufptr, size_t *size);
 
 static inline
 int n_stream_read(tn_stream *st, void *buf, size_t size) {

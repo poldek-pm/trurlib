@@ -233,29 +233,29 @@ int n_stream_gets(tn_stream *st, char *buf, size_t size)
 # define	MAX_CANON	256
 #endif
 #undef getc
-int n_stream_getline(tn_stream *st, char **bufptr, size_t size)
+int n_stream_getline(tn_stream *st, char **bufptr, size_t *size)
 {
     char *buf = *bufptr;
     size_t n;
 
     if (buf == NULL) {
         buf = n_malloc(MAX_CANON);
-        size = MAX_CANON;
+        *size = MAX_CANON;
     }
 
     *buf = '\0';
 
-    n = n_stream_gets(st, buf, size);
-    if (n < size - 1 || (n > 0 && buf[n - 1] == '\n')) {
+    n = n_stream_gets(st, buf, *size);
+    if (n < *size - 1 || (n > 0 && buf[n - 1] == '\n')) {
         *bufptr = buf;
         return n;
     }
 
     while (1) {
         register int c;
-        if (n == size - 1) {
-            size *= 2;
-            buf = n_realloc(buf, size);
+        if (n == *size - 1) {
+            *size *= 2;
+            buf = n_realloc(buf, *size);
         }
         c = st->st_getc(st->stream);
         if (c == EOF)
