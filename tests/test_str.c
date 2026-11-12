@@ -90,4 +90,35 @@ START_TEST(test_snprintf)
 END_TEST
 
 
-NTEST_RUNNER("str", test_strtokl, test_str_len, test_str_in, test_str_etokl, test_snprintf);
+START_TEST(test_str_strip_ws)
+{
+    char s_normal[] = "  ala ma  ";
+    char s_empty[] = "";
+    char s_blank[] = " \t  ";
+    char s_tail[] = "\tala\r\n";
+    char s_guard[] = "x ";        /* [0] guard, [1] byte before the string */
+    char *p;
+
+    p = n_str_strip_ws(s_normal);
+    expect_str(p, "ala ma");
+    ck_assert(p == s_normal + 2);       /* leading ws is skipped, not zeroed */
+
+    expect_str(n_str_strip_ws(s_empty), "");
+    expect_str(n_str_strip_ws(s_blank), "");
+    expect_str(n_str_strip_ws(s_tail), "ala");
+
+    /* The trailing-whitespace loop must stop at the string, not walk
+       below it. This is deterministic: an older implementation zeroed
+       the space just before the empty string, then stopped at 'x'. */
+    p = n_str_strip_ws(s_guard + 2);
+    expect_str(p, "");
+    ck_assert(s_guard[0] == 'x');
+    ck_assert(s_guard[1] == ' ');
+
+    ck_assert(n_str_strip_ws(NULL) == NULL);
+}
+END_TEST
+
+
+NTEST_RUNNER("str", test_strtokl, test_str_len, test_str_in, test_str_etokl, test_snprintf,
+             test_str_strip_ws);

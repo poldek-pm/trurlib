@@ -7,8 +7,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "nassert.h"
-
 char *n_str_strip_ws(char *str)
 {
     char *p;
@@ -17,18 +15,14 @@ char *n_str_strip_ws(char *str)
         return str;
 
     p = str;
-    while(isspace(*p))
+    while (isspace((unsigned char)*p))
         p++;
 
     str = p;
-    p = strchr(str, '\0');
-    n_assert(p);
-    p--;
+    p += strlen(p);
 
-    while (p != str && isspace(*p)) {
-        *p = '\0';
-        p--;
-    }
+    while (p > str && isspace((unsigned char)p[-1]))
+        *--p = '\0';
 
     return str;
 }
