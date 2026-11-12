@@ -115,7 +115,7 @@ static tn_stream *n_stream_new(int type)
             st->st_read  = (int (*)(void*, void*, size_t))n_iobuf_read;
             st->st_write = (int (*)(void*, const void*, size_t))n_iobuf_write;
             st->st_gets  = (char *(*)(void*, char*, size_t))n_iobuf_gets;
-            st->st_getc  = (int (*)(void*))getc;
+            st->st_getc  = (int (*)(void*))n_iobuf_getc;
             st->st_ungetc = NULL;
             st->st_seek  = (int (*)(void*, long, int))n_iobuf_seek;
             st->st_tell  = (long (*)(void*))n_iobuf_tell;
@@ -246,7 +246,7 @@ int n_stream_getline(tn_stream *st, char **bufptr, size_t size)
     *buf = '\0';
 
     n = n_stream_gets(st, buf, size);
-    if (n < size - 1) {
+    if (n < size - 1 || (n > 0 && buf[n - 1] == '\n')) {
         *bufptr = buf;
         return n;
     }

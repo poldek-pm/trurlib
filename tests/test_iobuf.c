@@ -104,4 +104,39 @@ START_TEST (test_seek)
 END_TEST
 
 
-NTEST_RUNNER("niobuf", test_read_write, test_seek);
+/* n_iobuf_gets() keeps fgets semantics: at most size - 1 bytes are
+   stored and the terminating nul always stays inside the buffer */
+START_TEST (test_gets)
+{
+    const char *path = NTEST_TMPPATH("niobuf-gets.zst");
+    tn_iobuf *io;
+    char buf[9];
+
+    io = n_iobuf_open(path, "w");
+    fail_if(io == NULL, "cannot create %s", path);
+    n_iobuf_write(io, "0123456789\n", 11);
+    n_iobuf_write(io, "ab\n", 3);
+    n_iobuf_close(io);
+
+    io = n_iobuf_open(path, "r");
+    fail_if(io == NULL, "cannot open %s", path);
+
+    buf[8] = 'X';                       /* guard just past the size */
+    expect_str(n_iobuf_gets(io, buf, 8), "0123456");
+    expect_int(buf[8], 'X');
+
+    expect_str(n_iobuf_gets(io, buf, 8), "789\n");
+    expect_int(buf[8], 'X');
+
+    expect_int(n_iobuf_getc(io), 'a');
+
+    expect_str(n_iobuf_gets(io, buf, 8), "b\n");
+    expect_str(n_iobuf_gets(io, buf, 8), "");        /* EOF */
+    expect_int(n_iobuf_getc(io), EOF);
+
+    n_iobuf_close(io);
+}
+END_TEST
+
+
+NTEST_RUNNER("niobuf", test_read_write, test_seek, test_gets);

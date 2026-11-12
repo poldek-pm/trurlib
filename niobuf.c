@@ -205,7 +205,7 @@ char *n_iobuf_getx(tn_iobuf *iobuf, char *dest, size_t size, int endl)
     size_t n;
 
     n = 0;
-    while (n < size && n_iobuf_read(iobuf, &b, 1) == 1) {
+    while (n + 1 < size && n_iobuf_read(iobuf, &b, 1) == 1) {
         dest[n++] = b;
         if (b == endl)
             break;
@@ -221,7 +221,7 @@ char *n_iobuf_gets(tn_iobuf *iobuf, char *dest, size_t size)
 
 int n_iobuf_getc(tn_iobuf *iobuf)
 {
-    int c = 0;
+    unsigned char c;
 
     if (n_iobuf_read(iobuf, &c, 1) == 1)
         return c;

@@ -101,18 +101,53 @@ START_TEST(test_seek) {
 END_TEST
 
 
-void test_getline(const char *name)
+/* n_stream_getline() returns one line at a time and grows its buffer when
+   the line does not fit; a line that ends exactly at the buffer boundary
+   must not pull in the next one. Run over a plain, a gzip and a zstd
+   stream, since st_gets and st_getc are separate wrappers there. */
+static void do_test_getline(const char *path)
 {
+    static const char *lines[] = {
+        "short\n",
+        "12345678901234\n",     /* 15 bytes, exactly the buffer size - 1 */
+        "a longer line that does not fit and grows the buffer: "
+        "0123456789 0123456789\n",
+        "last line without a newline",
+        NULL
+    };
     tn_stream *st;
-    char *buf = n_malloc(16);
-    int n;
+    char *buf;
+    int i;
 
-    st = n_stream_open(name, "r", TN_STREAM_UNKNOWN);
-    n = n_stream_getline(st, &buf, 16);
-    printf("getline = %d (%s)\n", n, buf);
-    n_assert((int)strlen(buf) == n);
+    st = n_stream_open(path, "w", TN_STREAM_UNKNOWN);
+    fail_if(st == NULL, "cannot create %s", path);
+    for (i = 0; lines[i] != NULL; i++)
+        n_stream_write(st, lines[i], strlen(lines[i]));
+    n_stream_close(st);
+
+    st = n_stream_open(path, "r", TN_STREAM_UNKNOWN);
+    fail_if(st == NULL, "cannot open %s", path);
+
+    buf = n_malloc(16);
+    for (i = 0; lines[i] != NULL; i++) {
+        int n = n_stream_getline(st, &buf, 16);
+
+        expect_int(n, strlen(lines[i]));
+        expect_str(buf, lines[i]);
+    }
+    expect_int(n_stream_getline(st, &buf, 16), 0);     /* EOF */
+
+    n_free(buf);
     n_stream_close(st);
 }
+
+START_TEST(test_stream_getline)
+{
+    do_test_getline(NTEST_TMPPATH("nstream-getline.txt"));
+    do_test_getline(NTEST_TMPPATH("nstream-getline.gz"));
+    do_test_getline(NTEST_TMPPATH("nstream-getline.zst"));
+}
+END_TEST
 
 START_TEST(test_open) {
     tn_stream *st = n_stream_open("/tmp/non_existing_file_trurlib_nstream.txt.zst", "r", TN_STREAM_UNKNOWN);
@@ -124,4 +159,5 @@ END_TEST
 NTEST_RUNNER("nstream",
             test_open,
             test_read_write,
-            test_seek);
+            test_seek,
+            test_stream_getline);
