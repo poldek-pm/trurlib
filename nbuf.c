@@ -286,12 +286,27 @@ int n_buf_addstring(tn_buf *buf, const char *str, int zero)
 
 int n_buf_vprintf(tn_buf *nbuf, const char *fmt, va_list args)
 {
-    char     buf[4096];
+    char     buf[4096], *p = buf;
+    va_list  ap;
     int      n;
 
-    n = n_vsnprintf(buf, sizeof(buf), fmt, args);
-    n_buf_write_ex(nbuf, buf, n, 1);
-    //n_buf_add(nbuf, buf, n);
+    va_copy(ap, args);
+    n = vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+
+    if (n < 0)
+        return -1;
+
+    if ((size_t) n >= sizeof(buf)) {
+        if ((p = n_malloc((size_t) n + 1)) == NULL)
+            return -1;
+        vsnprintf(p, (size_t) n + 1, fmt, args);
+    }
+
+    n = n_buf_write_ex(nbuf, p, n, 1);
+
+    if (p != buf)
+        free(p);
     return n;
 }
 
