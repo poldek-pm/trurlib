@@ -287,6 +287,8 @@ START_TEST(test_array_growth)
     n_die_set_hook(die_hook);
     expect_null(n_array_push(arr3, s1)); /* const array */
     expect_int(ndies, 1);
+    expect_null(n_array_push_inl(arr3, s1));
+    expect_int(ndies, 2);
 
     n_array_free(arr1);
     n_array_free(arr2);
