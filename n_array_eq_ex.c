@@ -22,7 +22,8 @@ int n_array_eq_ex(const tn_array *arr1, const tn_array *arr2, t_fn_cmp cmpf)
 	return 0;
 
     for (i = 0; i < n; i++) {
-	if (cmpf(arr1->data[i], arr2->data[i]) != 0)
+	if (cmpf(arr1->data[arr1->start_index + i],
+		 arr2->data[arr2->start_index + i]) != 0)
 	    return 0;
     }
 

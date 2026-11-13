@@ -404,6 +404,73 @@ START_TEST(test_array_set_nth_past_end)
 }
 END_TEST
 
+/* arrays made with no cmp_fn compare the pointers */
+static char *s_x = "x", *s_y = "y", *s_c = "c", *s_d = "d", *s_e = "e", *s_f = "f";
+
+/* c,d,e,f with two slots shifted out at the front */
+static tn_array *shifted_array(void)
+{
+    tn_array *a = n_array_new(8, NULL, NULL);
+
+    n_array_push(a, s_x);
+    n_array_push(a, s_y);
+    n_array_push(a, s_c);
+    n_array_push(a, s_d);
+    n_array_push(a, s_e);
+    n_array_push(a, s_f);
+    n_array_shift(a);
+    n_array_shift(a);
+
+    return a;
+}
+
+static char map_buf[16];
+static void map_cat(void *s)
+{
+    strcat(map_buf, s);
+}
+
+START_TEST(test_array_ops_after_shift)
+{
+    tn_array *a, *b;
+
+    a = shifted_array();
+    map_buf[0] = '\0';
+    n_array_map(a, map_cat);
+    expect_str(map_buf, "cdef");
+
+    b = n_array_new(4, NULL, NULL);
+    n_array_push(b, s_c);
+    n_array_push(b, s_d);
+    n_array_push(b, s_e);
+    n_array_push(b, s_f);
+    expect_int(n_array_eq(a, b), 1);
+    expect_int(n_array_eq(b, a), 1);
+    n_array_free(b);
+
+    n_array_reverse(a);
+    expect_str(array_str(a), "f,e,d,c");
+    n_array_free(a);
+
+    a = shifted_array();
+    n_array_remove_nth(a, 2);
+    expect_str(array_str(a), "c,d,f");
+    n_array_free(a);
+
+    a = n_array_new(8, NULL, NULL);
+    n_array_push(a, s_x);
+    n_array_push(a, s_y);
+    n_array_push(a, s_c);
+    n_array_push(a, s_c);
+    n_array_push(a, s_d);
+    n_array_shift(a);
+    n_array_shift(a);
+    n_array_uniq(a);
+    expect_str(array_str(a), "c,d");
+    n_array_free(a);
+}
+END_TEST
+
 START_TEST(test_array_remove)
 {
     tn_array *a = setupArray(5);
@@ -433,4 +500,5 @@ NTEST_RUNNER("array",
              test_array_push_after_shift,
              test_array_concat_after_shift,
              test_array_set_nth_past_end,
+             test_array_ops_after_shift,
              test_array_remove);
