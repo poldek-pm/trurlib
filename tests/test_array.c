@@ -173,6 +173,10 @@ START_TEST(test_array_autosorting)
     n_array_ctl(a, TN_ARRAY_AUTOSORTED);
     expect_str(n_array_bsearch(a, "1"), "1");
 
+    n_array_reverse(a);
+    expect_str(array_str(a), "5,4,3,2,1");
+    expect_str(n_array_bsearch(a, "2"), "2");
+
     n_array_free(a);
 }
 END_TEST

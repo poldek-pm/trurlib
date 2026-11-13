@@ -194,5 +194,6 @@ tn_array *n_array_reverse(tn_array *arr)
         j--;
     }
 
+    TN_ARRAY_clr_sorted(arr);
     return arr;
 }
