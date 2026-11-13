@@ -9,8 +9,8 @@ tn_array *n_array_push(tn_array *arr, void *data)
 {
     trurl_die__if_frozen(arr);
 
-    if (arr->items == arr->allocated) {
-        if (n_array_grow(arr, arr->allocated + 1) == NULL)
+    if (arr->start_index + arr->items == arr->allocated) {
+        if (n_array_grow(arr, arr->items + 1) == NULL)
             return NULL;
     }
 
@@ -27,8 +27,8 @@ tn_array *n_array_concat_ex(tn_array *arr, const tn_array *src, tn_fn_dup dup_fn
 
     trurl_die__if_frozen(arr);
 
-    if (arr->items + src->items > arr->allocated) {
-        if (n_array_grow(arr, arr->allocated + src->items) == NULL)
+    if (arr->start_index + arr->items + src->items > arr->allocated) {
+        if (n_array_grow(arr, arr->items + src->items) == NULL)
             return NULL;
     }
 
@@ -40,7 +40,7 @@ tn_array *n_array_concat_ex(tn_array *arr, const tn_array *src, tn_fn_dup dup_fn
 
         arr->data[index++] = item;
     }
-    arr->items = index;
+    arr->items = index - arr->start_index;
     TN_ARRAY_clr_sorted(arr);
 
     return arr;

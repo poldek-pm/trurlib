@@ -294,6 +294,114 @@ START_TEST(test_array_growth)
 }
 END_TEST
 
+/* start_index + items stays within the block: without ASan a write past it
+   can pass every other check */
+#define expect_in_block(a) ck_assert_uint_le((a)->start_index + (a)->items, (a)->allocated)
+
+/* the slots n_array_shift() leaves at the front are used again, the items
+   stay inside the block */
+static void check_push_after_shift(tn_array *(*push)(tn_array *, void *))
+{
+    tn_array *a = n_array_new(4, NULL, (t_fn_cmp) strcmp);
+
+    push(a, "a");
+    push(a, "b");
+    push(a, "c");
+    push(a, "d");
+    n_array_shift(a);
+
+    push(a, "e");
+    expect_in_block(a);
+    push(a, "f");
+    expect_in_block(a);
+    expect_str(array_str(a), "b,c,d,e,f");
+
+    n_array_free(a);
+}
+
+START_TEST(test_array_push_after_shift)
+{
+    check_push_after_shift(n_array_push);     /* libtrurl's */
+    check_push_after_shift(n_array_push_inl); /* narray.h's */
+}
+END_TEST
+
+/* a,b,c,d in a block of the given size */
+static tn_array *abcd_array(int size)
+{
+    tn_array *a = n_array_new(size, NULL, (t_fn_cmp) strcmp);
+
+    n_array_push(a, "a");
+    n_array_push(a, "b");
+    n_array_push(a, "c");
+    n_array_push(a, "d");
+    return a;
+}
+
+START_TEST(test_array_concat_after_shift)
+{
+    tn_array *a, *src = n_array_new(2, NULL, (t_fn_cmp) strcmp);
+
+    n_array_push(src, "e");
+    n_array_push(src, "f");
+
+    a = abcd_array(8);                  /* room at the end */
+    n_array_shift(a);
+    n_array_shift(a);
+    n_array_concat(a, src);
+    expect_int(n_array_size(a), 4);
+    expect_str(array_str(a), "c,d,e,f");
+    n_array_free(a);
+
+    a = abcd_array(4);                  /* room once the items move */
+    n_array_shift(a);
+    n_array_shift(a);
+    n_array_concat(a, src);
+    expect_in_block(a);
+    expect_int(n_array_size(a), 4);
+    expect_str(array_str(a), "c,d,e,f");
+    n_array_free(a);
+
+    a = abcd_array(4);                  /* the block grows too */
+    n_array_shift(a);
+    n_array_concat(a, src);
+    expect_in_block(a);
+    expect_int(n_array_size(a), 5);
+    expect_str(array_str(a), "b,c,d,e,f");
+    n_array_free(a);
+
+    n_array_free(src);
+}
+END_TEST
+
+START_TEST(test_array_set_nth_past_end)
+{
+    tn_array *a = n_array_new(4, NULL, (t_fn_cmp) strcmp);
+
+    n_array_set_nth(a, 0, "a");
+    n_array_set_nth(a, 1, "b");
+    n_array_set_nth(a, 2, "c");
+    n_array_set_nth(a, 3, "d");
+    n_array_set_nth(a, 4, "e");
+    expect_in_block(a);
+    expect_str(array_str(a), "a,b,c,d,e");
+
+    n_array_shift(a);
+    n_array_shift(a);
+    n_array_set_nth(a, 3, "f");
+    expect_str(array_str(a), "c,d,e,f");
+
+    n_array_set_nth(a, 6, "g");         /* the items move to the front */
+    expect_in_block(a);
+    expect_int(n_array_size(a), 7);
+    expect_str(n_array_nth(a, 3), "f");
+    expect_null(n_array_nth(a, 5));
+    expect_str(n_array_nth(a, 6), "g");
+
+    n_array_free(a);
+}
+END_TEST
+
 START_TEST(test_array_remove)
 {
     tn_array *a = setupArray(5);
@@ -320,4 +428,7 @@ NTEST_RUNNER("array",
              test_array_autosorting,
              test_array_bsearch,
              test_array_growth,
+             test_array_push_after_shift,
+             test_array_concat_after_shift,
+             test_array_set_nth_past_end,
              test_array_remove);
