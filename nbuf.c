@@ -82,12 +82,14 @@ tn_buf *n_buf_clean(tn_buf *buf)
         buf->data = NULL;
         buf->allocated = 0;
         buf->flags = 0;
+        buf->size = 0;
         buf->off  = 0;
 
     } else {
         buf->size = 0;
         buf->off  = 0;
-        buf->data[0] = '\0';
+        if (buf->data)
+            buf->data[0] = '\0';
     }
 
     return buf;

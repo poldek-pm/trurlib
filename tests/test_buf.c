@@ -83,4 +83,24 @@ START_TEST(test_buf_seek_past_end)
 }
 END_TEST
 
-NTEST_RUNNER("nbuf", test_buf, test_buf_iterator, test_buf_seek_past_end);
+START_TEST(test_buf_clean)
+{
+    char data[] = "caller's data";
+    tn_buf *nbuf = n_buf_new(0);
+
+    n_buf_clean(nbuf);                  /* nothing written yet */
+    expect_int(n_buf_size(nbuf), 0);
+
+    n_buf_init(nbuf, data, sizeof(data));
+    n_buf_clean(nbuf);                  /* lets the caller's data go */
+    expect_int(n_buf_size(nbuf), 0);
+    n_buf_puts(nbuf, "ab");
+    expect_in_block(nbuf);
+    expect_int(n_buf_size(nbuf), 2);
+
+    n_buf_free(nbuf);
+}
+END_TEST
+
+NTEST_RUNNER("nbuf", test_buf, test_buf_iterator, test_buf_seek_past_end,
+             test_buf_clean);
