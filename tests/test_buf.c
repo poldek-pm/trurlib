@@ -55,4 +55,32 @@ START_TEST(test_buf_iterator)
 }
 END_TEST
 
-NTEST_RUNNER("nbuf", test_buf, test_buf_iterator);
+/* size within the block: without ASan a write past it can pass every
+   other check */
+#define expect_in_block(b) ck_assert_uint_le((b)->size, (b)->allocated)
+
+/* as poldek's pkgfl_store(): room for a size, filled in after the data */
+START_TEST(test_buf_seek_past_end)
+{
+    tn_buf *nbuf = n_buf_new(16);
+
+    n_buf_write(nbuf, "0123456789abc", 13); /* 3 bytes left in the block */
+    n_buf_seek(nbuf, 4, SEEK_CUR);
+    n_buf_write(nbuf, "data", 4);
+    expect_in_block(nbuf);
+    expect_int(n_buf_size(nbuf), 21);
+
+    n_buf_seek(nbuf, 13, SEEK_SET);
+    n_buf_write(nbuf, "SIZE", 4);
+    expect_int(memcmp(n_buf_ptr(nbuf), "0123456789abcSIZEdata", 21), 0);
+
+    n_buf_seek(nbuf, 100, SEEK_SET);    /* far past the block */
+    n_buf_write(nbuf, "end", 3);
+    expect_in_block(nbuf);
+    expect_int(n_buf_size(nbuf), 103);
+
+    n_buf_free(nbuf);
+}
+END_TEST
+
+NTEST_RUNNER("nbuf", test_buf, test_buf_iterator, test_buf_seek_past_end);
