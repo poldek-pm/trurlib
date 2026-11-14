@@ -82,9 +82,11 @@ tn_iobuf *n_iobuf_dopen(int fd, const char *mode)
 
 int n_iobuf_close(tn_iobuf *iobuf)
 {
-    iobuf->io->destroy(iobuf->iostate, iobuf->stream);
+    int rc = iobuf->io->destroy(iobuf->iostate, iobuf->stream);
+
     iobuf->fd = -1;
-    int rc = fclose(iobuf->stream);
+    if (fclose(iobuf->stream) != 0)
+        rc = -1;
     free(iobuf);
 
     return rc;
@@ -184,9 +186,9 @@ int n_iobuf_write(tn_iobuf *iobuf, const void *buf, size_t size)
 
 int n_iobuf_flush(tn_iobuf *iobuf)
 {
-    int rv = iobuf->io->flush(iobuf->iostate, iobuf->stream);
+    int rv = iobuf->io->flush(iobuf->iostate, iobuf->stream);   /* bytes written or -1 */
     int rv2 = fflush(iobuf->stream);
-    return rv == 0 && rv2 == 0 ? 0 : EOF;
+    return rv >= 0 && rv2 == 0 ? 0 : EOF;
 }
 
 int n_iobuf_read(tn_iobuf *iobuf, void *buf, size_t size)

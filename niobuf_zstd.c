@@ -152,7 +152,7 @@ int zstd_read(struct zstd_state *st, FILE *file, void *dest, size_t dsize)
 
 	int n = ZSTD_decompressStream(st->stream, &output, &st->inbuf);
 	if (ZSTD_isError(n)) {
-            fprintf(stderr, "ZSTD_decompressStream: %s", ZSTD_getErrorName(n));
+            fprintf(stderr, "ZSTD_decompressStream: %s\n", ZSTD_getErrorName(n));
             st->failed = 1;
 	    return -1;
 	}
@@ -175,7 +175,7 @@ static int flush_outbuf(struct zstd_state *st, FILE *file)
     if (st->outbuf.pos > 0) {
         size_t n = fwrite(st->bufdata, 1, st->outbuf.pos, file);
         if (n != st->outbuf.pos) {
-            fprintf(stderr, "ZSTD write decompressed data failed");
+            fprintf(stderr, "ZSTD write compressed data failed\n");
             return -1;
         }
         nw += n;
@@ -193,7 +193,7 @@ int zstd_write(struct zstd_state *st, FILE *file, const void *src, size_t ssize)
 
         int n = ZSTD_compressStream(st->stream, &st->outbuf, &input);
         if (ZSTD_isError(n)) {
-            fprintf(stderr, "ZSTD_compressStream: %s", ZSTD_getErrorName(n));
+            fprintf(stderr, "ZSTD_compressStream: %s\n", ZSTD_getErrorName(n));
 	    return -1;
 	}
 
@@ -216,7 +216,7 @@ static int zstd_flush(struct zstd_state *st, FILE *file)
 
         n = ZSTD_flushStream(st->stream, &st->outbuf);
         if (ZSTD_isError(n)) {
-            fprintf(stderr, "ZSTD_flushStream: %s", ZSTD_getErrorName(n));
+            fprintf(stderr, "ZSTD_flushStream: %s\n", ZSTD_getErrorName(n));
             return -1;
         }
 
@@ -253,21 +253,23 @@ static int zstd_destroy(struct zstd_state *st, FILE *file)
         return 0;
     }
 
-    zstd_flush(st, file);
+    if (zstd_flush(st, file) == -1) {   /* the frame is broken already */
+        zstd_free(st);
+        return -1;
+    }
     reset_outbuf(st);
 
     int n = ZSTD_endStream(st->stream, &st->outbuf);
     if (ZSTD_isError(n)) {
-        fprintf(stderr, "ZSTD_endStream: %s", ZSTD_getErrorName(n));
+        fprintf(stderr, "ZSTD_endStream: %s\n", ZSTD_getErrorName(n));
         zstd_free(st);
         return -1;
     }
 
-    if (flush_outbuf(st, file) == -1)
-        return -1;
+    int rc = flush_outbuf(st, file) == -1 ? -1 : 0;
 
     zstd_free(st);
-    return 0;
+    return rc;
 }
 
 struct trurl_io zstdio = {
