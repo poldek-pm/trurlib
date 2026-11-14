@@ -45,7 +45,6 @@ int n_buf_write_ex(tn_buf *nbuf, const void *ptr, int size, int zero);
 int n_buf_seek(tn_buf *buf, int off, int whence);
 #define n_buf_tell(buf) n_buf_seek(buf, 0, SEEK_CUR)
 
-/* WARN: limited to 4K */
 int n_buf_vprintf(tn_buf *nbuf, const char *fmt, va_list args)
     TN_FORMAT_PRINTF(2, 0);
 int n_buf_printf(tn_buf *nbuf, const char *fmt, ...) TN_FORMAT_PRINTF(2, 3);

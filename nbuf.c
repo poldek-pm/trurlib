@@ -82,12 +82,14 @@ tn_buf *n_buf_clean(tn_buf *buf)
         buf->data = NULL;
         buf->allocated = 0;
         buf->flags = 0;
+        buf->size = 0;
         buf->off  = 0;
 
     } else {
         buf->size = 0;
         buf->off  = 0;
-        buf->data[0] = '\0';
+        if (buf->data)
+            buf->data[0] = '\0';
     }
 
     return buf;
@@ -198,9 +200,9 @@ int n_buf_write_ex(tn_buf *buf, const void *ptr, int size, int zero)
         zero = 1;
 
     /* size + zero + 1 - gets() must guarantee that buf is longer
-       than returned string */
-    if (buf->allocated - buf->off < (unsigned)size + zero + 1)
-        if (n_buf_grow(buf, buf->allocated + size + zero + 1) == NULL)
+       than returned string; off may lie past the block after n_buf_seek() */
+    if (buf->off + size + zero + 1 > buf->allocated)
+        if (n_buf_grow(buf, buf->off + size + zero + 1) == NULL)
             return -1;
 
     memcpy(&buf->data[buf->off], ptr, size);
@@ -284,12 +286,27 @@ int n_buf_addstring(tn_buf *buf, const char *str, int zero)
 
 int n_buf_vprintf(tn_buf *nbuf, const char *fmt, va_list args)
 {
-    char     buf[4096];
+    char     buf[4096], *p = buf;
+    va_list  ap;
     int      n;
 
-    n = n_vsnprintf(buf, sizeof(buf), fmt, args);
-    n_buf_write_ex(nbuf, buf, n, 1);
-    //n_buf_add(nbuf, buf, n);
+    va_copy(ap, args);
+    n = vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+
+    if (n < 0)
+        return -1;
+
+    if ((size_t) n >= sizeof(buf)) {
+        if ((p = n_malloc((size_t) n + 1)) == NULL)
+            return -1;
+        vsnprintf(p, (size_t) n + 1, fmt, args);
+    }
+
+    n = n_buf_write_ex(nbuf, p, n, 1);
+
+    if (p != buf)
+        free(p);
     return n;
 }
 
