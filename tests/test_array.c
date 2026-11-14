@@ -173,6 +173,10 @@ START_TEST(test_array_autosorting)
     n_array_ctl(a, TN_ARRAY_AUTOSORTED);
     expect_str(n_array_bsearch(a, "1"), "1");
 
+    n_array_reverse(a);
+    expect_str(array_str(a), "5,4,3,2,1");
+    expect_str(n_array_bsearch(a, "2"), "2");
+
     n_array_free(a);
 }
 END_TEST
@@ -287,10 +291,187 @@ START_TEST(test_array_growth)
     n_die_set_hook(die_hook);
     expect_null(n_array_push(arr3, s1)); /* const array */
     expect_int(ndies, 1);
+    expect_null(n_array_push_inl(arr3, s1));
+    expect_int(ndies, 2);
 
     n_array_free(arr1);
     n_array_free(arr2);
     n_array_free(arr3);
+}
+END_TEST
+
+/* start_index + items stays within the block: without ASan a write past it
+   can pass every other check */
+#define expect_in_block(a) ck_assert_uint_le((a)->start_index + (a)->items, (a)->allocated)
+
+/* the slots n_array_shift() leaves at the front are used again, the items
+   stay inside the block */
+static void check_push_after_shift(tn_array *(*push)(tn_array *, void *))
+{
+    tn_array *a = n_array_new(4, NULL, (t_fn_cmp) strcmp);
+
+    push(a, "a");
+    push(a, "b");
+    push(a, "c");
+    push(a, "d");
+    n_array_shift(a);
+
+    push(a, "e");
+    expect_in_block(a);
+    push(a, "f");
+    expect_in_block(a);
+    expect_str(array_str(a), "b,c,d,e,f");
+
+    n_array_free(a);
+}
+
+START_TEST(test_array_push_after_shift)
+{
+    check_push_after_shift(n_array_push);     /* libtrurl's */
+    check_push_after_shift(n_array_push_inl); /* narray.h's */
+}
+END_TEST
+
+/* a,b,c,d in a block of the given size */
+static tn_array *abcd_array(int size)
+{
+    tn_array *a = n_array_new(size, NULL, (t_fn_cmp) strcmp);
+
+    n_array_push(a, "a");
+    n_array_push(a, "b");
+    n_array_push(a, "c");
+    n_array_push(a, "d");
+    return a;
+}
+
+START_TEST(test_array_concat_after_shift)
+{
+    tn_array *a, *src = n_array_new(2, NULL, (t_fn_cmp) strcmp);
+
+    n_array_push(src, "e");
+    n_array_push(src, "f");
+
+    a = abcd_array(8);                  /* room at the end */
+    n_array_shift(a);
+    n_array_shift(a);
+    n_array_concat(a, src);
+    expect_int(n_array_size(a), 4);
+    expect_str(array_str(a), "c,d,e,f");
+    n_array_free(a);
+
+    a = abcd_array(4);                  /* room once the items move */
+    n_array_shift(a);
+    n_array_shift(a);
+    n_array_concat(a, src);
+    expect_in_block(a);
+    expect_int(n_array_size(a), 4);
+    expect_str(array_str(a), "c,d,e,f");
+    n_array_free(a);
+
+    a = abcd_array(4);                  /* the block grows too */
+    n_array_shift(a);
+    n_array_concat(a, src);
+    expect_in_block(a);
+    expect_int(n_array_size(a), 5);
+    expect_str(array_str(a), "b,c,d,e,f");
+    n_array_free(a);
+
+    n_array_free(src);
+}
+END_TEST
+
+START_TEST(test_array_set_nth_past_end)
+{
+    tn_array *a = n_array_new(4, NULL, (t_fn_cmp) strcmp);
+
+    n_array_set_nth(a, 0, "a");
+    n_array_set_nth(a, 1, "b");
+    n_array_set_nth(a, 2, "c");
+    n_array_set_nth(a, 3, "d");
+    n_array_set_nth(a, 4, "e");
+    expect_in_block(a);
+    expect_str(array_str(a), "a,b,c,d,e");
+
+    n_array_shift(a);
+    n_array_shift(a);
+    n_array_set_nth(a, 3, "f");
+    expect_str(array_str(a), "c,d,e,f");
+
+    n_array_set_nth(a, 6, "g");         /* the items move to the front */
+    expect_in_block(a);
+    expect_int(n_array_size(a), 7);
+    expect_str(n_array_nth(a, 3), "f");
+    expect_null(n_array_nth(a, 5));
+    expect_str(n_array_nth(a, 6), "g");
+
+    n_array_free(a);
+}
+END_TEST
+
+/* arrays made with no cmp_fn compare the pointers */
+static char *s_x = "x", *s_y = "y", *s_c = "c", *s_d = "d", *s_e = "e", *s_f = "f";
+
+/* c,d,e,f with two slots shifted out at the front */
+static tn_array *shifted_array(void)
+{
+    tn_array *a = n_array_new(8, NULL, NULL);
+
+    n_array_push(a, s_x);
+    n_array_push(a, s_y);
+    n_array_push(a, s_c);
+    n_array_push(a, s_d);
+    n_array_push(a, s_e);
+    n_array_push(a, s_f);
+    n_array_shift(a);
+    n_array_shift(a);
+
+    return a;
+}
+
+static char map_buf[16];
+static void map_cat(void *s)
+{
+    strcat(map_buf, s);
+}
+
+START_TEST(test_array_ops_after_shift)
+{
+    tn_array *a, *b;
+
+    a = shifted_array();
+    map_buf[0] = '\0';
+    n_array_map(a, map_cat);
+    expect_str(map_buf, "cdef");
+
+    b = n_array_new(4, NULL, NULL);
+    n_array_push(b, s_c);
+    n_array_push(b, s_d);
+    n_array_push(b, s_e);
+    n_array_push(b, s_f);
+    expect_int(n_array_eq(a, b), 1);
+    expect_int(n_array_eq(b, a), 1);
+    n_array_free(b);
+
+    n_array_reverse(a);
+    expect_str(array_str(a), "f,e,d,c");
+    n_array_free(a);
+
+    a = shifted_array();
+    n_array_remove_nth(a, 2);
+    expect_str(array_str(a), "c,d,f");
+    n_array_free(a);
+
+    a = n_array_new(8, NULL, NULL);
+    n_array_push(a, s_x);
+    n_array_push(a, s_y);
+    n_array_push(a, s_c);
+    n_array_push(a, s_c);
+    n_array_push(a, s_d);
+    n_array_shift(a);
+    n_array_shift(a);
+    n_array_uniq(a);
+    expect_str(array_str(a), "c,d");
+    n_array_free(a);
 }
 END_TEST
 
@@ -320,4 +501,8 @@ NTEST_RUNNER("array",
              test_array_autosorting,
              test_array_bsearch,
              test_array_growth,
+             test_array_push_after_shift,
+             test_array_concat_after_shift,
+             test_array_set_nth_past_end,
+             test_array_ops_after_shift,
              test_array_remove);

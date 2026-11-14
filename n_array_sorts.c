@@ -186,7 +186,7 @@ tn_array *n_array_reverse(tn_array *arr)
     trurl_die__if_frozen(arr);
 
     int i = arr->start_index;
-    int j = arr->items - 1;
+    int j = arr->start_index + arr->items - 1;
 
     while (i < j) {
         SWAP_void(arr->data[i], arr->data[j]);
@@ -194,5 +194,6 @@ tn_array *n_array_reverse(tn_array *arr)
         j--;
     }
 
+    TN_ARRAY_clr_sorted(arr);
     return arr;
 }

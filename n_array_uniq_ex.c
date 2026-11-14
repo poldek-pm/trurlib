@@ -21,7 +21,8 @@ tn_array *n_array_uniq_ex(tn_array *arr, t_fn_cmp cmpf)
     }
     
     while (i < arr->items) {
-        if (cmpf(arr->data[i - 1], arr->data[i]) == 0) {
+        if (cmpf(arr->data[arr->start_index + i - 1],
+                 arr->data[arr->start_index + i]) == 0) {
             n_array_remove_nth(arr, i);
 
         } else {

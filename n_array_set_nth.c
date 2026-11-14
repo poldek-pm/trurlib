@@ -6,7 +6,7 @@
 
 tn_array *n_array_set_nth(tn_array *arr, int i, void *data)
 {
-    register size_t pos = arr->start_index + i;
+    register size_t pos;
 
     n_assert(i >= 0);
     n_assert(arr->allocated > 0);
@@ -19,17 +19,20 @@ tn_array *n_array_set_nth(tn_array *arr, int i, void *data)
         return NULL;
     }
 
-    if (pos > arr->allocated) {
-        if (n_array_grow(arr, pos) == NULL)
-            return NULL;
-
-        arr->items = pos + 1;
-
-    } else {
-        /* if slot is not empty, free node */
-        if (arr->data[pos] != NULL && arr->free_fn != NULL) {
-            arr->free_fn(arr->data[pos]);
+    if ((size_t) i >= arr->items) {
+        if (arr->start_index + i >= arr->allocated) {
+            if (n_array_grow(arr, i + 1) == NULL)
+                return NULL;
         }
+
+        arr->items = i + 1;
+    }
+
+    pos = arr->start_index + i; /* after n_array_grow(), which moves the items */
+
+    /* if slot is not empty, free node */
+    if (arr->data[pos] != NULL && arr->free_fn != NULL) {
+        arr->free_fn(arr->data[pos]);
     }
 
     arr->data[pos] = data;

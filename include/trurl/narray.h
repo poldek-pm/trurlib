@@ -169,8 +169,10 @@ static inline tn_array *n_array_push_inl(tn_array *arr, void *data) {
 
     trurl_die__if_frozen(arr);
 
-    if (arr->items == arr->allocated)
-        n_array_grow(arr, arr->allocated + 1);
+    if (arr->start_index + arr->items == arr->allocated) {
+        if (n_array_grow(arr, arr->items + 1) == NULL)
+            return NULL;
+    }
 
     arr->data[arr->start_index + arr->items] = data;
     arr->items++;

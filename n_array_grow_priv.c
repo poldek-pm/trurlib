@@ -20,11 +20,15 @@ static tn_array *n_array_realloc(tn_array *arr, size_t new_size)
     return arr;
 }
 
+/* room for req_size items; the slots n_array_shift() left at the front are
+   used first */
 tn_array *n_array_grow(tn_array *arr, size_t req_size)
 {
     register size_t new_size = arr->allocated;
 
-    while (req_size >= new_size) {
+    n_array__adjust(arr);
+
+    while (req_size > new_size) {
         if (arr->flags & TN_ARRAY_CONSTSIZE) {
             trurl_die("n_array_grow: grow request for const size array");
             return NULL;
