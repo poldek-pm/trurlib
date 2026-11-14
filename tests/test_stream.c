@@ -158,6 +158,62 @@ START_TEST(test_stream_getline)
 }
 END_TEST
 
+static void do_test_printf_long(const char *path)
+{
+    /* with ".", one byte more than n_stream_vprintf()'s stack buffer holds */
+    char s[32 * 1024], rbuf[sizeof(s) + 16];
+    tn_stream *st;
+    int i;
+
+    memset(s, 'x', sizeof(s) - 1);
+    s[sizeof(s) - 1] = '\0';
+
+    st = n_stream_open(path, "w", TN_STREAM_UNKNOWN);
+    fail_if(st == NULL, "cannot create %s", path);
+    expect_int(n_stream_printf(st, "%s.", s), sizeof(s));
+    n_stream_close(st);
+
+    st = n_stream_open(path, "r", TN_STREAM_UNKNOWN);
+    expect_int(n_stream_read(st, rbuf, sizeof(rbuf)), sizeof(s));
+    n_stream_close(st);
+    for (i = 0; i < (int) sizeof(s) - 1 && rbuf[i] == 'x'; i++)
+        ;
+    expect_int(i, sizeof(s) - 1);
+    expect_int(rbuf[sizeof(s) - 1], '.');
+}
+
+START_TEST(test_printf_long)
+{
+    do_test_printf_long(NTEST_TMPPATH("nstream-printf-long.txt"));
+    do_test_printf_long(NTEST_TMPPATH("nstream-printf-long.gz"));
+    do_test_printf_long(NTEST_TMPPATH("nstream-printf-long.zst"));
+}
+END_TEST
+
+static void do_test_printf_format_error(const char *path)
+{
+    char rbuf[16];
+    tn_stream *st;
+
+    st = n_stream_open(path, "w", TN_STREAM_UNKNOWN);
+    fail_if(st == NULL, "cannot create %s", path);
+    /* the C locale has no multibyte form of U+0100 */
+    expect_int(n_stream_printf(st, "%ls", L"\x100"), -1);
+    n_stream_close(st);
+
+    st = n_stream_open(path, "r", TN_STREAM_UNKNOWN);
+    expect_int(n_stream_read(st, rbuf, sizeof(rbuf)), 0);
+    n_stream_close(st);
+}
+
+START_TEST(test_printf_format_error)
+{
+    do_test_printf_format_error(NTEST_TMPPATH("nstream-printf-err.txt"));
+    do_test_printf_format_error(NTEST_TMPPATH("nstream-printf-err.gz"));
+    do_test_printf_format_error(NTEST_TMPPATH("nstream-printf-err.zst"));
+}
+END_TEST
+
 START_TEST(test_open) {
     tn_stream *st = n_stream_open("/tmp/non_existing_file_trurlib_nstream.txt.zst", "r", TN_STREAM_UNKNOWN);
     n_assert(st == NULL);
@@ -169,4 +225,6 @@ NTEST_RUNNER("nstream",
             test_open,
             test_read_write,
             test_seek,
-            test_stream_getline);
+            test_stream_getline,
+            test_printf_long,
+            test_printf_format_error);
