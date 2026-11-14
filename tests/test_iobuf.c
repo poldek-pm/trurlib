@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include "n_check.h"
@@ -268,7 +269,53 @@ START_TEST (test_seek_past_end)
 }
 END_TEST
 
+static int write_and_close(const char *path, const void *data, size_t size)
+{
+    tn_iobuf *io = n_iobuf_dopen(open(path, O_WRONLY), "w");
+
+    fail_if(io == NULL, "cannot open %s", path);
+    n_iobuf_write(io, data, size);
+    return n_iobuf_close(io);
+}
+
+START_TEST (test_close_write_error)
+{
+    static unsigned char data[8192];
+    uint32_t x = 2463534242u;
+    size_t size, bufsize;
+    int fd, err;
+
+    for (size = 0; size < sizeof(data); size++) {     /* xorshift: incompressible */
+        x ^= x << 13;
+        x ^= x >> 17;
+        x ^= x << 5;
+        data[size] = (unsigned char) x;
+    }
+
+    fflush(stderr);
+    err = dup(2);
+    fd = open("/dev/null", O_WRONLY);
+    fail_if(err < 0 || fd < 0, "cannot redirect stderr to /dev/null");
+    dup2(fd, 2);
+    close(fd);
+
+    expect_int(write_and_close("/dev/full", data, 1), -1);   /* fails in fclose() */
+
+    /* a frame just under the size of the stdio buffer, st_blksize or BUFSIZ,
+       fits in it, so only the end of the frame, written at the close, fails */
+    for (bufsize = 1024; bufsize <= sizeof(data); bufsize *= 2)
+        for (size = bufsize - 64; size <= bufsize; size++)
+            fail_if(write_and_close("/dev/full", data, size) != -1,
+                    "closing after %zu bytes to /dev/full did not fail", size);
+
+    fflush(stderr);
+    dup2(err, 2);
+    close(err);
+}
+END_TEST
+
 
 NTEST_RUNNER("niobuf", test_read_write, test_seek, test_gets, test_read_error,
              test_read_error_after_seek, test_read_after_error,
-             test_seek_back_after_error, test_seek_past_end);
+             test_seek_back_after_error, test_seek_past_end,
+             test_close_write_error);

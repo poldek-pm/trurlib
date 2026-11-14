@@ -82,9 +82,11 @@ tn_iobuf *n_iobuf_dopen(int fd, const char *mode)
 
 int n_iobuf_close(tn_iobuf *iobuf)
 {
-    iobuf->io->destroy(iobuf->iostate, iobuf->stream);
+    int rc = iobuf->io->destroy(iobuf->iostate, iobuf->stream);
+
     iobuf->fd = -1;
-    int rc = fclose(iobuf->stream);
+    if (fclose(iobuf->stream) != 0)
+        rc = -1;
     free(iobuf);
 
     return rc;
