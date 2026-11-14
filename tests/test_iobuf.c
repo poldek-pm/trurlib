@@ -139,4 +139,39 @@ START_TEST (test_gets)
 END_TEST
 
 
-NTEST_RUNNER("niobuf", test_read_write, test_seek, test_gets);
+static tn_iobuf *open_not_zstd(const char *path)
+{
+    FILE *f = fopen(path, "w");
+
+    fail_if(f == NULL, "cannot create %s", path);
+    fputs("this is not a zstd stream\n", f);
+    fclose(f);
+    return n_iobuf_open(path, "r");
+}
+
+START_TEST (test_read_error)
+{
+    tn_iobuf *io = open_not_zstd(NTEST_TMPPATH("niobuf-notzstd.zst"));
+    char buf[16];
+
+    expect_int(n_iobuf_read(io, buf, sizeof(buf)), -1);
+    expect_int(n_iobuf_tell(io), 0);
+    n_iobuf_close(io);
+}
+END_TEST
+
+START_TEST (test_read_error_after_seek)
+{
+    tn_iobuf *io = open_not_zstd(NTEST_TMPPATH("niobuf-notzstd-seek.zst"));
+    char buf[16];
+
+    n_iobuf_seek(io, 100, SEEK_SET);    /* skipped to on the next read */
+    expect_int(n_iobuf_read(io, buf, sizeof(buf)), -1);
+    expect_int(n_iobuf_tell(io), 100);
+    n_iobuf_close(io);
+}
+END_TEST
+
+
+NTEST_RUNNER("niobuf", test_read_write, test_seek, test_gets, test_read_error,
+             test_read_error_after_seek);

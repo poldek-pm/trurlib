@@ -112,6 +112,8 @@ static long n_iobuf_real_seek(tn_iobuf *iobuf)
             size_t skipsize = sizeof(skipbuf) > seek ? seek : sizeof(skipbuf);
             n_assert(skipsize > 0);
             int n = iobuf->io->read(iobuf->iostate, iobuf->stream, skipbuf, skipsize);
+            if (n < 0)
+                return -1;
             if (n == 0)
                 return 0;       /* EOF */
             iobuf->pos += n;
@@ -191,9 +193,12 @@ int n_iobuf_read(tn_iobuf *iobuf, void *buf, size_t size)
 {
     int n;
 
-    n_iobuf_real_seek(iobuf);   /* pending seek */
+    if (n_iobuf_real_seek(iobuf) < 0)   /* pending seek */
+        return -1;
+
     n = iobuf->io->read(iobuf->iostate, iobuf->stream, buf, size);
-    iobuf->pos += n;
+    if (n > 0)
+        iobuf->pos += n;
 
     return n;
 }
