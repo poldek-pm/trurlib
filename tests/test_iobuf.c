@@ -245,7 +245,30 @@ START_TEST (test_seek_back_after_error)
 }
 END_TEST
 
+START_TEST (test_seek_past_end)
+{
+    const char *path = NTEST_TMPPATH("niobuf-seek-end.zst");
+    tn_iobuf *io;
+    char buf[16];
+
+    io = n_iobuf_open(path, "w");
+    fail_if(io == NULL, "cannot create %s", path);
+    n_iobuf_write(io, "0123456789abcdef", 16);
+    n_iobuf_close(io);
+
+    io = n_iobuf_open(path, "r");
+    n_iobuf_seek(io, 100, SEEK_SET);
+    expect_int(n_iobuf_read(io, buf, sizeof(buf)), 0);
+    expect_int(n_iobuf_tell(io), 100);  /* the offset asked for, as ftell() */
+
+    n_iobuf_seek(io, -90, SEEK_CUR);
+    expect_int(n_iobuf_read(io, buf, sizeof(buf)), 6);
+    expect_int(memcmp(buf, "abcdef", 6), 0);
+    n_iobuf_close(io);
+}
+END_TEST
+
 
 NTEST_RUNNER("niobuf", test_read_write, test_seek, test_gets, test_read_error,
              test_read_error_after_seek, test_read_after_error,
-             test_seek_back_after_error);
+             test_seek_back_after_error, test_seek_past_end);

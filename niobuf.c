@@ -117,9 +117,9 @@ static long n_iobuf_real_seek(tn_iobuf *iobuf)
             if (n == 0)
                 return 0;       /* EOF */
             iobuf->pos += n;
+            iobuf->seek -= n;
             seek -= n;
         }
-        iobuf->seek = 0;
     }
 
     return iobuf->pos;
