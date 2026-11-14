@@ -197,13 +197,30 @@ tn_stream *n_stream_dopen(int fd, const char *mode, int type)
 }
 
 
-int n_stream_vprintf(tn_stream *st, const char *fmt, va_list ap)
+int n_stream_vprintf(tn_stream *st, const char *fmt, va_list args)
 {
-    char buf[1024 * 32];
-    int  n;
+    char     buf[1024 * 32], *p = buf;
+    va_list  ap;
+    int      n;
 
+    va_copy(ap, args);
     n = vsnprintf(buf, sizeof(buf), fmt, ap);
-    return st->st_write(st->stream, buf, n);
+    va_end(ap);
+
+    if (n < 0)
+        return -1;
+
+    if ((size_t) n >= sizeof(buf)) {
+        if ((p = n_malloc((size_t) n + 1)) == NULL)
+            return -1;
+        vsnprintf(p, (size_t) n + 1, fmt, args);
+    }
+
+    n = n_stream_write(st, p, n);
+
+    if (p != buf)
+        free(p);
+    return n;
 }
 
 
