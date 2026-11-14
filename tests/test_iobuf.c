@@ -1,6 +1,10 @@
+#define _GNU_SOURCE             /* RTLD_NEXT */
+#include <dlfcn.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <zstd.h>
 
 #include "n_check.h"
 #include "niobuf.h"
@@ -314,8 +318,70 @@ START_TEST (test_close_write_error)
 }
 END_TEST
 
+/* stand-ins for the library's calls: one fwrite() of a stream fails, and
+   the compressors freed are counted */
+static int fwrite_fails_in = 0;         /* the n-th next fwrite() fails */
+static int ncstreams_freed = 0;
+
+size_t fwrite(const void *ptr, size_t size, size_t n, FILE *stream)
+{
+    static size_t (*real_fwrite)(const void *, size_t, size_t, FILE *);
+
+    if (fwrite_fails_in > 0 && --fwrite_fails_in == 0) {
+        errno = ENOSPC;
+        return 0;
+    }
+    if (real_fwrite == NULL)
+        real_fwrite = (size_t (*)(const void *, size_t, size_t, FILE *))
+            dlsym(RTLD_NEXT, "fwrite");
+    return real_fwrite(ptr, size, n, stream);
+}
+
+size_t ZSTD_freeCStream(ZSTD_CStream *zcs)
+{
+    static size_t (*real_free)(ZSTD_CStream *);
+
+    ncstreams_freed++;
+    if (real_free == NULL)
+        real_free = (size_t (*)(ZSTD_CStream *)) dlsym(RTLD_NEXT, "ZSTD_freeCStream");
+    return real_free(zcs);
+}
+
+/* closes a stream with data left in the compressor, failing the nth
+   fwrite() of the close: the 1st writes the flushed data, the 2nd the end
+   of the frame */
+static int close_failing_fwrite(const char *path, int nth)
+{
+    char data[100];
+    tn_iobuf *io = n_iobuf_open(path, "w");
+    int rc, nfreed = ncstreams_freed;
+
+    fail_if(io == NULL, "cannot create %s", path);
+    memset(data, 'x', sizeof(data));
+    expect_int(n_iobuf_write(io, data, sizeof(data)), sizeof(data));
+
+    fwrite_fails_in = nth;
+    rc = n_iobuf_close(io);
+    fwrite_fails_in = 0;
+    expect_int(ncstreams_freed, nfreed + 1);
+    return rc;
+}
+
+START_TEST (test_close_flush_error)
+{
+    expect_int(close_failing_fwrite(NTEST_TMPPATH("niobuf-flush-error.zst"), 1), -1);
+}
+END_TEST
+
+START_TEST (test_close_end_error)
+{
+    expect_int(close_failing_fwrite(NTEST_TMPPATH("niobuf-end-error.zst"), 2), -1);
+}
+END_TEST
+
 
 NTEST_RUNNER("niobuf", test_read_write, test_seek, test_gets, test_read_error,
              test_read_error_after_seek, test_read_after_error,
              test_seek_back_after_error, test_seek_past_end,
-             test_close_write_error);
+             test_close_write_error, test_close_flush_error,
+             test_close_end_error);

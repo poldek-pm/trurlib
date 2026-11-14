@@ -253,7 +253,10 @@ static int zstd_destroy(struct zstd_state *st, FILE *file)
         return 0;
     }
 
-    zstd_flush(st, file);
+    if (zstd_flush(st, file) == -1) {   /* the frame is broken already */
+        zstd_free(st);
+        return -1;
+    }
     reset_outbuf(st);
 
     int n = ZSTD_endStream(st->stream, &st->outbuf);
@@ -263,11 +266,10 @@ static int zstd_destroy(struct zstd_state *st, FILE *file)
         return -1;
     }
 
-    if (flush_outbuf(st, file) == -1)
-        return -1;
+    int rc = flush_outbuf(st, file) == -1 ? -1 : 0;
 
     zstd_free(st);
-    return 0;
+    return rc;
 }
 
 struct trurl_io zstdio = {
