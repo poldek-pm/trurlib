@@ -379,9 +379,28 @@ START_TEST (test_close_end_error)
 }
 END_TEST
 
+START_TEST (test_flush_after_write)
+{
+    const char *path = NTEST_TMPPATH("niobuf-flush.zst");
+    tn_iobuf *io = n_iobuf_open(path, "w"), *in;
+    char buf[16];
+
+    fail_if(io == NULL, "cannot create %s", path);
+    expect_int(n_iobuf_write(io, "0123456789", 10), 10);
+    expect_int(n_iobuf_flush(io), 0);
+
+    in = n_iobuf_open(path, "r");       /* the flushed data is in the file */
+    fail_if(in == NULL, "cannot open %s", path);
+    expect_int(n_iobuf_read(in, buf, 10), 10);
+    expect_int(memcmp(buf, "0123456789", 10), 0);
+    n_iobuf_close(in);
+    expect_int(n_iobuf_close(io), 0);
+}
+END_TEST
+
 
 NTEST_RUNNER("niobuf", test_read_write, test_seek, test_gets, test_read_error,
              test_read_error_after_seek, test_read_after_error,
              test_seek_back_after_error, test_seek_past_end,
              test_close_write_error, test_close_flush_error,
-             test_close_end_error);
+             test_close_end_error, test_flush_after_write);

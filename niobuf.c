@@ -186,9 +186,9 @@ int n_iobuf_write(tn_iobuf *iobuf, const void *buf, size_t size)
 
 int n_iobuf_flush(tn_iobuf *iobuf)
 {
-    int rv = iobuf->io->flush(iobuf->iostate, iobuf->stream);
+    int rv = iobuf->io->flush(iobuf->iostate, iobuf->stream);   /* bytes written or -1 */
     int rv2 = fflush(iobuf->stream);
-    return rv == 0 && rv2 == 0 ? 0 : EOF;
+    return rv >= 0 && rv2 == 0 ? 0 : EOF;
 }
 
 int n_iobuf_read(tn_iobuf *iobuf, void *buf, size_t size)
