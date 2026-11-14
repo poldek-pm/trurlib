@@ -32,6 +32,8 @@ struct zstd_state {
 
     size_t         bufsize;
     void          *bufdata;
+
+    int            failed;      /* zstd.h: no use after an error until reset */
 };
 
 static ZSTD_CStream *zstd_new_c_stream(size_t *size) {
@@ -115,6 +117,7 @@ static void zstd_reset(struct zstd_state *st)
 
     st->inbuf.pos = st->inbuf.size = 0;
     st->outbuf.pos = st->outbuf.size = 0;
+    st->failed = 0;
 }
 
 static int fill_inbuf(struct zstd_state *st, FILE *file)
@@ -134,6 +137,9 @@ int zstd_read(struct zstd_state *st, FILE *file, void *dest, size_t dsize)
 {
     ZSTD_outBuffer output = { dest, dsize, 0 };
 
+    if (st->failed)
+        return -1;
+
     //DBGF("read.start %d %d\n", st->inbuf.pos, st->inbuf.size);
     while (output.pos < output.size) {
         //DBGF("read %d %d\n", st->inbuf.pos, st->inbuf.size);
@@ -147,6 +153,7 @@ int zstd_read(struct zstd_state *st, FILE *file, void *dest, size_t dsize)
 	int n = ZSTD_decompressStream(st->stream, &output, &st->inbuf);
 	if (ZSTD_isError(n)) {
             fprintf(stderr, "ZSTD_decompressStream: %s", ZSTD_getErrorName(n));
+            st->failed = 1;
 	    return -1;
 	}
     }
