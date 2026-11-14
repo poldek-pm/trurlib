@@ -214,6 +214,41 @@ START_TEST(test_printf_format_error)
 }
 END_TEST
 
+static char hooked[16];
+static size_t nhooked = 0;
+
+/* records what it is given; *arg says whether the stream writes it too */
+static int record_hook(const void *buf, size_t size, void *arg)
+{
+    fail_if(nhooked + size > sizeof(hooked), "hooked more than expected");
+    memcpy(hooked + nhooked, buf, size);
+    nhooked += size;
+    return *(int *) arg;
+}
+
+START_TEST(test_printf_write_hook)
+{
+    const char *path = NTEST_TMPPATH("nstream-printf-hook.txt");
+    char rbuf[16];
+    int write = 0;
+    tn_stream *st = n_stream_open(path, "w", TN_STREAM_UNKNOWN);
+
+    fail_if(st == NULL, "cannot create %s", path);
+    n_stream_set_write_hook(st, record_hook, &write);
+    expect_int(n_stream_printf(st, "%s", "abc"), 3);   /* taken by the hook */
+    write = 1;
+    expect_int(n_stream_printf(st, "%s", "def"), 3);
+    n_stream_close(st);
+    expect_int(nhooked, 6);
+    expect_int(memcmp(hooked, "abcdef", 6), 0);
+
+    st = n_stream_open(path, "r", TN_STREAM_UNKNOWN);
+    expect_int(n_stream_read(st, rbuf, sizeof(rbuf)), 3);
+    expect_int(memcmp(rbuf, "def", 3), 0);
+    n_stream_close(st);
+}
+END_TEST
+
 START_TEST(test_open) {
     tn_stream *st = n_stream_open("/tmp/non_existing_file_trurlib_nstream.txt.zst", "r", TN_STREAM_UNKNOWN);
     n_assert(st == NULL);
@@ -227,4 +262,5 @@ NTEST_RUNNER("nstream",
             test_seek,
             test_stream_getline,
             test_printf_long,
-            test_printf_format_error);
+            test_printf_format_error,
+            test_printf_write_hook);

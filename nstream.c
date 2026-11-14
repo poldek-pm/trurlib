@@ -216,7 +216,7 @@ int n_stream_vprintf(tn_stream *st, const char *fmt, va_list args)
         vsnprintf(p, (size_t) n + 1, fmt, args);
     }
 
-    n = st->st_write(st->stream, p, n);
+    n = n_stream_write(st, p, n);
 
     if (p != buf)
         free(p);
