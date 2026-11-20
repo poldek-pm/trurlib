@@ -40,12 +40,6 @@ typedef void (*memh) (void);
 
 static memh mem_fail_fn = NULL;
 
-void (*setxmallocs_handler(void (*handler) (void))) (void) {
-    memh tmp = mem_fail_fn;
-    mem_fail_fn = handler;
-    return tmp;
-}
-
 void (*n_malloc_set_failhook(void (*fn) (void)))
 {
     memh tmp = mem_fail_fn;
@@ -54,14 +48,15 @@ void (*n_malloc_set_failhook(void (*fn) (void)))
 }
 
 
+/* the hook only reports it: callers take the pointer */
 static void nomem(void)
 {
     if (mem_fail_fn != NULL)
         mem_fail_fn();
-    else {
-        printf("Memory exhausted\n");
-        exit(1);
-    }
+    else
+        fprintf(stderr, "Memory exhausted\n");
+
+    exit(1);
 }
 
 
@@ -93,12 +88,7 @@ void *n_realloc(void *ptr, size_t size)
 
 char *n_strdupl(const char *s, size_t length)
 {
-    register char *new;
-
-    if ((new = n_malloc(length + 1)) == NULL) {
-        nomem();
-        return NULL;
-    }
+    register char *new = n_malloc(length + 1);
 
     memcpy(new, s, length);
     new[length] = '\0';
@@ -109,12 +99,7 @@ char *n_strdupl(const char *s, size_t length)
 char *n_strdup(const char *s)
 {
     register size_t len = strlen(s) + 1;
-    register char *new;
-
-    if ((new = n_malloc(len)) == NULL) {
-        nomem();
-        return NULL;
-    }
+    register char *new = n_malloc(len);
 
     return memcpy(new, s, len);
 }
@@ -122,12 +107,7 @@ char *n_strdup(const char *s)
 
 void *n_memdup(const void *ptr, size_t size)
 {
-    register void *new;
-
-    if ((new = n_malloc(size)) == NULL) {
-        nomem();
-        return NULL;
-    }
+    register void *new = n_malloc(size);
 
     return memcpy(new, ptr, size);
 }

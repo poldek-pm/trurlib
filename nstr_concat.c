@@ -43,8 +43,7 @@ char *n_str_vconcat(const char *s, va_list ap)
     }
     va_end(local_ap);
 
-    if ((rstr = n_malloc(len + 1)) == NULL)
-        return NULL;
+    rstr = n_malloc(len + 1);
 
     strcpy(rstr, s);
 
