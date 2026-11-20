@@ -11,6 +11,7 @@ static tn_array *n_array_realloc(tn_array *arr, size_t new_size)
 
     diff = new_size - arr->allocated;
     n_assert(diff > 0);
+    n_assert(new_size <= UINT32_MAX);   /* arr->allocated is a uint32_t */
 
     tmp = n_realloc(arr->data, new_size * sizeof(*tmp));
     memset(&tmp[arr->allocated], 0, (new_size - arr->allocated) * sizeof(*tmp));

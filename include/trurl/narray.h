@@ -28,9 +28,9 @@ typedef struct trurl_array_private {
     uint32_t    _refcnt;
     uint16_t    flags;
 
-    size_t      items;
-    size_t      allocated;
-    size_t      start_index;
+    uint32_t    items;
+    uint32_t    allocated;
+    uint32_t    start_index;
 
     void        **data;
 
@@ -114,14 +114,14 @@ static inline int n_array_size_inl(const tn_array *arr)
 */
 void *n_array_nth(const tn_array *arr, int i);
 /* a literal, so that the compiler sees the format n_die() gets */
-#define TN_ERRMSG_ARRAY_NTH_OOB "n_array_nth: index(%d) out of bounds(%zu)\n"
+#define TN_ERRMSG_ARRAY_NTH_OOB "n_array_nth: index(%d) out of bounds(%u)\n"
 #ifndef SWIG
 #define n_array_nth(a, i) n_array_nth_inl(a, i)
 extern const char *n_errmsg_array_nth_oob;
 static inline void *n_array_nth_inl(const tn_array *arr, register int i)
 {
     if ((size_t) i >= arr->items || i < 0)
-        n_die(TN_ERRMSG_ARRAY_NTH_OOB, i, arr->items);
+        n_die(TN_ERRMSG_ARRAY_NTH_OOB, i, (unsigned)arr->items);
 
     return arr->data[arr->start_index + i];
 }

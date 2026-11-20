@@ -14,7 +14,7 @@ void *n_array_nth(const tn_array *arr, int i)
     n_assert(arr->items > 0);
 
     if ((size_t) i >= arr->items || i < 0) {
-        trurl_die(TN_ERRMSG_ARRAY_NTH_OOB, i, arr->items);
+        trurl_die(TN_ERRMSG_ARRAY_NTH_OOB, i, (unsigned)arr->items);
         return NULL;
     }
     
