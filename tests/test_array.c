@@ -475,6 +475,53 @@ START_TEST(test_array_ops_after_shift)
 }
 END_TEST
 
+/* start_index has 16 bits: shifting more items than that moves the rest back
+   to the front of the block */
+START_TEST(test_array_shift_many)
+{
+    const int n = 70000, nshift = 69990;
+    tn_array *a = n_array_new(4, NULL, NULL);
+
+    for (intptr_t i = 0; i < n; i++)
+        n_array_push(a, (void *)i);
+
+    for (intptr_t i = 0; i < nshift; i++) {
+        void *p = n_array_shift(a);
+        ck_assert_ptr_eq(p, (void *)i);
+        expect_in_block(a);
+    }
+
+    expect_int(n_array_size(a), n - nshift);
+    for (int i = 0; i < n - nshift; i++)
+        ck_assert_ptr_eq(n_array_nth(a, i), (void *)(intptr_t)(nshift + i));
+
+    n_array_push(a, (void *)(intptr_t)n);
+    n_array_unshift(a, (void *)(intptr_t)(nshift - 1));
+    expect_in_block(a);
+    expect_int(n_array_size(a), n - nshift + 2);
+    ck_assert_ptr_eq(n_array_nth(a, 0), (void *)(intptr_t)(nshift - 1));
+    ck_assert_ptr_eq(n_array_nth(a, n_array_size(a) - 1), (void *)(intptr_t)n);
+
+    n_array_free(a);
+}
+END_TEST
+
+/* an array on an allocator is freed with n_array_free_na() */
+START_TEST(test_array_na)
+{
+    tn_alloc *na = n_alloc_new(4, TN_ALLOC_OBSTACK);
+    tn_array *a = n_array_new_na(na, 2, NULL);
+
+    n_array_push(a, s_c);
+    n_array_push(a, s_d);
+    n_array_push(a, s_e);
+    expect_str(array_str(a), "c,d,e");
+
+    n_array_free_na(na, a);
+    n_alloc_free(na);
+}
+END_TEST
+
 START_TEST(test_array_remove)
 {
     tn_array *a = setupArray(5);
@@ -505,4 +552,6 @@ NTEST_RUNNER("array",
              test_array_concat_after_shift,
              test_array_set_nth_past_end,
              test_array_ops_after_shift,
+             test_array_shift_many,
+             test_array_na,
              test_array_remove);

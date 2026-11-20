@@ -19,5 +19,7 @@ void *n_array_shift(tn_array *arr)
     ptr = arr->data[arr->start_index];
     arr->data[arr->start_index] = NULL;
     arr->start_index++;
+    if (arr->start_index == UINT16_MAX) /* start_index has 16 bits */
+        n_array__adjust(arr);
     return ptr;
 }

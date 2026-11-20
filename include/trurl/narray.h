@@ -20,17 +20,17 @@
                                                external cmp functions */
 #define TN_ARRAY_FROZEN             (1 << 2)
 
-#define TN_ARRAY_INTERNAL_ISSORTED  (1 << 8)
-#define TN_ARRAY_INTERNAL_NA        (1 << 9)
+#define TN_ARRAY_INTERNAL_ISSORTED  (1 << 6)
+#define TN_ARRAY_INTERNAL_NA        (1 << 7)
 /* WARN: _never_ ever access array members directly */
 typedef struct trurl_array_private {
 #ifndef SWIG
     uint32_t    _refcnt;
     uint16_t    flags;
+    uint16_t    start_index;
 
     uint32_t    items;
     uint32_t    allocated;
-    uint32_t    start_index;
 
     void        **data;
 
