@@ -13,6 +13,7 @@ tn_array *n_array_init_ex(tn_array *arr, int size, t_fn_free freef,
     n_assert(arr);
 
     if (data) {
+        n_assert(size > 0);     /* allocated 0 would never grow */
         arr->data   = data;
         arr->items  = size;
 
