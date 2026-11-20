@@ -506,6 +506,24 @@ START_TEST(test_array_shift_many)
 }
 END_TEST
 
+/* allocated is a uint32_t: a request past it dies instead of wrapping */
+START_TEST(test_array_grow_limit)
+{
+    tn_array *a = n_array_new(4, NULL, NULL);
+
+    a->allocated = UINT32_MAX / 2 + 1; /* fake; n_array_grow() must not realloc */
+
+    ndies = 0;
+    n_die_set_hook(die_hook);
+    expect_null(n_array_grow(a, (size_t)UINT32_MAX / 2 + 2));
+    expect_int(ndies, 1);
+    n_die_set_hook(NULL);
+
+    a->allocated = 4;
+    n_array_free(a);
+}
+END_TEST
+
 /* an array on an allocator is freed with n_array_free_na() */
 START_TEST(test_array_na)
 {
@@ -553,5 +571,6 @@ NTEST_RUNNER("array",
              test_array_set_nth_past_end,
              test_array_ops_after_shift,
              test_array_shift_many,
+             test_array_grow_limit,
              test_array_na,
              test_array_remove);
