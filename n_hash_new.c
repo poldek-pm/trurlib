@@ -9,6 +9,8 @@ static tn_hash *do_n_hash_new_ex(tn_alloc *na,
 {
     tn_hash *ht = NULL;
 
+    n_assert(size <= UINT32_MAX);      /* ht->size is a uint32_t */
+
     if (na == NULL)
         ht = n_calloc(1, sizeof(*ht));
     else
@@ -22,7 +24,7 @@ static tn_hash *do_n_hash_new_ex(tn_alloc *na,
 
 #if ENABLE_TRACE
     if (size % 2 == 0 && size > 100)
-        printf("n_hash_new %p %d\n", ht, size);
+        printf("n_hash_new %p %zu\n", ht, size);
 #endif
     ht->size = size;
     ht->free_fn = freefn;
@@ -36,6 +38,7 @@ tn_hash *n_hash_new2(tn_alloc *na, size_t size, void (*freefn) (void *))
 {
     register size_t rsize = 4;
 
+    n_assert(size <= (size_t)1 << 31); /* rsize must fit in ht->size */
     while (rsize < size)
         rsize <<= 1;
 

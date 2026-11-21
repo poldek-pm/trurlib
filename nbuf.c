@@ -111,27 +111,18 @@ void n_buf_free(tn_buf *buf)
 
 static tn_buf *n_buf_realloc(tn_buf *buf, size_t new_size)
 {
-    register int diff;
-
-    diff = new_size - buf->allocated;
-
-    n_assert(diff > 0);
+    n_assert(new_size > buf->allocated);
 
     if (buf->flags & TN_BUF_CONSTSIZE) {
         trurl_die("n_buf_grow: grow request for const size buffer");
         return NULL;
     }
 
-    if (diff > 0) {
-        void *tmp;
+    DBGF("%p to %zu: allocated %zu, size %zu, off %zu\n", buf, new_size,
+         buf->allocated, buf->size, buf->off);
 
-        DBGF("%p to %d: allocated %d, size %d, off %d\n", new_size,
-             buf, buf->allocated, buf->size, buf->off);
-
-        tmp = n_realloc(buf->data, new_size);
-        buf->data = tmp;
-        buf->allocated = new_size;
-    }
+    buf->data = n_realloc(buf->data, new_size);
+    buf->allocated = new_size;
     return buf;
 }
 
@@ -143,8 +134,13 @@ static tn_buf *n_buf_grow(tn_buf *buf, size_t req_size)
     if (new_size == 0)
         new_size = 2;
 
-    while (req_size >= new_size)
+    while (req_size >= new_size) {
+        if (new_size > SIZE_MAX / 2) {     /* doubling would wrap size_t */
+            trurl_die("n_buf_grow: %zu bytes do not fit in a buffer", req_size);
+            return NULL;
+        }
         new_size *= 2;
+    }
 
     return n_buf_realloc(buf, new_size);
 }

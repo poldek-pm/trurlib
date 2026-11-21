@@ -92,6 +92,7 @@ tn_oash *ohash_new2(tn_alloc *na, size_t size, void (*freefn) (void *))
 {
     register size_t rsize = 4;
 
+    n_assert(size <= (size_t)1 << 31); /* rsize must fit in ht->cap */
     while (rsize < size)
         rsize <<= 1;
     return ohash_new_ex(na, rsize, freefn);
@@ -515,7 +516,10 @@ void *n_oash_it_get(tn_oash_it *hi, const char **key) {
 
 static void realloc_data(tn_oash *ht)
 {
-    size_t newsize = ht->dcap << 1;
+    size_t newsize;
+
+    n_assert(ht->dcap <= UINT32_MAX / 2); /* ht->dcap is a uint32_t */
+    newsize = (size_t)ht->dcap << 1;
 
     ht->data = n_realloc(ht->data, newsize * sizeof(*ht->data));
     memset(&ht->data[ht->dcap], 0, (newsize - ht->dcap) * sizeof(*ht->data));
@@ -530,7 +534,10 @@ static void ohash_rehash(tn_oash *ht)
     oldsize  = ht->cap;
     oldtable = ht->table;
 
-    newsize = ht->cap << 1;
+    /* this doubles ht->cap (a uint32_t); unlike n_hash's chains, open
+       addressing cannot leave the table full, so refuse rather than stop */
+    n_assert(ht->cap <= UINT32_MAX / 2);
+    newsize = (size_t)ht->cap << 1;
     ht->table = n_calloc(newsize, sizeof(*ht->table));
     if (ht->table == NULL) {
         ht->table = oldtable;

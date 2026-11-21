@@ -12,6 +12,11 @@ static void n_hash_rehash(tn_hash *ht)
     size_t i, newsize, oldsize;
     struct hash_bucket **oldtable;
 
+    /* this grows ht->size (a uint32_t) 4x; past the limit the chains keep
+       growing instead, which is slower but still correct */
+    if (ht->size > UINT32_MAX / 4)
+        return;
+
     oldsize  = ht->size;
     oldtable = ht->table;
 

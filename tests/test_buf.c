@@ -160,6 +160,26 @@ START_TEST(test_buf_printf_no_room)
 }
 END_TEST
 
+/* a buffer that would grow past size_t dies instead of wrapping */
+START_TEST(test_buf_grow_limit)
+{
+    tn_buf *nbuf = n_buf_new(16);
+
+    n_die_set_hook(die_hook);
+    ndies = 0;
+    nbuf->allocated = SIZE_MAX / 2 + 1; /* fake; n_buf_grow() must not realloc */
+    nbuf->off = nbuf->allocated;
+    expect_int(n_buf_write(nbuf, "a", 1), -1);
+    expect_int(ndies, 1);
+    n_die_set_hook(NULL);
+
+    nbuf->allocated = 16;
+    nbuf->off = 0;
+    n_buf_free(nbuf);
+}
+END_TEST
+
 NTEST_RUNNER("nbuf", test_buf, test_buf_iterator, test_buf_seek_past_end,
              test_buf_clean, test_buf_printf_long,
-             test_buf_printf_format_error, test_buf_printf_no_room);
+             test_buf_printf_format_error, test_buf_printf_no_room,
+             test_buf_grow_limit);
