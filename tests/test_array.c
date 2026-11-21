@@ -408,6 +408,34 @@ START_TEST(test_array_set_nth_past_end)
 }
 END_TEST
 
+/* start_index + i can pass 16 bits: the bounds check must not truncate the
+   sum to the width of start_index */
+START_TEST(test_array_set_nth_past_16_bits)
+{
+    const int n = 70000;
+    const int nshift = UINT16_MAX - 1; /* one short of n_array_shift() compacting */
+    tn_array *a = n_array_new(4, NULL, NULL);
+
+    for (int i = 0; i < n; i++)
+        n_array_push(a, (void *)(intptr_t)i);
+    for (int i = 0; i < nshift; i++)
+        n_array_shift(a);
+
+    expect_int(a->start_index, nshift);
+    /* nshift + n is above UINT16_MAX and past the block: grows, compacts */
+    a = n_array_set_nth(a, 70000, (void *)(intptr_t)1);
+    expect_int(a->start_index, 0);
+    expect_int(n_array_size(a), 70001);
+    expect_int((intptr_t)n_array_nth(a, 0), nshift);
+    expect_int((intptr_t)n_array_nth(a, n - nshift - 1), n - 1);
+    expect_null(n_array_nth(a, n - nshift));
+    expect_int((intptr_t)n_array_nth(a, 70000), 1);
+    expect_in_block(a);
+
+    n_array_free(a);
+}
+END_TEST
+
 /* arrays made with no cmp_fn compare the pointers */
 static char *s_x = "x", *s_y = "y", *s_c = "c", *s_d = "d", *s_e = "e", *s_f = "f";
 
@@ -475,6 +503,127 @@ START_TEST(test_array_ops_after_shift)
 }
 END_TEST
 
+/* start_index has 16 bits: shifting more items than that moves the rest back
+   to the front of the block */
+START_TEST(test_array_shift_many)
+{
+    const int n = 70000, nshift = 69990;
+    tn_array *a = n_array_new(4, NULL, NULL);
+
+    for (intptr_t i = 0; i < n; i++)
+        n_array_push(a, (void *)i);
+
+    for (intptr_t i = 0; i < nshift; i++) {
+        void *p = n_array_shift(a);
+        ck_assert_ptr_eq(p, (void *)i);
+        expect_in_block(a);
+    }
+
+    expect_int(n_array_size(a), n - nshift);
+    for (int i = 0; i < n - nshift; i++)
+        ck_assert_ptr_eq(n_array_nth(a, i), (void *)(intptr_t)(nshift + i));
+
+    n_array_push(a, (void *)(intptr_t)n);
+    n_array_unshift(a, (void *)(intptr_t)(nshift - 1));
+    expect_in_block(a);
+    expect_int(n_array_size(a), n - nshift + 2);
+    ck_assert_ptr_eq(n_array_nth(a, 0), (void *)(intptr_t)(nshift - 1));
+    ck_assert_ptr_eq(n_array_nth(a, n_array_size(a) - 1), (void *)(intptr_t)n);
+
+    n_array_free(a);
+}
+END_TEST
+
+/* allocated is a uint32_t: a request past it dies instead of wrapping */
+START_TEST(test_array_grow_limit)
+{
+    tn_array *a = n_array_new(4, NULL, NULL);
+
+    a->allocated = UINT32_MAX / 2 + 1; /* fake; n_array_grow() must not realloc */
+
+    ndies = 0;
+    n_die_set_hook(die_hook);
+    expect_null(n_array_grow(a, (size_t)UINT32_MAX / 2 + 2));
+    expect_int(ndies, 1);
+    n_die_set_hook(NULL);
+
+    a->allocated = 4;
+    n_array_free(a);
+}
+END_TEST
+
+static int nasserts = 0;
+static void assert_hook(const char *expr, const char *file, int line)
+{
+    (void)expr; (void)file; (void)line;
+    nasserts++;
+}
+
+/* an array of no items given as data would have nothing to double */
+START_TEST(test_array_new_empty_data)
+{
+    tn_array *a;
+
+    n_assert_set_hook(assert_hook);
+    nasserts = 0;
+    a = n_array_new_ex(0, NULL, NULL, n_malloc(sizeof(void *)));
+    expect_int(nasserts, 1);
+    n_assert_set_hook(NULL);
+    n_array_free(a);
+
+    a = n_array_new_ex(0, NULL, NULL, NULL); /* no data: 0 is a default size */
+    n_array_push(a, s_c);
+    expect_str(array_str(a), "c");
+    n_array_free(a);
+}
+END_TEST
+
+/* an array on an allocator is freed with n_array_free_na() */
+START_TEST(test_array_na)
+{
+    tn_alloc *na = n_alloc_new(4, TN_ALLOC_OBSTACK);
+    tn_array *a = n_array_new_na(na, 2, NULL);
+
+    n_array_push(a, s_c);
+    n_array_push(a, s_d);
+    n_array_push(a, s_e);
+    expect_str(array_str(a), "c,d,e");
+
+    n_array_free_na(na, a);
+    n_alloc_free(na);
+}
+END_TEST
+
+static int na_freed;
+static void na_free_item(void *item)
+{
+    (void)item;
+    na_freed++;
+}
+
+/* n_ref() counts an extra reference: the first n_array_free_na() only drops it */
+START_TEST(test_array_na_refcnt)
+{
+    tn_alloc *na = n_alloc_new(4, TN_ALLOC_OBSTACK);
+    tn_array *a = n_array_new_na(na, 2, NULL);
+
+    n_array_ctl_set_freefn(a, na_free_item);
+    n_array_push(a, s_c);
+    n_array_push(a, s_d);
+    n_ref(a);
+
+    na_freed = 0;
+    n_array_free_na(na, a);     /* drops n_ref()'s reference only */
+    expect_int(na_freed, 0);
+    expect_int(n_array_size(a), 2);
+    expect_str(array_str(a), "c,d");
+
+    n_array_free_na(na, a);     /* the owner's reference frees it */
+    expect_int(na_freed, 2);
+    n_alloc_free(na);
+}
+END_TEST
+
 START_TEST(test_array_remove)
 {
     tn_array *a = setupArray(5);
@@ -504,5 +653,11 @@ NTEST_RUNNER("array",
              test_array_push_after_shift,
              test_array_concat_after_shift,
              test_array_set_nth_past_end,
+             test_array_set_nth_past_16_bits,
              test_array_ops_after_shift,
+             test_array_shift_many,
+             test_array_grow_limit,
+             test_array_new_empty_data,
+             test_array_na,
+             test_array_na_refcnt,
              test_array_remove);

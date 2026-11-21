@@ -27,12 +27,12 @@ struct trurl_oash_table {
     uint16_t    flags;
 
     uint32_t cap;
-    struct tentry *table;
     uint32_t size;
-
     uint32_t dcap;
-    struct dentry **data;
     uint32_t dsize;
+
+    struct tentry *table;
+    struct dentry **data;
 
     void          (*free_fn) (void *);
     tn_alloc      *na;

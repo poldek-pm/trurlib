@@ -49,8 +49,8 @@ struct trurl_hash_table {
     uint16_t    flags;
 
     uint32_t size;
-    struct hash_bucket **table;
     uint32_t items;
+    struct hash_bucket **table;
 
     void          (*free_fn) (void *);
     tn_alloc      *na;

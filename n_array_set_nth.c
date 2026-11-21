@@ -14,13 +14,13 @@ tn_array *n_array_set_nth(tn_array *arr, int i, void *data)
     trurl_die__if_frozen(arr);
 
     if (i < 0) {
-        trurl_die("n_array_set_nth: index(%d) out of bounds(%zu)\n", i,
-                  arr->items);
+        trurl_die("n_array_set_nth: index(%d) out of bounds(%u)\n", i,
+                  (unsigned)arr->items);
         return NULL;
     }
 
     if ((size_t) i >= arr->items) {
-        if (arr->start_index + i >= arr->allocated) {
+        if ((size_t) arr->start_index + i >= arr->allocated) {
             if (n_array_grow(arr, i + 1) == NULL)
                 return NULL;
         }

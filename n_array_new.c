@@ -13,6 +13,7 @@ tn_array *n_array_init_ex(tn_array *arr, int size, t_fn_free freef,
     n_assert(arr);
 
     if (data) {
+        n_assert(size > 0);     /* allocated 0 would never grow */
         arr->data   = data;
         arr->items  = size;
 
@@ -105,7 +106,7 @@ void n_array_free_na(tn_alloc *na, tn_array *arr)
         arr->_refcnt--;
         return;
     }
-    n_assert((arr->flags & TN_ARRAY_INTERNAL_NA) == 1);
+    n_assert((arr->flags & TN_ARRAY_INTERNAL_NA) != 0);
 
     n_array_clean(arr);
     free(arr->data);

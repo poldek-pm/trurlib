@@ -6,11 +6,9 @@
 
 static tn_array *n_array_realloc(tn_array *arr, size_t new_size)
 {
-    register int diff;
     void **tmp;
 
-    diff = new_size - arr->allocated;
-    n_assert(diff > 0);
+    n_assert(new_size > arr->allocated);
 
     tmp = n_realloc(arr->data, new_size * sizeof(*tmp));
     memset(&tmp[arr->allocated], 0, (new_size - arr->allocated) * sizeof(*tmp));
@@ -31,6 +29,12 @@ tn_array *n_array_grow(tn_array *arr, size_t req_size)
     while (req_size > new_size) {
         if (arr->flags & TN_ARRAY_CONSTSIZE) {
             trurl_die("n_array_grow: grow request for const size array");
+            return NULL;
+        }
+
+        /* arr->allocated is a uint32_t; on ILP32 size_t would wrap too */
+        if (new_size > UINT32_MAX / 2) {
+            trurl_die("n_array_grow: %zu items do not fit in an array", req_size);
             return NULL;
         }
 
