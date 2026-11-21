@@ -9,7 +9,8 @@ tn_array *n_array_clone_ex(const tn_array *arr, t_fn_dup dup_fn)
     tn_array *dupl;
     
     dupl = n_array_new(arr->allocated, arr->free_fn, arr->cmp_fn);
-    dupl->flags = arr->flags;
+    /* FROZEN and NA describe the source, not the new array */
+    dupl->flags = arr->flags & ~(TN_ARRAY_INTERNAL_NA | TN_ARRAY_FROZEN);
     if (dup_fn != NULL) {
         register unsigned int i;
         int n = arr->start_index;

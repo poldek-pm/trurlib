@@ -624,6 +624,70 @@ START_TEST(test_array_na_refcnt)
 }
 END_TEST
 
+/* a frozen array is freed as n_array_free() frees one */
+START_TEST(test_array_na_frozen)
+{
+    tn_alloc *na = n_alloc_new(4, TN_ALLOC_OBSTACK);
+    tn_array *a = n_array_new_na(na, 2, NULL);
+
+    n_array_ctl_set_freefn(a, na_free_item);
+    n_array_push(a, s_c);
+    n_array_push(a, s_d);
+    n_array_freeze(a);
+
+    na_freed = 0;
+    n_array_free_na(na, a);
+    expect_int(na_freed, 2);
+    n_alloc_free(na);
+}
+END_TEST
+
+static void *dup_same(void *ptr)
+{
+    return ptr;
+}
+
+/* a clone is malloc()ed, so it is freed with n_array_free() */
+START_TEST(test_array_na_clone)
+{
+    tn_alloc *na = n_alloc_new(4, TN_ALLOC_OBSTACK);
+    tn_array *a = n_array_new_na(na, 2, NULL);
+    tn_array *c;
+
+    n_array_push(a, s_c);
+    n_array_push(a, s_d);
+
+    c = n_array_clone_ex(a, dup_same);
+    expect_str(array_str(c), "c,d");
+    n_array_free(c);
+
+    n_array_free_na(na, a);
+    n_alloc_free(na);
+}
+END_TEST
+
+/* a frozen source does not freeze the clone: it must stay fillable */
+START_TEST(test_array_clone_frozen)
+{
+    tn_array *a = n_array_new(4, NULL, NULL);
+    tn_array *c;
+
+    n_array_push(a, s_c);
+    n_array_freeze(a);
+
+    c = n_array_clone_ex(a, dup_same);
+    expect_str(array_str(c), "c");
+    n_array_free(c);
+
+    c = n_array_clone(a);       /* empty, for the caller to fill */
+    n_array_push(c, s_d);
+    expect_str(array_str(c), "d");
+    n_array_free(c);
+
+    n_array_free(a);
+}
+END_TEST
+
 START_TEST(test_array_remove)
 {
     tn_array *a = setupArray(5);
@@ -660,4 +724,7 @@ NTEST_RUNNER("array",
              test_array_new_empty_data,
              test_array_na,
              test_array_na_refcnt,
+             test_array_na_frozen,
+             test_array_na_clone,
+             test_array_clone_frozen,
              test_array_remove);
