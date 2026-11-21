@@ -41,8 +41,7 @@ tn_buf *n_buf_new(int initial_size)
 {
     tn_buf *buf;
 
-    if ((buf = n_calloc(1, sizeof(*buf))) == NULL)
-        return NULL;
+    buf = n_calloc(1, sizeof(*buf));
 
     if (initial_size == 0) {
         buf->data = NULL;
@@ -112,8 +111,6 @@ void n_buf_free(tn_buf *buf)
 
 static tn_buf *n_buf_realloc(tn_buf *buf, size_t new_size)
 {
-    void *tmp;
-
     n_assert(new_size > buf->allocated);
 
     if (buf->flags & TN_BUF_CONSTSIZE) {
@@ -124,10 +121,7 @@ static tn_buf *n_buf_realloc(tn_buf *buf, size_t new_size)
     DBGF("%p to %zu: allocated %zu, size %zu, off %zu\n", buf, new_size,
          buf->allocated, buf->size, buf->off);
 
-    if ((tmp = n_realloc(buf->data, new_size)) == NULL)
-        return NULL;
-
-    buf->data = tmp;
+    buf->data = n_realloc(buf->data, new_size);
     buf->allocated = new_size;
     return buf;
 }
@@ -295,8 +289,7 @@ int n_buf_vprintf(tn_buf *nbuf, const char *fmt, va_list args)
         return -1;
 
     if ((size_t) n >= sizeof(buf)) {
-        if ((p = n_malloc((size_t) n + 1)) == NULL)
-            return -1;
+        p = n_malloc((size_t) n + 1);
         vsnprintf(p, (size_t) n + 1, fmt, args);
     }
 

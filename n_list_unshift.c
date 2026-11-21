@@ -13,10 +13,8 @@ tn_list *n_list_unshift(tn_list *l, void *data)
 	    return NULL;
     }
     
-    if ((node = n_malloc(sizeof(*node))) == NULL) {
-	return NULL;
-    }
-    
+    node = n_malloc(sizeof(*node));
+
     node->data = data;
     node->next = l->head;
     l->head = node;

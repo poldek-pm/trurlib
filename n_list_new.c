@@ -8,8 +8,7 @@ tn_list *n_list_new(unsigned int flags, t_fn_free freef, t_fn_cmp cmpf)
 {
     tn_list *l;
 
-    if ((l = n_malloc(sizeof(*l))) == NULL)
-        return NULL;
+    l = n_malloc(sizeof(*l));
 
     l->_refcnt = 0;
     l->flags = flags;

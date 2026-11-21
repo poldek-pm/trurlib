@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+/* fn reports a failed allocation; when it returns, the process exits
+   with 1 (it no longer goes on), so the allocators below never return NULL */
 void (*n_malloc_set_failhook(void (*fn) (void)));
 void *n_malloc(size_t size);
 void *n_calloc(size_t nmemb, size_t size);

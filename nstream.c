@@ -405,8 +405,7 @@ int n_stream_vprintf(tn_stream *st, const char *fmt, va_list args)
         return -1;
 
     if ((size_t) n >= sizeof(buf)) {
-        if ((p = n_malloc((size_t) n + 1)) == NULL)
-            return -1;
+        p = n_malloc((size_t) n + 1);
         vsnprintf(p, (size_t) n + 1, fmt, args);
     }
 
