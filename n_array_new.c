@@ -108,6 +108,7 @@ void n_array_free_na(tn_alloc *na, tn_array *arr)
     }
     n_assert((arr->flags & TN_ARRAY_INTERNAL_NA) != 0);
 
+    n_array_unfreeze(arr);
     n_array_clean(arr);
     free(arr->data);
     arr->data = NULL;
