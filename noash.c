@@ -23,7 +23,7 @@ struct tentry {
 
 
 struct trurl_oash_table {
-    uint16_t    _refcnt;
+    uint32_t    _refcnt;
     uint16_t    flags;
 
     uint32_t cap;

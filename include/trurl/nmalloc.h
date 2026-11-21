@@ -56,7 +56,7 @@ typedef struct trurl_str16_private tn_str16;
 
 /* obstack allocator */
 struct trurl_alloc_private {
-    uint16_t    _refcnt;
+    uint32_t    _refcnt;
     uint16_t    _flags;
     void*       (*na_malloc)(struct trurl_alloc_private *, size_t size);
     void*       (*na_calloc)(struct trurl_alloc_private *, size_t size);

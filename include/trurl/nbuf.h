@@ -17,7 +17,7 @@
 #include <trurl/n_snprintf.h>
 
 struct trurl_buf {
-    uint16_t      _refcnt;
+    uint32_t      _refcnt;
     uint16_t      flags;
 
     unsigned char *data;

@@ -8,15 +8,14 @@
 
 #include <stdint.h>
 #include <trurl/nassert.h>
-#ifndef UINT16_MAX
-#define UINT16_MAX 65536
-#endif
+
+/* o is a trurlib object: its first member is a uint32_t reference count */
 static inline void *n_ref(void *o)
 {
-    register uint16_t *v;
-    
-    v = (uint16_t*)o;
-    n_assert(*v < UINT16_MAX - 1);
+    register uint32_t *v;
+
+    v = (uint32_t*)o;
+    n_assert(*v < UINT32_MAX);
     (*v)++;
     return o;
 }

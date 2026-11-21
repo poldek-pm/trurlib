@@ -19,7 +19,7 @@ tn_tuple *n_tuple_new(tn_alloc *na, int size, void **data)
 {
     tn_tuple *tu;
 
-    n_assert(size < UINT16_MAX);
+    n_assert(size >= 0 && (size_t)size <= (SIZE_MAX - sizeof(*tu)) / sizeof(void*));
     if (na)
         tu = na->na_malloc(na, sizeof(*tu) + (size * sizeof(void*)));
     else
@@ -70,7 +70,7 @@ void *n_tuple_nth(const tn_tuple *tu, register int i)
 {
     
     if ((size_t) i >= tu->size || i < 0)
-        n_die(TN_ERRMSG_TUPLE_NTH_OOB, i, tu->size);
+        n_die(TN_ERRMSG_TUPLE_NTH_OOB, i, (unsigned)tu->size);
     
     return tu->data[i];
 }

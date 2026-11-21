@@ -25,7 +25,7 @@
 /* WARN: _never_ ever access array members directly */
 typedef struct trurl_array_private {
 #ifndef SWIG
-    uint16_t    _refcnt;
+    uint32_t    _refcnt;
     uint16_t    flags;
 
     size_t      items;

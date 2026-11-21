@@ -33,7 +33,7 @@ struct list_node {
 };
 
 struct trurl_list {
-    uint16_t    _refcnt;
+    uint32_t    _refcnt;
     uint16_t    flags;
 
     int items;
