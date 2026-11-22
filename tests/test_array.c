@@ -705,6 +705,106 @@ START_TEST(test_array_remove)
 }
 END_TEST
 
+static int nfreed = 0;
+static void free_counted(void *p)
+{
+    nfreed++;
+    free(p);
+}
+
+static int cmp_int(const void *a, const void *b)
+{
+    return *(const int *)a - *(const int *)b;
+}
+
+static int cmp_odd(const void *a, const void *b)
+{
+    (void)b;
+    return *(const int *)a % 2 ? 0 : 1;
+}
+
+/* n ints from first, each of them repeated times, after a shift of one
+   item (start_index > 0) */
+static tn_array *int_array(int first, int n, int times)
+{
+    tn_array *a = n_array_new(4, free_counted, cmp_int);
+
+    n_array_push(a, n_malloc(sizeof(int)));
+    for (int i = 0; i < n; i++) {
+        for (int k = 0; k < times; k++) {
+            int *v = n_malloc(sizeof(*v));
+            *v = first + i;
+            n_array_push(a, v);
+        }
+    }
+    free(n_array_shift(a));
+    return a;
+}
+
+/* every item is checked once, the ones kept stay in order, each one removed
+   is freed once, and the slots left behind are empty */
+START_TEST(test_array_remove_many)
+{
+    const int n = 10000;
+    tn_array *a = int_array(0, n, 1);
+
+    nfreed = 0;
+    n_array_remove_ex(a, NULL, cmp_odd);
+    expect_int(n_array_size(a), n / 2);
+    expect_int(nfreed, n / 2);
+    for (int i = 0; i < n_array_size(a); i++)
+        fail_unless(*(int *)n_array_nth(a, i) == 2 * i, "item %d is %d", i,
+                    *(int *)n_array_nth(a, i));
+
+    /* the array keeps working after it */
+    int *v = n_malloc(sizeof(*v));
+    *v = -1;
+    n_array_push(a, v);
+    expect_int(n_array_size(a), n / 2 + 1);
+    expect_int(*(int *)n_array_nth(a, n / 2), -1);
+
+    n_array_remove_ex(a, NULL, cmp_odd);    /* -1 is odd */
+    expect_int(n_array_size(a), n / 2);
+
+    int zero = 0;
+    n_array_remove(a, &zero);
+    expect_int(n_array_size(a), n / 2 - 1);
+    expect_int(*(int *)n_array_nth(a, 0), 2);
+
+    nfreed = 0;
+    n_array_free(a);
+    expect_int(nfreed, n / 2 - 1);
+}
+END_TEST
+
+START_TEST(test_array_uniq_many)
+{
+    const int n = 10000;
+    tn_array *a = int_array(0, n, 3);
+
+    nfreed = 0;
+    n_array_uniq(a);
+    expect_int(n_array_size(a), n);
+    expect_int(nfreed, 2 * n);
+    for (int i = 0; i < n_array_size(a); i++)
+        fail_unless(*(int *)n_array_nth(a, i) == i, "item %d is %d", i,
+                    *(int *)n_array_nth(a, i));
+
+    n_array_uniq(a);                        /* nothing to drop */
+    expect_int(n_array_size(a), n);
+
+    nfreed = 0;
+    n_array_free(a);
+    expect_int(nfreed, n);
+
+    a = int_array(7, 1, 5);                 /* all the same */
+    n_array_uniq(a);
+    expect_int(n_array_size(a), 1);
+    expect_int(*(int *)n_array_nth(a, 0), 7);
+    n_array_free(a);
+}
+END_TEST
+
 NTEST_RUNNER("array",
              test_array_basic,
              test_array_concat,
@@ -727,4 +827,6 @@ NTEST_RUNNER("array",
              test_array_na_frozen,
              test_array_na_clone,
              test_array_clone_frozen,
-             test_array_remove);
+             test_array_remove,
+             test_array_remove_many,
+             test_array_uniq_many);
